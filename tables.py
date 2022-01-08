@@ -119,16 +119,15 @@ def check_if_judge_exists_already(j_id, judges):
 def create_judges(judges_data):
     judges = []
     for index, row in judges_data.iterrows():
-        if index > 0:
-            j_name = row['Judge_name']
-            j_id = row['Judge_ID']
-            j_location = row['location']
-            judge_exists = check_if_judge_exists_already(j_id, judges)
-            if judge_exists:
-                judge_exists.add_location(j_location)
-            else:
-                judge = Judge(j_id, j_name, j_location, [], False)
-                judges.append(judge)
+        j_name = row['Judge_name']
+        j_id = row['Judge_ID']
+        j_location = row['Location']
+        judge_exists = check_if_judge_exists_already(j_id, judges)
+        if judge_exists:
+            judge_exists.add_location(j_location)
+        else:
+            judge = Judge(j_id, j_name, [j_location], False)
+            judges.append(judge)
     print(judges)
     return judges
 
@@ -136,7 +135,7 @@ def create_judges(judges_data):
 def create_cases(cases_data):
     cases = []
     for index, row in cases_data.iterrows():
-        c_id = row['ID']
+        c_id = index + 1
         c_main_type = row['Main_Type']
         c_secondary_type = row['Secondary_Type']
         c_sub_type = row['Sub_Type']
