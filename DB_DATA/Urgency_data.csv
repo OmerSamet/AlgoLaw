@@ -1,0 +1,5 @@
+﻿Urgency_id,Urgency_name,Meaning,Dependencies
+1,Most urgent,תורנות,Tel Aviv
+2,Medium,השבוע,Tel Aviv
+3,Low,אי מתן מענה,waiting for reply
+4,Regular,,
