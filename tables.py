@@ -2,6 +2,7 @@ import os
 import time
 import csv
 import pathlib
+import pandas as pd
 
 
 class Judge:
@@ -10,15 +11,26 @@ class Judge:
         self.name = name
         self.locations = locations
         self.is_in_rotation = is_in_rotation
-        self.total_weight = 0
+        self.total_weight = self.create_weight_dict()
         self.cases = []
 
+    def create_weight_dict():
+        location_weight_dict  = dict()
+        for location in self.locations:
+            location_weight_dict[location] = 0
+
+        return location_weight_dict
 
     def add_case(self, Case):
         self.cases.append(Case)
-        self.total_weight += Case.weight
+        self.total_weight[Case.location] += Case.weight
 
 
+    def get_weight(self, location):
+        return self.total_weight[location]
+
+    def add_location(location):
+        self.locations.append(location)
 
 class Case:
     def __init__(self, id, first_type, second_type, third_type, urgency_level, duration, location, weight):
@@ -45,25 +57,27 @@ def calc_locations(judges_ids):
 
 def handle_cases(judges_ids, cases_ids):
     for case_id in cases_ids:
-        send_case(judges_ids, case_id)
+        judge_id = send_case(judges_ids, case_id)
 
 
-def compare_judges_weight(j1, j2):
-    if j1.get_weigth() < j2.get_weigth():
-        return -1
-    elif j1.get_weigth() > j2.get_weigth():
-        return 1
-    else:
-        return 0
+
+# def compare_judges_weight(j1, j2, location=location):
+#     if j1.get_weight() < j2.get_weight():
+#         return -1
+#     elif j1.get_weight() > j2.get_weight():
+#         return 1
+#     else:
+#         return 0
 
 
 def send_case(judges_ids, case_id):
-    sort_judges_by_weight = judges_ids.sort(key=compare_judges_weight)
-    for judge_id in sort_judges_by_weight:
-        if is_valid_judge(judge_id, case_id):
-            judge_id.add_case()
-            return judge_id
-    return None
+    relevant_judges = [for judge_id in judges_ids if is_valid_judge(judge_id, case_id)]
+    if not relevant_judges:
+        return None
+    sort_judges_by_weight = sorted(relevant_judges, key=lambda x: x.get_weight(location))
+    sort_judges_by_weight[0].add_case(case_id)
+    return judge_id
+    
 
 
 def is_valid_judge(judge_id, case_id):
@@ -77,26 +91,77 @@ def valid_location(judge_id, case_id):
     return False
 
 
-def write_csv(data):
-    header = ['ID Case', 'ID judge', 'Location', 'Hall', 'Date', 'Time']
+def write_csv(judges_ids):
+    # Write Judges and cases division
+    header = ['ID Case', 'ID judge', 'Location']
     with open('output.csv', 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
         writer.writerow(header)
-        writer.writerows(data)
+        for judge in judge_ids:
+            for case in judge.cases:
+                line = str(case.id) + ',' + str(judge.id) + ',' + case.location + '\n'
+                writer.writerow(line)
+
+    # Write Judges and weight division
+    header = ['ID judge', 'location', 'weight']
+    with open('judge_output.csv', 'w', encoding='UTF8', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(header)
+        for judge in judge_ids:
+            judge_weight_dict = judge.total_weight
+            for location, weight in judge.total_weight.items():
+                line = str(judge.id) + ',' + location + ',' + str(weight)
+                writer.writerow(line)
+
+def check_if_judge_exists_already(j_id, judges):
+    for judge in judges:
+        if judge.id == j_id:
+            return judge
+
+    return False
+
+def create_judges(judges_data):
+    judges = []
+    for index, row in judges_data.iterrows():
+        if index > 0:
+            j_name = row['Judge_name']
+            j_id = row['Judge_ID']
+            j_location = row['location']
+            judge_exists =  check_if_judge_exists_already(j_id, judges)
+            if judge_exists:
+                judge_exists.add_location(location)
+            else:
+                judge = Judge(j_id, j_name, j_location, [], False)
+                judges.append(judge)
+    return judges
 
 
-def get_data(directory):
-    file_list = []
-    for i in os.listdir(directory):
-        a = os.stat(os.path.join(directory, i))
-        file_list.append([pathlib.Path(i).parent.resolve(), i, time.ctime(a.st_ctime),
-                          time.ctime(a.st_mtime), time.ctime(a.st_atime)])
-    return file_list
+def create_cases(cases_data):
+    cases = []
+    for index, row in cases_data.iterrows():
+        c_id = row['ID']
+        c_main_type = row['Main_Type']
+        c_secondary_type = row['Secondary_Type']
+        c_sub_type = row['Sub_Type']
+        c_urg_level = row['Urgency_Level']
+        c_duration = row['Duration']
+        c_location = row['Location']
+        c_weight = row['Weight']
+        case = Case(c_id, c_main_type, c_secondary_type, c_sub_type, c_urg_level, c_duration, c_location, c_weight)
+        cases.append(case)
+
+    return cases
+
+def get_data(file_name):
+    pd.read_csv(file_name)
 
 
 if __name__ == '__main__':
-    judges_ids = get_data('judges.csv')
-    cases_ids = get_data('cases.csv')
+    judges_data = get_data('DB_DATA/Judge_Data.csv')
+    cases_data = get_data('DB_DATA/Case_Data.csv')
 
-    result =
-    write_csv(result)
+    judges_ids = create_judges(judges_data)
+    cases_ids = create_cases(cases_data)
+
+    handle_cases(judges_ids, cases_ids)
+    write_csv(judges_ids)
