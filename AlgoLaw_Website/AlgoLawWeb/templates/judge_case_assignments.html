@@ -1,0 +1,43 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div class="d-flex">
+        <div id="judge_calendar" class="col-md-11"></div>
+        <div class="col-md-3">
+              <ul class="list-group">
+                <button onclick="{ judge_calendar.changeView('dayGridMonth') }" class="btn btn-outline-info">Month</button>
+                <button onclick="{ judge_calendar.changeView('dayGridWeek') }" class="btn btn-outline-info">Week</button>
+                <button onclick="{ judge_calendar.changeView('timeGridDay') }" class="btn btn-outline-info">Day</button>
+                <button onclick="{ judge_calendar.changeView('listWeek') }" class="btn btn-outline-info">List</button>
+              </ul>
+          </div>
+    </div>
+    <script>
+        let calendarEl = document.getElementById('judge_calendar');
+        let judge_calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            events : [
+                {% for event in events %}
+                    {
+                        title : '{{event.todo}}',
+                        start : '{{event.date}}'
+                    },
+                {% endfor %}
+            ]
+        });
+        judge_calendar.render();
+    </script>
+{% endblock content %}
+
+
+
+            {#timeZone: 'UTC',#}
+{#            initialView: 'dayGridMonth', dayGridWeek', 'timeGridDay', 'listWeek#}
+            {#height: '100%',#}
+            {#events: 'https://fullcalendar.io/api/demo-feeds/events.json'#}
+            {#events: [#}
+            {#    {#}
+            {#        title:#}
+            {#        start:#}
+            {#        end:#}
+            {#    }#}
+            {#]#}

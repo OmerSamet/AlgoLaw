@@ -1,0 +1,9 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h1>AlgoLaw</h1>
+        {% for button in buttons %}
+            <article class="d-flex justify-content-center content-section">
+                <a class="btn btn-primary text-center" href="{{ url_for(button.redirect) }}">{{ button.Name }}</a>
+            </article>
+        {% endfor %}
+{% endblock content %}
