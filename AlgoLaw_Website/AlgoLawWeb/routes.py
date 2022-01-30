@@ -6,7 +6,7 @@ from AlgoLawWeb.forms import RegistrationForm, LoginForm, UpdateAccountForm, Cas
 from AlgoLawWeb.models import User, Post
 from flask_login import login_user, current_user, logout_user, login_required
 from datetime import datetime
-
+from AlgoLawBackEnd import judge_divider
 
 ###################################### UPLOAD FUNCTIONS #############################################################
 
@@ -72,6 +72,7 @@ def judge_case_assignments():
 @app.route('/run_logic')
 @login_required
 def run_logic():
+    judge_divider.handle_cases()
     output_file = 'output.csv'
     return send_from_directory(directory=app.config["OUTPUT_DIR"], path=output_file, as_attachment=True)
 
