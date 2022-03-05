@@ -39,6 +39,25 @@ def upload_cases():
     return render_template('upload_cases.html', title='Upload Cases', form=form)
 
 
+@app.route('/<variable>/upload_generic', methods=['GET', 'POST'])
+# @app.route('/<variable>/upload_generic', methods=['GET', 'POST'])
+# @app.route('/<variable>/upload_generic', methods=['GET', 'POST'])
+# @app.route('/<variable>/upload_generic', methods=['GET', 'POST'])
+# @app.route('/<variable>/upload_generic', methods=['GET', 'POST'])
+# @app.route('/<variable>/upload_generic', methods=['GET', 'POST'])
+# @app.route('/<variable>/upload_generic', methods=['GET', 'POST'])
+@login_required
+def upload_generic(variable):
+    form = CasesForm()
+    if form.validate_on_submit():
+        if form.csv_file.data:
+            new_file = save_csv_file(form.csv_file.data)
+            flash('File uploaded!', 'success')
+            return redirect(url_for('home'))
+
+    return render_template('upload_generic.html', title=variable, form=form)
+
+
 #####################################################################################################################
 #####################################################################################################################
 #####################################################################################################################

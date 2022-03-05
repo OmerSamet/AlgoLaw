@@ -59,5 +59,5 @@ class UpdateAccountForm(FlaskForm):
 class CasesForm(FlaskForm):
     csv_file = FileField('Upload case CSV file', validators=[FileRequired()])
     # , validators = [FileAllowed(['csv'])]
-    submit = SubmitField('Upload')
+    submit = SubmitField('העלה')
 
