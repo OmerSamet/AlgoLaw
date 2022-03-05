@@ -1,0 +1,34 @@
+{% extends "layout.html" %}
+{% block content %}
+
+    <div class="content-section w-75 d-flex flex-column float-right">
+        <div class="p-2 d-flex justify-content-end">
+            <img src="{{url_for('static',filename = 'Web_models/judge_personal_space.jpeg')}}" width="180" height="70">
+        </div>
+        <div class="p-2 d-flex justify-content-end">
+            <h3 style="font-weight: bold;">יש לבחור את הפעולה הרצויה</h3>
+        </div>
+        <div class="d-flex justify-content-center">
+            <div>
+                <a href="{{ url_for('judge_case_assignments') }}">
+                    <img src="{{url_for('static',filename = 'Web_models/look_at_schedule_big.jpeg')}}" width="200" height="200">
+                </a>
+            </div>
+            <div>
+                <a href="{{ url_for('home') }}">
+                    <img src="{{url_for('static',filename = 'Web_models/look_for_cases_big.jpeg')}}" width="200" height="200">
+                </a>
+            </div>
+            <div>
+                <a href="{{ url_for('home') }}">
+                    <img src="{{url_for('static',filename = 'Web_models/ask_for_long_vacation_big.jpeg')}}" width="200" height="200">
+                </a>
+            </div>
+            <div>
+                <a href="{{ url_for('home') }}">
+                    <img src="{{url_for('static',filename = 'Web_models/short_vacation_big.jpeg')}}" width="200" height="200">
+                </a>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

@@ -62,6 +62,24 @@ def judge_case_assignments():
     return render_template('judge_case_assignments.html', events=events)
 
 
+@app.route('/judge_personal_space')
+@login_required
+def judge_personal_space():
+    return render_template('judge_personal_space.html', title='Judge Personal Space')
+
+
+#####################################################################################################################
+#####################################################################################################################
+#####################################################################################################################
+
+###################################### SECRATARY FUNCTIONS ############################################
+
+@app.route('/secretary_space')
+@login_required
+def secretary_space():
+    return render_template('secretary_space.html', title='Secretary Space')
+
+
 #####################################################################################################################
 #####################################################################################################################
 #####################################################################################################################
@@ -118,12 +136,12 @@ buttons = [
         'redirect': 'run_logic'
     },
     {
-        'Name': 'Find Cases',
-        'redirect': 'home'
+        'Name': 'Secretary Space',
+        'redirect': 'secretary_space'
     },
     {
-        'Name': 'Input Judge missing days',
-        'redirect': 'home'
+        'Name': 'Judge Personal Space',
+        'redirect': 'judge_personal_space'
     }
 ]
 
