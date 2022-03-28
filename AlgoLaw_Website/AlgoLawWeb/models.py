@@ -85,7 +85,7 @@ class Case(db.Model):
     location = db.Column(db.String(100), nullable=False)
     weight = db.Column(db.Integer, nullable=False)
     quarter = db.Column(db.Integer, nullable=False)
-    date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    case_datetime = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     judge_id = db.Column(db.Integer, db.ForeignKey('judge.id'), nullable=False)
 
     def __repr__(self):
