@@ -2,6 +2,12 @@ from datetime import datetime
 from AlgoLawWeb import db, login_manager
 from flask_login import UserMixin
 
+ROLES = {
+    'דיין/דיינת': 'Judge',
+    'מזכיר/מזכירה': 'Secretary',
+    'הנהלה': 'Master'
+}
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -14,9 +20,10 @@ class User(db.Model, UserMixin):
     image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
     password = db.Column(db.String(60), nullable=False)
     posts = db.relationship('Post', backref='author', lazy=True)
+    role = db.Column(db.String(20), nullable=False, default='None')
 
     def __repr__(self):
-        return f"User:('{self.username}', '{self.email}', '{self.image_file}')"
+        return f"User:('{self.username}', '{self.email}', '{self.image_file}','{self.role}')"
 
 
 class Post(db.Model):
@@ -29,6 +36,14 @@ class Post(db.Model):
     def __repr__(self):
         return f"Post:('{self.title}', '{self.date_posted}')"
 
+
+class JudgeToVaca(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    judge_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    start_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    end_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    is_verified = db.Column(db.Boolean, nullable=False)
+    type = db.Column(db.String(20), nullable=False)
 
 
 

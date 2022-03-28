@@ -10,13 +10,15 @@
                 <button onclick="{ judge_calendar.changeView('dayGridMonth') }" class="btn btn-outline-info">חודשי</button>
                 <button onclick="{ judge_calendar.changeView('dayGridWeek') }" class="btn btn-outline-info">שבועי</button>
                 <button onclick="{ judge_calendar.changeView('timeGridDay') }" class="btn btn-outline-info">יומי</button>
+                <button onclick="{ judge_calendar.changeView('listWeek') }" class="btn btn-outline-info">רשימה</button>
               </ul>
           </div>
     </div>
     <script>
         let calendarEl = document.getElementById('judge_calendar');
         let judge_calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth',
+            initialView: 'listWeek',
+            selectable: true,
             events : [
                 {% for event in events %}
                     {
@@ -29,24 +31,6 @@
         judge_calendar.render();
     </script>
 
-    {% if cur_page == 'ShortVaca' %}
-    <button onlcick=""> זמן חופשה </button>
-    {%  elif cur_page == 'LongVaca' %}
-    <button onlcick=""> שלח בקשה </button>
-    {% endif %}
 
 {% endblock content %}
 
-
-
-            {#timeZone: 'UTC',#}
-{#            initialView: 'dayGridMonth', dayGridWeek', 'timeGridDay', 'listWeek#}
-            {#height: '100%',#}
-            {#events: 'https://fullcalendar.io/api/demo-feeds/events.json'#}
-            {#events: [#}
-            {#    {#}
-            {#        title:#}
-            {#        start:#}
-            {#        end:#}
-            {#    }#}
-            {#]#}

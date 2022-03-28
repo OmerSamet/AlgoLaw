@@ -1,0 +1,93 @@
+{% extends "layout.html" %}
+{% block content %}
+    <link href='fullcalendar/main.css' rel='stylesheet' />
+    <script src='fullcalendar/main.js'></script>
+<!--    <script src='fullcalendar/fullcalendar.js'></script>-->
+    <script src='fullcalendar/core/locales/he.js'></script>
+
+
+
+    <div class="d-flex">
+        <div id="judge_calendar" class="col-md-11"></div>
+        <div class="col-md-3">
+            <h2 class="form-group text-right"> בקשת חופשה ארוכה </h2>
+              <ul class="list-group">
+
+                  <button onclick="{ judge_calendar.changeView('dayGridMonth') }" class="btn btn-outline-info">חודשי</button>
+                  <button onclick="{ judge_calendar.changeView('dayGridWeek') }" class="btn btn-outline-info">שבועי</button>
+                  <button onclick="{ judge_calendar.changeView('timeGridDay') }" class="btn btn-outline-info">יומי</button>
+                  <br>
+                  <br>
+                  <br>
+                  <form method="POST" action="">
+                      {{ form.hidden_tag() }}
+                      <fieldset class="form-group">
+    <!--                      Show when the vacation is-->
+                          <div id="start_date" class="form-group text-right">
+                              {{ form.start_date.label(class="form-control-label") }}
+                          </div>
+                          <div class="form-group text-md-center">
+                              {{form.start_date(id="start_date_value")}}
+<!--                              {{ form.start_date(class="form-control form-control-lg") }}-->
+                          </div>
+                          <div id="end_date" class="form-group text-right">
+                              {{ form.end_date.label(class="form-control-label") }}
+                          </div>
+                          <div class="form-group text-md-center">
+                              {{form.end_date(id="end_date_value")}}
+                          </div>
+                          <div>
+                              {{ form.submit(class="btn btn-outline-info") }}
+                          </div>
+                      </fieldset>
+                  </form>
+
+              </ul>
+          </div>
+    </div>
+    <script>
+        let calendarEl = document.getElementById('judge_calendar');
+        let judge_calendar = new FullCalendar.Calendar(calendarEl, {
+            locale: 'he',
+            initialView: 'dayGridMonth',
+            selectable: true,
+            direction: 'rtl',
+            events : [
+                {% for event in events %}
+                    {
+                        title : '{{event.todo}}',
+                        start : '{{event.date}}',
+                        end : '{{event.date}}'
+                    },
+                {% endfor %}
+            ],
+            select: function(info) {
+                // console.log(["Selected Date : " + info.startStr + ' to ' + info.endStr]);
+                // alert('selected ' + info.startStr + ' to ' + info.endStr);
+                var div = document.getElementById('start_date_value');
+                div.value = info.startStr
+                var div = document.getElementById('end_date_value');
+                div.value = info.endStr
+            }
+            });
+        judge_calendar.render();
+
+
+
+    </script>
+
+{% endblock content %}
+
+
+
+            {#timeZone: 'UTC',#}
+{#            initialView: 'dayGridMonth', dayGridWeek', 'timeGridDay', 'listWeek#}
+            {#height: '100%',#}
+            {#events: 'https://fullcalendar.io/api/demo-feeds/events.json'#}
+            {#events: [#}
+            {#    {#}
+            {#        title:#}
+            {#        start:#}
+            {#        end:#}
+            {#    }#}
+            {#]#}

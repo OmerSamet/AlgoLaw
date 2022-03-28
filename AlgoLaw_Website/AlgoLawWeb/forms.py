@@ -1,20 +1,21 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed, FileRequired
-from wtforms import StringField, PasswordField, SubmitField, BooleanField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, DateField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
-from AlgoLawWeb.models import User
+from AlgoLawWeb.models import User, datetime
 from flask_login import current_user
 
 
 class RegistrationForm(FlaskForm):
-    username = StringField('Username',
+    username = StringField('שם משתמש',
                            validators=[DataRequired(), Length(min=2, max=20)])
-    email = StringField('Email',
+    email = StringField('מייל',
                         validators=[DataRequired(), Email()])
-    password = PasswordField('Password', validators=[DataRequired()])
-    confirm_password = PasswordField('Confirm Password',
+    password = PasswordField('סיסמא', validators=[DataRequired()])
+    role = SelectField('תפקיד', validators=[DataRequired()], choices=['דיין/דיינת','מזכיר/מזכירה','הנהלה'])
+    confirm_password = PasswordField('חזור על סיסמא',
                                      validators=[DataRequired(), EqualTo('password')])
-    submit = SubmitField('Sign Up')
+    submit = SubmitField('הירשם')
 
     def validate_username(self, username):
         user = User.query.filter_by(username=username.data).first()
@@ -28,11 +29,11 @@ class RegistrationForm(FlaskForm):
 
 
 class LoginForm(FlaskForm):
-    email = StringField('Email',
+    email = StringField('מייל',
                         validators=[DataRequired(), Email()])
-    password = PasswordField('Password', validators=[DataRequired()])
-    remember = BooleanField('Remember Me')
-    submit = SubmitField('Login')
+    password = PasswordField('סיסמא', validators=[DataRequired()])
+    remember = BooleanField('זכור אותי')
+    submit = SubmitField('!התחבר')
 
 
 class UpdateAccountForm(FlaskForm):
@@ -61,3 +62,11 @@ class CasesForm(FlaskForm):
     # , validators = [FileAllowed(['csv'])]
     submit = SubmitField('העלה')
 
+
+class VacaForm(FlaskForm):
+    start_date = DateField('תחילת חופש', validators=[DataRequired()], format='%Y/%m/%d')
+    end_date = DateField('סוף חופש', validators=[DataRequired()], format='%Y/%m/%d')
+    submit = SubmitField('הגש/י')
+
+# default=datetime.today().date(),
+# default=datetime.today().date() + timedelta(days=1),

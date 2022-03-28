@@ -2,10 +2,10 @@ import os
 import secrets
 from flask import render_template, url_for, flash, redirect, request, send_from_directory
 from AlgoLawWeb import app, db, bcrypt
-from AlgoLawWeb.forms import RegistrationForm, LoginForm, UpdateAccountForm, CasesForm
-from AlgoLawWeb.models import User, Post
+from AlgoLawWeb.forms import RegistrationForm, LoginForm, UpdateAccountForm, CasesForm, VacaForm
+from AlgoLawWeb.models import User, Post, ROLES, JudgeToVaca
 from flask_login import login_user, current_user, logout_user, login_required
-from datetime import datetime
+import datetime
 from AlgoLawBackEnd import judge_divider
 
 ###################################### UPLOAD FUNCTIONS #############################################################
@@ -40,12 +40,6 @@ def upload_cases():
 
 
 @app.route('/<variable>/upload_generic', methods=['GET', 'POST'])
-# @app.route('/<variable>/upload_generic', methods=['GET', 'POST'])
-# @app.route('/<variable>/upload_generic', methods=['GET', 'POST'])
-# @app.route('/<variable>/upload_generic', methods=['GET', 'POST'])
-# @app.route('/<variable>/upload_generic', methods=['GET', 'POST'])
-# @app.route('/<variable>/upload_generic', methods=['GET', 'POST'])
-# @app.route('/<variable>/upload_generic', methods=['GET', 'POST'])
 @login_required
 def upload_generic(variable):
     form = CasesForm()
@@ -64,10 +58,90 @@ def upload_generic(variable):
 
 
 ###################################### SPECIFIC JUDGE CALENDAR FUNCTIONS ############################################
+events = [
+        {
+            'todo': 'my event1',
+            'date': '2022-01-30',
+        },
+        {
+            'todo': 'my event2',
+            'date': '2022-01-31',
+        }
+    ]
+
+
+def check_date_earlier_than_today(form):
+    if form.start_date.raw_data is not None:
+        start_date = datetime.datetime.strptime(form.start_date.raw_data[0], '%Y-%m-%d')
+        end_date = datetime.datetime.strptime(form.end_date.raw_data[0], '%Y-%m-%d')
+        if start_date < datetime.datetime.today():
+            flash('תאריך תחילת חופש צריך להיות לפחות היום או מאוחר יותר', 'danger')
+            return False
+    else:
+        return False
+    return True
+
+
+def check_not_short_vaca(form):
+    if form.start_date.raw_data is not None:
+        start_date = datetime.datetime.strptime(form.start_date.raw_data[0], '%Y-%m-%d')
+        end_date = datetime.datetime.strptime(form.end_date.raw_data[0], '%Y-%m-%d')
+        delta = end_date - start_date
+        if delta.days <= 3:
+            flash('הבקשה היא לחופשה קצרה נא ללכת ל״חופשה קצרה״', 'warning')
+            return False
+    else:
+        return False
+    return True
+
+
 
 @app.route('/judge_case_assignments', methods=['GET', 'POST'])
 @login_required
 def judge_case_assignments():
+    return render_template('judge_case_assignments.html', events=events)
+
+
+@app.route('/judge_short_vaca', methods=['GET', 'POST'])
+@login_required
+def judge_short_vaca():
+    form = VacaForm()
+    if check_date_earlier_than_today(form):
+        start_date = datetime.datetime.strptime(form.start_date.raw_data[0], '%Y-%m-%d')
+        end_date = datetime.datetime.strptime(form.end_date.raw_data[0], '%Y-%m-%d')
+        delta = end_date - start_date
+        if delta.days <= 3:
+            vacation = JudgeToVaca(judge_id=current_user.id, is_verified=True, type='Short',
+                                   start_date=start_date, end_date=end_date)
+            add_to_db(vacation)
+            flash('בקשה הוגשה', 'success')
+            # finish
+            return redirect(url_for('home'))
+        else:
+            flash('חופשה קצרה יכולה להיות עד 3 ימים, לחןפשה ארוכה יותר נע ללכת ל״בקשה לחופשה ארוכה״', 'danger')
+    return render_template('judge_short_vaca.html', events=events, form=form)
+
+
+@app.route('/judge_long_vaca', methods=['GET', 'POST'])
+@login_required
+def judge_long_vaca():
+    form = VacaForm()
+    if check_date_earlier_than_today(form):
+        if check_not_short_vaca(form):
+            start_date = datetime.datetime.strptime(form.start_date.raw_data[0], '%Y-%m-%d')
+            end_date = datetime.datetime.strptime(form.end_date.raw_data[0], '%Y-%m-%d')
+            vacation = JudgeToVaca(judge_id=current_user.id, is_verified=False, type='Long',
+                                   start_date=start_date, end_date=end_date)
+            add_to_db(vacation)
+            flash('בקשה הוגשה', 'success')
+            # finish
+            return redirect(url_for('home'))
+
+    return render_template('judge_long_vaca.html', events=events, form=form)
+
+@app.route('/judge_case_search', methods=['GET', 'POST'])
+@login_required
+def judge_case_search():
     events = [
         {
             'todo': 'my event1',
@@ -78,7 +152,7 @@ def judge_case_assignments():
             'date': '2022-01-31',
         }
     ]
-    return render_template('judge_case_assignments.html', events=events)
+    return render_template('judge_case_search.html', events=events)
 
 
 @app.route('/judge_personal_space')
@@ -164,13 +238,13 @@ buttons = [
     }
 ]
 
-
 @app.route('/')
 @app.route('/home')
 @login_required
 def home():
     if check_logged_in():
-        return render_template('home.html', buttons=buttons)
+        cur_role = ROLES[current_user.role]
+        return return_role_page(cur_role)
     else:
         return redirect(url_for('login'))
 
@@ -181,6 +255,16 @@ def home():
 
 ###################################### LOGIN / LOGOUT FUNCTIONS #####################################################
 
+def return_role_page(cur_role):
+    if cur_role == 'Master':
+        return render_template('home.html', buttons=buttons)
+    elif cur_role == 'Judge':
+        return judge_personal_space()
+    elif cur_role == 'Secretary':
+        return secretary_space()
+    else:
+        return render_template('home.html', buttons=buttons)
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
@@ -188,7 +272,7 @@ def register():
     form = RegistrationForm()
     if form.validate_on_submit():
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-        user = User(username=form.username.data, email=form.email.data, password=hashed_password)
+        user = User(username=form.username.data, email=form.email.data, password=hashed_password, role=form.role.data)
         add_to_db(user)
         flash(f'Your account has been created! You can now login', 'success')
         return redirect(url_for('login'))
