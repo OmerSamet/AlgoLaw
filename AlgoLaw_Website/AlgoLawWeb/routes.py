@@ -158,7 +158,7 @@ def judge_case_search():
 @app.route('/judge_personal_space')
 @login_required
 def judge_personal_space():
-    return render_template('judge_personal_space.html', title='Judge Personal Space')
+    return render_template('judge_personal_space.html', title='Judge Personal Space', username=current_user.username)
 
 
 #####################################################################################################################
