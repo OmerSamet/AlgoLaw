@@ -30,7 +30,7 @@ class Judge:
 
 
 class Case:
-    def __init__(self, id, first_type, second_type, third_type, urgency_level, duration, location, weight, status):
+    def __init__(self, id, first_type, second_type, third_type, urgency_level, duration, location, weight):
         self.id = id
         self.first_type = first_type
         self.second_type = second_type
