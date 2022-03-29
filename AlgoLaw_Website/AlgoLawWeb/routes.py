@@ -91,7 +91,8 @@ def master_vacation_view():
 @app.route('/judge_case_assignments', methods=['GET', 'POST'])
 @login_required
 def judge_case_assignments():
-    return render_template('judge_case_assignments.html', events=events)
+    vacations = get_all_vacations(judge_id=current_user.id)
+    return render_template('judge_case_assignments.html', events=vacations)
 
 
 @app.route('/judge_short_vaca', methods=['GET', 'POST'])
@@ -138,7 +139,8 @@ def judge_long_vaca():
 @app.route('/judge_case_search', methods=['GET', 'POST'])
 @login_required
 def judge_case_search():
-    return render_template('judge_case_search.html', events=events)
+    vacations = get_all_vacations(judge_id=current_user.id)
+    return render_template('judge_case_search.html', events=vacations)
 
 
 @app.route('/judge_personal_space')
