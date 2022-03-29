@@ -83,10 +83,11 @@ def master_space():
 @app.route('/verification_of_vacations/<vaca_id>', methods=['GET', 'POST'])
 @login_required
 def verification_of_vacations(vaca_id):
-    cur_vaca = Vacation.query.filter_by(id=vaca_id).all()
-    cur_vaca.is_verified = True
-    db.session.commit()
-    return True
+    cur_vaca = Vacation.query.filter_by(id=vaca_id).first()
+    if cur_vaca:
+        cur_vaca.is_verified = True
+        db.session.commit()
+    return 'True'
 
 
 @app.route('/<judge_id>/master_vacation_view', methods=['GET', 'POST'])

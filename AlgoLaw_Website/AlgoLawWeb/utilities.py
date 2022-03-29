@@ -97,7 +97,8 @@ def get_all_vacations(judge_id=None):
             'judge_id': vacation.judge_id,
             'title': 'חופש ' + judges_dict[vacation.judge_id],
             'start': str(vacation.start_date),
-            'end': str(vacation.end_date)
+            'end': str(vacation.end_date),
+            'id': vacation.id
         }
         if vacation.is_verified:
             event['color'] = '#6495ED'

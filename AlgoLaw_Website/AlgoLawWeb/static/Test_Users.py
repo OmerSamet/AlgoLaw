@@ -95,4 +95,3 @@ vacations = [vacation1,vacation2,vacation3,vacation4,vacation5]
 for vacation in vacations:
     db.session.add(vacation)
 db.session.commit()
-
