@@ -54,9 +54,10 @@
             events : [
                 {% for event in events %}
                     {
-                        title : '{{event.todo}}',
-                        start : '{{event.date}}',
-                        end : '{{event.date}}'
+                        title : "{{event['title']}}",
+                        start : "{{event['start']}}",
+                        end : "{{event['end']}}",
+                        backgroundColor: "{{event['color']}}"
                     },
                 {% endfor %}
             ],

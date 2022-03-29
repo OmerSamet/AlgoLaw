@@ -1,4 +1,3 @@
-import os
 import secrets
 from flask import render_template, url_for, flash, redirect, request, send_from_directory
 from AlgoLawWeb import app, db, bcrypt
@@ -7,23 +6,44 @@ from AlgoLawWeb.models import User, Post, ROLES, JudgeToVaca
 from flask_login import login_user, current_user, logout_user, login_required
 import datetime
 from AlgoLawBackEnd import judge_divider
-
-###################################### UPLOAD FUNCTIONS #############################################################
-
-def check_available_directory():
-    current_year = datetime.now().year
-    current_quarter = (datetime.now().month - 1 // 3) + 1
-    if not os.path.isdir(f'{app.root_path}/Cases_Uploaded/{current_year}_quarter_{current_quarter}'):
-        os.mkdir(f'{app.root_path}/Cases_Uploaded/{current_year}_quarter_{current_quarter}')
-    return f'{app.root_path}/Cases_Uploaded/{current_year}_quarter_{current_quarter}'
+from AlgoLawWeb.utilities import check_if_already_vacation, save_csv_file, \
+    get_all_vacations, get_all_judges, check_date_earlier_than_today, check_not_short_vaca, add_to_db, check_logged_in, \
+    return_role_page
 
 
-def save_csv_file(form_csv_file):
-    output_dir = check_available_directory()
-    uploader_username = current_user.username
-    csv_path = os.path.join(app.root_path, output_dir, uploader_username+'_Case_Data.csv')
-    form_csv_file.save(csv_path)
-    return csv_path
+events = [
+        {
+            'todo': 'my event1',
+            'date': '2022-01-30',
+        },
+        {
+            'todo': 'my event2',
+            'date': '2022-01-31',
+        }
+    ]
+
+buttons = [
+    {
+        'Name': 'Upload New Cases',
+        'redirect': 'upload_cases'
+    },
+    {
+        'Name': 'Get Case Assignments',
+        'redirect': 'judge_case_assignments'
+    },
+    {
+        'Name': 'Run Logic',
+        'redirect': 'run_logic'
+    },
+    {
+        'Name': 'Secretary Space',
+        'redirect': 'secretary_space'
+    },
+    {
+        'Name': 'Judge Personal Space',
+        'redirect': 'judge_personal_space'
+    }
+]
 
 
 @app.route('/upload_cases', methods=['GET', 'POST'])
@@ -52,47 +72,10 @@ def upload_generic(variable):
     return render_template('upload_generic.html', title=variable, form=form)
 
 
-#####################################################################################################################
-#####################################################################################################################
-#####################################################################################################################
-
-###################################### MASTER FUNCTIONS ############################################
-
-
 @app.route('/master_space')
 @login_required
 def master_space():
     return render_template('master_space.html', title='Master Space', username=current_user.username)
-
-
-def get_all_vacations():
-    events = []
-    vacations = JudgeToVaca.query.all()
-    for vacation in vacations:
-        event = {
-            'title': 'חופש' + str(vacation.judge_id),
-            'start': vacation.start_date,
-            'end': vacation.end_date
-        }
-        if vacation.is_verified:
-            event['color'] = '#6495ED'
-        else:
-            event['color'] = '#DC143C'
-        events.append(event)
-    return events
-
-
-def get_all_judges():
-    users = User.query.all()
-    judges = []
-    for user in users:
-        if user.role == 'דיין/דיינת':
-            judge = {
-                'id': user.id,
-                'name': user.username
-            }
-            judges.append(judge)
-    return judges
 
 
 @app.route('/master_vacation_view')
@@ -105,54 +88,6 @@ def master_vacation_view():
                            judges=judges)
 
 
-#####################################################################################################################
-#####################################################################################################################
-#####################################################################################################################
-
-
-###################################### SPECIFIC JUDGE CALENDAR FUNCTIONS ############################################
-events = [
-        {
-            'todo': 'my event1',
-            'date': '2022-01-30',
-        },
-        {
-            'todo': 'my event2',
-            'date': '2022-01-31',
-        }
-    ]
-
-def check_if_already_vacation(form):
-    pass
-
-
-
-def check_date_earlier_than_today(form):
-    if form.start_date.raw_data is not None:
-        start_date = datetime.datetime.strptime(form.start_date.raw_data[0], '%Y-%m-%d')
-        end_date = datetime.datetime.strptime(form.end_date.raw_data[0], '%Y-%m-%d')
-        if start_date < datetime.datetime.today():
-            flash('תאריך תחילת חופש צריך להיות לפחות היום או מאוחר יותר', 'danger')
-            return False
-    else:
-        return False
-    return True
-
-
-def check_not_short_vaca(form):
-    if form.start_date.raw_data is not None:
-        start_date = datetime.datetime.strptime(form.start_date.raw_data[0], '%Y-%m-%d')
-        end_date = datetime.datetime.strptime(form.end_date.raw_data[0], '%Y-%m-%d')
-        delta = end_date - start_date
-        if delta.days <= 3:
-            flash('הבקשה היא לחופשה קצרה נא ללכת ל״חופשה קצרה״', 'warning')
-            return False
-    else:
-        return False
-    return True
-
-
-
 @app.route('/judge_case_assignments', methods=['GET', 'POST'])
 @login_required
 def judge_case_assignments():
@@ -163,6 +98,7 @@ def judge_case_assignments():
 @login_required
 def judge_short_vaca():
     form = VacaForm()
+    vacations = get_all_vacations(judge_id=current_user.id)
     if check_date_earlier_than_today(form):
         start_date = datetime.datetime.strptime(form.start_date.raw_data[0], '%Y-%m-%d')
         end_date = datetime.datetime.strptime(form.end_date.raw_data[0], '%Y-%m-%d')
@@ -176,39 +112,32 @@ def judge_short_vaca():
             return redirect(url_for('home'))
         else:
             flash('חופשה קצרה יכולה להיות עד 3 ימים, לחןפשה ארוכה יותר נע ללכת ל״בקשה לחופשה ארוכה״', 'danger')
-    return render_template('judge_short_vaca.html', events=events, form=form)
+    return render_template('judge_short_vaca.html', events=vacations, form=form)
 
 
 @app.route('/judge_long_vaca', methods=['GET', 'POST'])
 @login_required
 def judge_long_vaca():
     form = VacaForm()
+    vacations = get_all_vacations(judge_id=current_user.id)
     if check_date_earlier_than_today(form):
         if check_not_short_vaca(form):
             start_date = datetime.datetime.strptime(form.start_date.raw_data[0], '%Y-%m-%d')
             end_date = datetime.datetime.strptime(form.end_date.raw_data[0], '%Y-%m-%d')
-            vacation = JudgeToVaca(judge_id=current_user.id, is_verified=False, type='Long',
+            if not check_if_already_vacation(start_date, end_date, current_user.id):
+                vacation = JudgeToVaca(judge_id=current_user.id, is_verified=False, type='Long',
                                    start_date=start_date, end_date=end_date)
-            add_to_db(vacation)
-            flash('בקשה הוגשה', 'success')
-            # finish
-            return redirect(url_for('home'))
+                add_to_db(vacation)
+                flash('בקשה הוגשה', 'success')
+                # finish
+                return redirect(url_for('home'))
 
-    return render_template('judge_long_vaca.html', events=events, form=form)
+    return render_template('judge_long_vaca.html', events=vacations, form=form)
+
 
 @app.route('/judge_case_search', methods=['GET', 'POST'])
 @login_required
 def judge_case_search():
-    events = [
-        {
-            'todo': 'my event1',
-            'date': '2022-01-30',
-        },
-        {
-            'todo': 'my event2',
-            'date': '2022-01-31',
-        }
-    ]
     return render_template('judge_case_search.html', events=events)
 
 
@@ -218,24 +147,11 @@ def judge_personal_space():
     return render_template('judge_personal_space.html', title='Judge Personal Space', username=current_user.username)
 
 
-#####################################################################################################################
-#####################################################################################################################
-#####################################################################################################################
-
-###################################### SECRATARY FUNCTIONS ############################################
-
 @app.route('/secretary_space')
 @login_required
 def secretary_space():
     return render_template('secretary_space.html', title='Secretary Space')
 
-
-#####################################################################################################################
-#####################################################################################################################
-#####################################################################################################################
-
-
-###################################### RUN LOGIC ############################################
 
 @app.route('/run_logic')
 @login_required
@@ -245,82 +161,24 @@ def run_logic():
     return send_from_directory(directory=app.config["OUTPUT_DIR"], path=output_file, as_attachment=True)
 
 
-#####################################################################################################################
-#####################################################################################################################
-#####################################################################################################################
-
-
-
-###################################### UTILITY FUNCTIONS #############################################################
-
-def check_logged_in():
-    if current_user.is_authenticated:
-        return True
-    else:
-        return False
-
-
-def add_to_db(data_to_add):
-    db.session.add(data_to_add)
-    db.session.commit()
-
-
-#####################################################################################################################
-#####################################################################################################################
-#####################################################################################################################
-
-
-###################################### HOME FUNCTIONS #############################################################
-
-buttons = [
-    {
-        'Name': 'Upload New Cases',
-        'redirect': 'upload_cases'
-    },
-    {
-        'Name': 'Get Case Assignments',
-        'redirect': 'judge_case_assignments'
-    },
-    {
-        'Name': 'Run Logic',
-        'redirect': 'run_logic'
-    },
-    {
-        'Name': 'Secretary Space',
-        'redirect': 'secretary_space'
-    },
-    {
-        'Name': 'Judge Personal Space',
-        'redirect': 'judge_personal_space'
-    }
-]
-
 @app.route('/')
 @app.route('/home')
 @login_required
 def home():
     if check_logged_in():
         cur_role = ROLES[current_user.role]
-        return return_role_page(cur_role)
+        role_page_id = return_role_page(cur_role)
+        if role_page_id == 1:
+            return master_space()
+        elif role_page_id == 2:
+            return judge_personal_space()
+        elif role_page_id == 3:
+            return secretary_space()
+        else:
+            return render_template('home.html', buttons=buttons)
     else:
         return redirect(url_for('login'))
 
-
-#####################################################################################################################
-#####################################################################################################################
-#####################################################################################################################
-
-###################################### LOGIN / LOGOUT FUNCTIONS #####################################################
-
-def return_role_page(cur_role):
-    if cur_role == 'Master':
-        return master_space()
-    elif cur_role == 'Judge':
-        return judge_personal_space()
-    elif cur_role == 'Secretary':
-        return secretary_space()
-    else:
-        return render_template('home.html', buttons=buttons)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -360,7 +218,3 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('home'))
-
-#####################################################################################################################
-#####################################################################################################################
-#####################################################################################################################
