@@ -1,17 +1,14 @@
 {% extends "layout.html" %}
 {% block content %}
-    <link href='fullcalendar/main.css' rel='stylesheet' />
+    <link href='fullcalendar/main.css' rel='stylesheet'/>
     <script src='fullcalendar/main.js'></script>
     <script src='fullcalendar/core/locales/he.js'></script>
-
-
 
     <div class="d-flex">
         <div id="judge_calendar" class="col-md-11"></div>
         <div class="col-md-3">
             <h2 class="form-group text-right" style="font-weight: bold;"> חופשות </h2>
               <ul class="list-group">
-
                   <button onclick="{ judge_calendar.changeView('dayGridMonth') }" class="btn btn-outline-info">חודשי</button>
                   <button onclick="{ judge_calendar.changeView('dayGridWeek') }" class="btn btn-outline-info">שבועי</button>
                   <button onclick="{ judge_calendar.changeView('timeGridDay') }" class="btn btn-outline-info">יומי</button>
@@ -21,61 +18,69 @@
                   <br>
                   <form>
                       <h3 class="form-group text-right" style="font-weight: bold;">בחירת דיין</h3>
-                      <select class="form-group text-right" id="judges_options">
-                          <option></option>
+                      <select onchange="renderCalendar(judges_options.value)" class="form-group text-right" id="judges_options">
+                          <option value="All">הכל</option>
                       </select>
                   </form>
                   <script src="//code.jquery.com/jquery-2.1.1.min.js"></script>
                   <script>
                     "use strict";
-
-                    var judges = {{ judges|tojson }};
-
-                    var form = $('form');
                     var judges_options = $('select#judges_options');
 
-                    for ([key, val] of judges) {
-                        judges_options.append($('<option/>', {'value': key.id, 'text': key.name}));
-                    }
-
+                    {% for judge in judges %}
+                        judges_options.append($('<option value={{judge["id"]}}>{{judge['name']}}</option>'));
+                    {% endfor %}
                   </script>
-
-
 
               </ul>
           </div>
     </div>
     <script>
-        let calendarEl = document.getElementById('judge_calendar');
-        let judge_calendar = new FullCalendar.Calendar(calendarEl, {
-            locale: 'he',
-            initialView: 'dayGridMonth',
-            selectable: true,
-            direction: 'rtl',
-            events : [
-                {% for event in events %}
-                    {
-                        title : "{{event['title']}}",
-                        start : "{{event['start']}}",
-                        end : "{{event['end']}}",
-                        backgroundColor: "{{event['color']}}"
-
-                    },
-                {% endfor %}
-            ],
-            select: function(info) {
-                // console.log(["Selected Date : " + info.startStr + ' to ' + info.endStr]);
-                // alert('selected ' + info.startStr + ' to ' + info.endStr);
-                var div = document.getElementById('start_date_value');
-                div.value = info.startStr
-                var div = document.getElementById('end_date_value');
-                div.value = info.endStr
+        const renderCalendar = async (judgeId) => {
+            if (judgeId == undefined | judgeId == "All") {
+                judgeIdToUse = 'none'
+                }
+            else{
+                judgeIdToUse = judgeId
             }
-            });
-        judge_calendar.render();
+            let result = await fetch(`/${judgeIdToUse}/get_all_judge_events`)
+                    let body = await result.json();
+                    let eventsForCal = [];
+                    for (let event of body){
+                        let currentPush ={title: event.title,
+                                    start: Date.parse(event.start),
+                                    end: Date.parse(event.end),
+                                    backgroundColor: event.color}
+                        eventsForCal.push(currentPush)
+
+                                }
+                    console.log(body);
+                    let calendarEl = document.getElementById('judge_calendar');
+                    let judge_calendar = new FullCalendar.Calendar(calendarEl, {
+                        locale: 'he',
+                        initialView: 'dayGridMonth',
+                        selectable: true,
+                        direction: 'rtl',
+                        events: eventsForCal,
+                        eventClick: function (info) {
+                            var eventObj = info.event;
+                            let isVerified = confirm("חופשה מאושרת?")
+                            if (isVerified) {
+
+                            }
+                            else {
+
+                            }
+                            }
+                })
+                    ;
+                    judge_calendar.render();
 
 
-
+        }
+    </script>
+    <script>
+        renderCalendar();
     </script>
 
 {% endblock content %}

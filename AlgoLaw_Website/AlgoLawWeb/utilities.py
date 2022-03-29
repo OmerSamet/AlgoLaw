@@ -86,13 +86,18 @@ def get_all_vacations(judge_id=None):
     events = []
     if not judge_id:
         vacations = JudgeToVaca.query.all()
+        relevant_judges = User.query.all()
     else:
         vacations = JudgeToVaca.query.filter_by(judge_id=judge_id).all()
+        relevant_judges = User.query.filter_by(id=judge_id).all()
+
+    judges_dict = {judge.id: judge.username for judge in relevant_judges}
     for vacation in vacations:
         event = {
-            'title': 'חופש' + str(vacation.judge_id),
-            'start': vacation.start_date,
-            'end': vacation.end_date
+            'judge_id': vacation.judge_id,
+            'title': 'חופש ' + judges_dict[vacation.judge_id],
+            'start': str(vacation.start_date),
+            'end': str(vacation.end_date)
         }
         if vacation.is_verified:
             event['color'] = '#6495ED'

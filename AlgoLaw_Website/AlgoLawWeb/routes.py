@@ -9,6 +9,7 @@ from AlgoLawBackEnd import judge_divider
 from AlgoLawWeb.utilities import check_if_already_vacation, save_csv_file, \
     get_all_vacations, get_all_judges, check_date_earlier_than_today, check_not_short_vaca, add_to_db, check_logged_in, \
     return_role_page
+import json
 
 
 events = [
@@ -78,14 +79,33 @@ def master_space():
     return render_template('master_space.html', title='Master Space', username=current_user.username)
 
 
-@app.route('/master_vacation_view')
+@app.route('/verification_of_vacations/<vaca_id>', methods=['GET', 'POST'])
 @login_required
-def master_vacation_view():
-    vacations = get_all_vacations()
-    judges = get_all_judges()
+def verification_of_vacations(vaca_id):
+    cur_vaca = JudgeToVaca.query.filter_by(id=vaca_id).all()
+    cur_vaca.is_verified = True
+    db.session.commit()
+    return True
+
+
+@app.route('/<judge_id>/master_vacation_view', methods=['GET', 'POST'])
+@login_required
+def master_vacation_view(judge_id):  # judge_id = judge_id to see vacations of
+    if judge_id == 'none':
+        judge_id = None
+    vacations = get_all_vacations(judge_id)  # dict -> 'judge_id': vacation.judge_id, 'title': 'חופש' + str(vacation.judge_id), 'start': vacation.start_date, 'end': vacation.end_date
+    judges = get_all_judges()  # dict -> id: judge_id, name: judge_name
     return render_template('master_vacation_view.html', title='Vacations View',
-                           username=current_user.username, events=vacations,
-                           judges=judges)
+                           judge_id=current_user.id,username=current_user.username,
+                           events=vacations, judges=judges)
+
+@app.route('/<judge_id>/get_all_judge_events')
+@login_required
+def get_all_judge_events(judge_id):  # judge_id = judge_id to see vacations of
+    if judge_id == 'none':
+        judge_id = None
+    vacations = get_all_vacations(judge_id)  # dict -> 'judge_id': vacation.judge_id, 'title': 'חופש' + str(vacation.judge_id), 'start': vacation.start_date, 'end': vacation.end_date
+    return json.dumps(vacations)
 
 
 @app.route('/judge_case_assignments', methods=['GET', 'POST'])

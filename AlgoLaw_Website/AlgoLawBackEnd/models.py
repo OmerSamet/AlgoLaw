@@ -10,28 +10,27 @@ class Judge:
         self.name = name
         self.locations = locations
         self.is_in_rotation = is_in_rotation
-        self.total_weight = defaultdict(int)
+        self.weight_dict = defaultdict(int)  # dict -> location: weight
         self.cases = []
 
     def add_case(self, case):
         self.cases.append(case)
-        self.total_weight[case.location] += case.weight
+        self.weight_dict[case.location] += case.weight
         if case.location not in self.locations:
             self.locations.append(case.location)
 
-    # def get_weight(self, location):
     def get_weight(self):
-        total_judge_weight = 0
-        for location in self.total_weight.keys():
-            total_judge_weight += self.total_weight[location]
-        return total_judge_weight
+        total_weight = 0
+        for location in self.weight_dict.keys():
+            total_weight += self.weight_dict[location]
+        return total_weight
 
     def add_location(self, location):
         self.locations.append(location)
 
 
 class Case:
-    def __init__(self, id, first_type, second_type, third_type, urgency_level, duration, location, weight):
+    def __init__(self, id, first_type, second_type, third_type, urgency_level, duration, location, weight, status):
         self.id = id
         self.first_type = first_type
         self.second_type = second_type
@@ -41,6 +40,7 @@ class Case:
         self.location = location
         self.weight = weight
         self.quarter = (datetime.now().month-1 // 3) + 1
+        self.status = True  # True = is open, False = Done
 
 
 class DBReader:
@@ -50,8 +50,8 @@ class DBReader:
 
     def get_judges(self):
         judges_data = pd.read_csv(JudgeDataDir)
-        judges_ids = self.create_judges(judges_data)
-        return judges_ids
+        judges = self.create_judges(judges_data)
+        return judges
 
     def create_judges(self, judges_data):
         judges = []
@@ -65,7 +65,6 @@ class DBReader:
             else:
                 judge = Judge(j_id, j_name, [j_location], False)
                 judges.append(judge)
-        print(judges)
         return judges
 
     @staticmethod
@@ -96,7 +95,6 @@ class DBReader:
 
             case = Case(c_id, c_main_type, c_secondary_type, c_sub_type, c_urg_level, c_duration, c_location, c_weight)
             cases.append(case)
-        print(cases)
         return cases
 
     @staticmethod
@@ -116,6 +114,7 @@ class DBReader:
 
         return c_urg_level, c_duration, c_location, c_weight
 
+
 class Divider:
     def __init__(self, judges, cases):
         self.judges = judges
@@ -132,7 +131,6 @@ class Divider:
         if not relevant_judges:
             return None
 
-        # sort_judges_by_weight = sorted(relevant_judges, key=lambda x: x.get_weight(case.location))
         sort_judges_by_weight = sorted(relevant_judges, key=lambda x: x.get_weight())
         sort_judges_by_weight[0].add_case(case)
         return sort_judges_by_weight[0]

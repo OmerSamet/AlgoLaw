@@ -81,6 +81,16 @@ vacation5 = JudgeToVaca(judge_id=1,
                         end_date=datetime.datetime.strptime('2022-04-25','%Y-%m-%d'),
                         is_verified=True,
                         type='Short')
+vacation6 = JudgeToVaca(judge_id=4,
+                        start_date=datetime.datetime.strptime('2022-03-02','%Y-%m-%d'),
+                        end_date=datetime.datetime.strptime('2022-03-20','%Y-%m-%d'),
+                        is_verified=True,
+                        type='Long')
+vacation7 = JudgeToVaca(judge_id=4,
+                        start_date=datetime.datetime.strptime('2022-04-22','%Y-%m-%d'),
+                        end_date=datetime.datetime.strptime('2022-04-25','%Y-%m-%d'),
+                        is_verified=True,
+                        type='Short')
 
 vacations = [vacation1,vacation2,vacation3,vacation4,vacation5]
 for vacation in vacations:
