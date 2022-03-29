@@ -37,7 +37,7 @@ class Post(db.Model):
         return f"Post:('{self.title}', '{self.date_posted}')"
 
 
-class JudgeToVaca(db.Model):
+class Vacation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     judge_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     start_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)

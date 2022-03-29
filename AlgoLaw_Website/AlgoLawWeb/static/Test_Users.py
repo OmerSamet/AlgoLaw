@@ -27,7 +27,6 @@ FAKE CASES
 
 CASE 1
 
-
 '''
 from AlgoLawWeb.models import User, Post, ROLES, JudgeToVaca
 from AlgoLawWeb import db, bcrypt

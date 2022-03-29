@@ -2,7 +2,7 @@ import secrets
 from flask import render_template, url_for, flash, redirect, request, send_from_directory
 from AlgoLawWeb import app, db, bcrypt
 from AlgoLawWeb.forms import RegistrationForm, LoginForm, UpdateAccountForm, CasesForm, VacaForm
-from AlgoLawWeb.models import User, Post, ROLES, JudgeToVaca
+from AlgoLawWeb.models import User, Post, ROLES, Vacation
 from flask_login import login_user, current_user, logout_user, login_required
 import datetime
 from AlgoLawBackEnd import judge_divider
@@ -82,7 +82,7 @@ def master_space():
 @app.route('/verification_of_vacations/<vaca_id>', methods=['GET', 'POST'])
 @login_required
 def verification_of_vacations(vaca_id):
-    cur_vaca = JudgeToVaca.query.filter_by(id=vaca_id).all()
+    cur_vaca = Vacation.query.filter_by(id=vaca_id).all()
     cur_vaca.is_verified = True
     db.session.commit()
     return True
@@ -125,14 +125,14 @@ def judge_short_vaca():
         end_date = datetime.datetime.strptime(form.end_date.raw_data[0], '%Y-%m-%d')
         delta = end_date - start_date
         if delta.days <= 3:
-            vacation = JudgeToVaca(judge_id=current_user.id, is_verified=True, type='Short',
+            vacation = Vacation(judge_id=current_user.id, is_verified=True, type='Short',
                                    start_date=start_date, end_date=end_date)
             add_to_db(vacation)
             flash('בקשה הוגשה', 'success')
             # finish
             return redirect(url_for('home'))
         else:
-            flash('חופשה קצרה יכולה להיות עד 3 ימים, לחןפשה ארוכה יותר נע ללכת ל״בקשה לחופשה ארוכה״', 'danger')
+            flash('חופשה קצרה יכולה להיות עד 3 ימים, לחופשה ארוכה יותר נע ללכת ל״בקשה לחופשה ארוכה״', 'danger')
     return render_template('judge_short_vaca.html', events=vacations, form=form)
 
 
@@ -146,7 +146,7 @@ def judge_long_vaca():
             start_date = datetime.datetime.strptime(form.start_date.raw_data[0], '%Y-%m-%d')
             end_date = datetime.datetime.strptime(form.end_date.raw_data[0], '%Y-%m-%d')
             if not check_if_already_vacation(start_date, end_date, current_user.id):
-                vacation = JudgeToVaca(judge_id=current_user.id, is_verified=False, type='Long',
+                vacation = Vacation(judge_id=current_user.id, is_verified=False, type='Long',
                                    start_date=start_date, end_date=end_date)
                 add_to_db(vacation)
                 flash('בקשה הוגשה', 'success')

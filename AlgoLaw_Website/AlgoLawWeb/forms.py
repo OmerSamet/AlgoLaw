@@ -59,7 +59,6 @@ class UpdateAccountForm(FlaskForm):
 
 class CasesForm(FlaskForm):
     csv_file = FileField('Upload case CSV file', validators=[FileRequired()])
-    # , validators = [FileAllowed(['csv'])]
     submit = SubmitField('העלה')
 
 
@@ -67,6 +66,3 @@ class VacaForm(FlaskForm):
     start_date = DateField('תחילת חופש', validators=[DataRequired()], format='%Y/%m/%d')
     end_date = DateField('סוף חופש', validators=[DataRequired()], format='%Y/%m/%d')
     submit = SubmitField('הגש/י')
-
-# default=datetime.today().date(),
-# default=datetime.today().date() + timedelta(days=1),

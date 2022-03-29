@@ -1,6 +1,6 @@
 from sqlalchemy import or_, and_
 from AlgoLawWeb import app, db
-from AlgoLawWeb.models import User, Post, ROLES, JudgeToVaca
+from AlgoLawWeb.models import User, Post, ROLES, Vacation
 import datetime
 import os
 from flask import render_template, url_for, flash, redirect, request, send_from_directory
@@ -39,19 +39,19 @@ def check_date_earlier_than_today(form):
 
 ###################################### VACATION FUNCTIONS #############################################################
 def check_if_already_vacation(start_date, end_date, judge_id):
-    overlapping_vacations = db.session.query(JudgeToVaca).filter(JudgeToVaca.judge_id == judge_id,
+    overlapping_vacations = db.session.query(Vacation).filter(Vacation.judge_id == judge_id,
                                                                  or_(
                                                                      # new vacation inside old vacation
-                                                                     and_(start_date >= JudgeToVaca.start_date,
-                                                                          end_date <= JudgeToVaca.end_date),
+                                                                     and_(start_date >= Vacation.start_date,
+                                                                          end_date <= Vacation.end_date),
                                                                      # new vacation starts before old vacation but ends during old vacation
-                                                                     and_(start_date < JudgeToVaca.start_date,
-                                                                          end_date >= JudgeToVaca.start_date,
-                                                                          end_date <= JudgeToVaca.end_date),
+                                                                     and_(start_date < Vacation.start_date,
+                                                                          end_date >= Vacation.start_date,
+                                                                          end_date <= Vacation.end_date),
                                                                      # new vacation starts after old vacations starts but before old one ends
-                                                                     and_(start_date >= JudgeToVaca.start_date,
-                                                                          start_date <= JudgeToVaca.end_date,
-                                                                          end_date > JudgeToVaca.end_date)
+                                                                     and_(start_date >= Vacation.start_date,
+                                                                          start_date <= Vacation.end_date,
+                                                                          end_date > Vacation.end_date)
                                                                  )
                                                                  ).all()
     if overlapping_vacations:
@@ -85,10 +85,10 @@ def get_all_vacations(judge_id=None):
     '''
     events = []
     if not judge_id:
-        vacations = JudgeToVaca.query.all()
+        vacations = Vacation.query.all()
         relevant_judges = User.query.all()
     else:
-        vacations = JudgeToVaca.query.filter_by(judge_id=judge_id).all()
+        vacations = Vacation.query.filter_by(judge_id=judge_id).all()
         relevant_judges = User.query.filter_by(id=judge_id).all()
 
     judges_dict = {judge.id: judge.username for judge in relevant_judges}
