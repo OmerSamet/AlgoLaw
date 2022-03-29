@@ -56,6 +56,59 @@ def upload_generic(variable):
 #####################################################################################################################
 #####################################################################################################################
 
+###################################### MASTER FUNCTIONS ############################################
+
+
+@app.route('/master_space')
+@login_required
+def master_space():
+    return render_template('master_space.html', title='Master Space', username=current_user.username)
+
+
+def get_all_vacations():
+    events = []
+    vacations = JudgeToVaca.query.all()
+    for vacation in vacations:
+        event = {
+            'title': 'חופש' + str(vacation.judge_id),
+            'start': vacation.start_date,
+            'end': vacation.end_date
+        }
+        if vacation.is_verified:
+            event['color'] = '#6495ED'
+        else:
+            event['color'] = '#DC143C'
+        events.append(event)
+    return events
+
+
+def get_all_judges():
+    users = User.query.all()
+    judges = []
+    for user in users:
+        if user.role == 'דיין/דיינת':
+            judge = {
+                'id': user.id,
+                'name': user.username
+            }
+            judges.append(judge)
+    return judges
+
+
+@app.route('/master_vacation_view')
+@login_required
+def master_vacation_view():
+    vacations = get_all_vacations()
+    judges = get_all_judges()
+    return render_template('master_vacation_view.html', title='Vacations View',
+                           username=current_user.username, events=vacations,
+                           judges=judges)
+
+
+#####################################################################################################################
+#####################################################################################################################
+#####################################################################################################################
+
 
 ###################################### SPECIFIC JUDGE CALENDAR FUNCTIONS ############################################
 events = [
@@ -68,6 +121,10 @@ events = [
             'date': '2022-01-31',
         }
     ]
+
+def check_if_already_vacation(form):
+    pass
+
 
 
 def check_date_earlier_than_today(form):
@@ -257,7 +314,7 @@ def home():
 
 def return_role_page(cur_role):
     if cur_role == 'Master':
-        return render_template('home.html', buttons=buttons)
+        return master_space()
     elif cur_role == 'Judge':
         return judge_personal_space()
     elif cur_role == 'Secretary':

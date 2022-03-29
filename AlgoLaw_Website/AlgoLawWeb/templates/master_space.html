@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div class="content-section w-85 d-flex flex-column float-right">
+<!--        <div class="p-2 d-flex justify-content-end">-->
+<!--            <img src="{{url_for('static',filename = 'Web_models/secretary.jpeg')}}" width="180" height="70">-->
+<!--        </div>-->
+        <h3 class="p-2 d-flex justify-content-end" style="font-weight: bold;">{{username}} שלום</h3>
+
+        <div class="p-2 d-flex justify-content-end">
+            <h3 style="font-weight: bold;">יש לבחור את הפעולה הרצויה</h3>
+        </div>
+            <div class="d-flex justify-content-center align-content-around flex-wrap">
+                <div>
+                    <article class="d-flex justify-content-center content-section">
+                        <a class="btn btn-primary text-center" href="{{ url_for('upload_generic', variable='מתן אילוצים') }}">
+        <!--                    <img src="{{url_for('static',filename = 'Web_models/changes_for_schedule_big.jpeg')}}" width="200" height="200">-->
+                            Long vacation verification
+                        </a>
+                    </article>
+                </div>
+                <div>
+                    <article class="d-flex justify-content-center content-section">
+                        <a class="btn btn-primary text-center" href="{{ url_for('master_vacation_view') }}">
+    <!--                        <img src="{{url_for('static',filename = 'Web_models/changes_for_schedule_big.jpeg')}}" width="200" height="200">-->
+                            Look at vacations
+                        </a>
+                    </article>
+                </div>
+                <div>
+                    <article class="d-flex justify-content-center content-section">
+                        <a class="btn btn-primary text-center" href="{{ url_for('upload_generic', variable='מתן אילוצים') }}">
+        <!--                    <img src="{{url_for('static',filename = 'Web_models/changes_for_schedule_big.jpeg')}}" width="200" height="200">-->
+                            specific judge view
+                        </a>
+                    </article>
+                </div>
+            </div>
+        </article>
+    </div>
+{% endblock content %}
