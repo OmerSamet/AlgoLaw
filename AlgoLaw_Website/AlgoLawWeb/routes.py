@@ -10,6 +10,7 @@ from AlgoLawWeb.utilities import check_if_already_vacation, save_csv_file, \
     get_all_vacations, get_all_judges, check_date_earlier_than_today, check_not_short_vaca, add_to_db, check_logged_in, \
     return_role_page
 import json
+from AlgoLawWeb.db_initiator import DBInitiator
 
 
 events = [
@@ -239,4 +240,12 @@ def login():
 @app.route('/logout')
 def logout():
     logout_user()
+    return redirect(url_for('home'))
+
+
+@app.route('/initiate_db')
+def initiate_db():
+    initiator = DBInitiator(db)
+    initiator.import_data_to_db()
+    flash('Initiated DB', 'info')
     return redirect(url_for('home'))

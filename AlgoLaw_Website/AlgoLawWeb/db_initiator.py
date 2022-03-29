@@ -1,0 +1,206 @@
+import pandas as pd
+from AlgoLawWeb.models import User, Post, ROLES, Vacation, Judge, Hall, Rotation, Case
+from AlgoLawWeb import db, login_manager, bcrypt
+from AlgoLawWeb.utilities import add_to_db
+import datetime
+
+
+class DBInitiator:
+    def __init__(self, db):
+        self.db = db
+        self.case_enrichment_data_path = r'/Users/omersamet/Documents/Personal Docs/Google/AlgoLaw/DB_DATA/Case_Data.csv'
+        self.fake_cases_csv_path = r'/Users/omersamet/Documents/Personal Docs/Google/AlgoLaw/DB_DATA/Fake_case_data.csv'
+        self.judge_data_csv_path = r'/Users/omersamet/Documents/Personal Docs/Google/AlgoLaw/DB_DATA/Judge_Data.csv'
+        self.halls_data_csv_path = r'/Users/omersamet/Documents/Personal Docs/Google/AlgoLaw/DB_DATA/Halls.csv'
+        self.rotation_data_csv_path = r'/Users/omersamet/Documents/Personal Docs/Google/AlgoLaw/DB_DATA/Judge_Rotation_Schedule.csv'
+
+    def import_data_to_db(self):
+        # Delete current DB and create empty DB
+        self.db.drop_all()
+        self.db.create_all()
+
+        # Get all data to DataFrames
+        judges = self.add_judges_to_db()
+        halls = self.add_halls_to_db()
+        rotation_dates = self.add_rotation_dates_to_db()
+        cases = self.add_cases_to_db()
+
+        self.check_csv_imports(cases, judges, halls, rotation_dates)
+
+        users, vacations = self.add_users_and_vacations_to_site()
+        print(f'Added {len(users)} users and {len(vacations)} vacations')
+
+    @staticmethod
+    def add_users_and_vacations_to_site():
+        user1 = User(username="TestJudge",
+                     email="TestJudge@justice.com",
+                     password=bcrypt.generate_password_hash("TestJudge123!@#").decode('utf-8'),
+                     role="דיין/דיינת")
+        user2 = User(username="TestSecretary",
+                     email="TestSecretary@justice.com",
+                     password=bcrypt.generate_password_hash("TestSecretary123!@#").decode('utf-8'),
+                     role="מזכיר/מזכירה")
+        user3 = User(username="TestMaster",
+                     email="TestMaster@justice.com",
+                     password=bcrypt.generate_password_hash("TestMaster123!@#").decode('utf-8'),
+                     role="הנהלה")
+        user4 = User(username="TestJudge2",
+                     email="TestJudge2@justice.com",
+                     password=bcrypt.generate_password_hash("TestJudge123!@#").decode('utf-8'),
+                     role="דיין/דיינת")
+        users = [user1, user2, user3, user4]
+        for user in users:
+            db.session.add(user)
+        db.session.commit()
+
+        vacation1 = Vacation(judge_id=1,
+                                start_date=datetime.datetime.strptime('2022-03-28', '%Y-%m-%d'),
+                                end_date=datetime.datetime.strptime('2022-03-30', '%Y-%m-%d'),
+                                is_verified=True,
+                                type='Short')
+        vacation2 = Vacation(judge_id=1,
+                                start_date=datetime.datetime.strptime('2022-04-08', '%Y-%m-%d'),
+                                end_date=datetime.datetime.strptime('2022-04-18', '%Y-%m-%d'),
+                                is_verified=False,
+                                type='Long')
+        vacation3 = Vacation(judge_id=1,
+                                start_date=datetime.datetime.strptime('2022-04-02', '%Y-%m-%d'),
+                                end_date=datetime.datetime.strptime('2022-04-04', '%Y-%m-%d'),
+                                is_verified=True,
+                                type='Short')
+        vacation4 = Vacation(judge_id=1,
+                                start_date=datetime.datetime.strptime('2022-03-02', '%Y-%m-%d'),
+                                end_date=datetime.datetime.strptime('2022-03-20', '%Y-%m-%d'),
+                                is_verified=True,
+                                type='Long')
+        vacation5 = Vacation(judge_id=1,
+                                start_date=datetime.datetime.strptime('2022-04-22', '%Y-%m-%d'),
+                                end_date=datetime.datetime.strptime('2022-04-25', '%Y-%m-%d'),
+                                is_verified=True,
+                                type='Short')
+        vacation6 = Vacation(judge_id=4,
+                                start_date=datetime.datetime.strptime('2022-03-02', '%Y-%m-%d'),
+                                end_date=datetime.datetime.strptime('2022-03-20', '%Y-%m-%d'),
+                                is_verified=True,
+                                type='Long')
+        vacation7 = Vacation(judge_id=4,
+                                start_date=datetime.datetime.strptime('2022-04-22', '%Y-%m-%d'),
+                                end_date=datetime.datetime.strptime('2022-04-25', '%Y-%m-%d'),
+                                is_verified=True,
+                                type='Short')
+
+        vacations = [vacation1, vacation2, vacation3, vacation4, vacation5, vacation6, vacation7]
+        for vacation in vacations:
+            db.session.add(vacation)
+        db.session.commit()
+        return users, vacations
+
+    @staticmethod
+    def check_csv_imports(cases, judges, halls, rotation_dates):
+        # Check if anything failed
+        if not judges:
+            print('Judges not imported correctly')
+        if not halls:
+            print('Halls not imported correctly')
+        if not rotation_dates:
+            print('Rotations not imported correctly')
+        if not cases:
+            print('Cases not imported correctly')
+
+    @staticmethod
+    def get_case_db_data(case_enrichment_df, main_type, second_type, sub_type):
+        if type(sub_type) == str:
+            pandas_query = (case_enrichment_df['Main_Type'] == main_type) & (
+                    case_enrichment_df['Secondary_Type'] == second_type) & (
+                                   case_enrichment_df['Sub_Type'] == sub_type)
+        else:
+            pandas_query = (case_enrichment_df['Main_Type'] == main_type) & (
+                    case_enrichment_df['Secondary_Type'] == second_type)
+
+        c_urg_level = case_enrichment_df[pandas_query]['Urgency_Level'].values[0]
+        c_duration = case_enrichment_df[pandas_query]['Duration'].values[0]
+        c_location = case_enrichment_df[pandas_query]['Location'].values[0]
+        c_weight = case_enrichment_df[pandas_query]['Weight'].values[0]
+
+        return c_urg_level, c_duration, c_location, c_weight
+
+    @staticmethod
+    def get_now_quarter():
+        quarter_string = f'Y:{datetime.datetime.now().year} Q:{(datetime.datetime.now().month-1 // 3) + 1}'
+        return quarter_string
+
+    def add_cases_to_db(self):
+        case_enrichment_df = pd.read_csv(self.case_enrichment_data_path).fillna('NO DATA')
+        fake_cases_df = pd.read_csv(self.fake_cases_csv_path).fillna('NO DATA')
+        for index, row in fake_cases_df.iterrows():
+            main_type = row['Case_Main_Type']
+            second_type = row['Secondary_Type']
+            sub_type = row['Case_sub_type']
+
+            urg_level, duration, location, weight = self.get_case_db_data(case_enrichment_df, main_type,
+                                                                                  second_type, sub_type)
+
+            new_case = Case(first_type=main_type,
+                            second_type=second_type,
+                            third_type=sub_type,
+                            urgency_level=urg_level,
+                            duration=duration,
+                            location=location,
+                            weight=weight,
+                            quarter=self.get_now_quarter())
+
+            add_to_db(new_case)
+
+        return True
+
+    @staticmethod
+    def create_user(email, role):
+        default_password = 'Pass123987'
+        hashed_password = bcrypt.generate_password_hash(default_password).decode('utf-8')
+        username = email.split('@')[0]
+        user = User(username=username, email=email, password=hashed_password, role=role)
+        add_to_db(user)
+        return user
+
+    def add_judges_to_db(self):
+        judge_role = 'דיין/דיינת'
+        judges_df = pd.read_csv(self.judge_data_csv_path)
+        for index, row in judges_df.iterrows():
+            judge_email = row['email']
+            judge_user = User.query.filter_by(email=judge_email).first()
+            if not judge_user:
+                # create a user for Judge
+                judge_user = self.create_user(judge_email, judge_role)
+                judge = Judge(username=judge_user.username,
+                              email=judge_email,
+                              locations=row['Location'],
+                              is_in_rotation=False,
+                              total_weight='',
+                              user_id=judge_user.id)
+                add_to_db(judge)
+            else:
+                # judge already has user and user object in 'judge_user' just need to add location
+                judge = Judge.query.filter_by(email=judge_email).first()
+                judge.locations = judge.locations + ',' + row['Location']
+                db.session.commit()
+
+        return True
+
+    def add_halls_to_db(self):
+        halls_locations_df = pd.read_csv(self.halls_data_csv_path)
+        for index, row in halls_locations_df.iterrows():
+            hall = Hall(hall_number=row['Hall_id'],
+                        location=row['Location'])
+            add_to_db(hall)
+
+        return True
+
+    def add_rotation_dates_to_db(self):
+        rotation_df = pd.read_csv(self.rotation_data_csv_path)
+        for index, row in rotation_df.iterrows():
+            rotation = Rotation(judge_id=row['Judge_ID'],
+                                start_date=datetime.datetime.strptime(row['Start_Date'], '%Y-%m-%d'),
+                                end_date=datetime.datetime.strptime(row['End_Date'], '%Y-%m-%d'))
+            add_to_db(rotation)
+
+        return True

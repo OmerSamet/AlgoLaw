@@ -1,14 +1,14 @@
-﻿Judge_name,Judge_ID,Location
-Ilan,1,Jerusalem
-Shlomi,2,Jerusalem
-Hananya,3,Jerusalem
-Miki,4,Jerusalem
-Rachel,5,Jerusalem
-Meirav,6,Jerusalem
-Asaf,7,Jerusalem
-Yoav,8,Jerusalem
-Miki,4,Beer Sheva
-Ilan,1,Haifa
-Buffy,9,Tel Aviv
-Dotan,10,Tel Aviv
-Yoav,11,Tel Aviv
+﻿Judge_name,Judge_ID,Location,email
+Ilan,1,Jerusalem,Ilan@justice.com
+Shlomi,2,Jerusalem,Shlomi@justice.com
+Hananya,3,Jerusalem,Hananya@justice.com
+Miki,4,Jerusalem,Miki@justice.com
+Rachel,5,Jerusalem,Rachel@justice.com
+Meirav,6,Jerusalem,Meirav@justice.com
+Asaf,7,Jerusalem,Asaf@justice.com
+Yoav,8,Jerusalem,Yoav@justice.com
+Miki,4,Beer Sheva,Miki@justice.com
+Ilan,1,Haifa,Ilan@justice.com
+Buffy,9,Tel Aviv,Buffy@justice.com
+Dotan,10,Tel Aviv,Dotan@justice.com
+Yoav,11,Tel Aviv,YoavB@justice.com
