@@ -39,7 +39,7 @@ class Case:
         self.duration = duration
         self.location = location
         self.weight = weight
-        self.quarter = (datetime.now().month-1 // 3) + 1
+        self.quarter = ((datetime.now().month-1) // 3) + 1
         self.status = True  # True = is open, False = Done
 
 
@@ -153,7 +153,7 @@ class Divider:
                          'Jerusalem': 0,
                          'Beer Sheva': 0}
         for judge_id in self.judges:
-            judge_location_data = judge_id.total_weight
+            judge_location_data = judge_id.weight_dict
             for location, amount in judge_location_data.items():
                 locations_map[location] += amount
         return locations_map
