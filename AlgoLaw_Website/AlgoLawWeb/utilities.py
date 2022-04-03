@@ -1,10 +1,26 @@
 from sqlalchemy import or_, and_
 from AlgoLawWeb import app, db
-from AlgoLawWeb.models import User, Post, ROLES, Vacation
+from AlgoLawWeb.models import User, Post, ROLES, Vacation, CaseJudgeLocation, Case, CaseSchedule, Judge
 import datetime
 import os
 from flask import render_template, url_for, flash, redirect, request, send_from_directory
 from flask_login import login_user, current_user, logout_user, login_required
+import pandas as pd
+from collections import defaultdict
+
+
+EVENT_COLORS = {
+    'VACATION_VERIFIED': '#3CB371',
+    'VACATION_UNVERIFIED': '#DC143C',
+    'CASE_CONFIRMED': '#6495ED',
+    'CASE_NOT_CONFIRMED': '#8B0000'
+}
+
+ROLES_EN_TO_HE = {
+    'Judge': 'דיין/דיינת',
+    'Secretary': 'מזכיר/מזכירה',
+    'Master': 'הנהלה'
+}
 
 
 ###################################### UPLOAD FUNCTIONS #############################################################
@@ -52,7 +68,7 @@ def check_if_already_vacation(start_date, end_date, judge_id):
                                                                      and_(start_date >= Vacation.start_date,
                                                                           start_date <= Vacation.end_date,
                                                                           end_date > Vacation.end_date)
-                                                                 )
+                                                                    )
                                                                  ).all()
     if overlapping_vacations:
         flash('קיימת כבר חופשה על התאריכים האלה', 'warning')
@@ -73,20 +89,71 @@ def check_not_short_vaca(form):
     return True
 
 
+def get_case_id_to_title(case_id_judge_id):
+    case_id_to_title = defaultdict(str)
+    for case_id, judge_id in case_id_judge_id:
+        case = Case.query.filter(Case.id == case_id).first()
+        judge = Judge.query.filter(Judge.id == judge_id).first()
+        case_id_to_title[case.id] = judge.username + ' - ' + case.first_type
+
+    return case_id_to_title
+
+
+def get_all_cases(judge_id=None):
+    '''
+        :param judge_id: if None -> get all cases of all judges, if ID get cases of ID judge
+        :return: events - dict -> {
+            judge_id
+            title
+            start
+            end
+            id
+            color
+        }
+    '''
+    events = []
+    if not judge_id:
+        cases = CaseSchedule.query.all()
+    else:
+        cases = CaseSchedule.query.filter_by(judge_id=judge_id).all()
+
+    case_id_to_title = get_case_id_to_title([(case.case_id,case.judge_id) for case in cases])
+    for case in cases:
+        case_start_time = datetime.datetime.strptime(case.start_time, '%H:%M').time()
+        case_end_time = datetime.datetime.strptime(case.end_time, '%H:%M').time()
+        case_start_date = datetime.datetime.combine(case.date, case_start_time)
+        case_end_date = datetime.datetime.combine(case.date, case_end_time)
+        event = {
+            'judge_id': case.judge_id,
+            'title': case_id_to_title[case.case_id],
+            'start': str(case_start_date),
+            'end': str(case_end_date),
+            'id': case.id
+        }
+        if case.is_verified:
+            event['color'] = EVENT_COLORS['CASE_CONFIRMED']
+        else:
+            event['color'] = EVENT_COLORS['CASE_NOT_CONFIRMED']
+        events.append(event)
+    return events
+
+
 def get_all_vacations(judge_id=None):
     '''
     :param judge_id: if None -> get all vacations of all judges, if ID get vacations of ID judge
     :return: events - dict -> {
+        judge_id
         title
         start
         end
+        id
         color
     }
     '''
     events = []
     if not judge_id:
         vacations = Vacation.query.all()
-        relevant_judges = User.query.all()
+        relevant_judges = User.query.filter_by(role=ROLES_EN_TO_HE['Judge']).all()
     else:
         vacations = Vacation.query.filter_by(judge_id=judge_id).all()
         relevant_judges = User.query.filter_by(id=judge_id).all()
@@ -101,12 +168,25 @@ def get_all_vacations(judge_id=None):
             'id': vacation.id
         }
         if vacation.is_verified:
-            event['color'] = '#6495ED'
+            event['color'] = EVENT_COLORS['VACATION_VERIFIED']
         else:
-            event['color'] = '#DC143C'
+            event['color'] = EVENT_COLORS['VACATION_UNVERIFIED']
         events.append(event)
     return events
 
+
+def get_all_events(judge_id=None):
+    '''
+    :param judge_id:
+    :return:
+    '''
+    events = []
+    vacations = get_all_vacations(judge_id=judge_id)
+    events.extend(vacations)
+    cases = get_all_cases(judge_id=judge_id)
+    events.extend(cases)
+
+    return events
 
 ###################################### MASTER FUNCTIONS ############################################
 def get_all_judges():
@@ -149,3 +229,18 @@ def add_to_db(data_to_add):
     db.session.add(data_to_add)
     db.session.commit()
 
+
+def insert_output_to_db(output_path):
+    data = pd.read_csv(output_path)
+    for index, row in data.iterrows():
+        case_id = row['ID Case']
+        judge_id = row['ID judge']
+        location = row['Location']
+        quarter = ((datetime.datetime.now().month-1) // 3) + 1
+        year = datetime.datetime.now().year
+        case_judge_location = CaseJudgeLocation(case_id=case_id,
+                                                judge_id=judge_id,
+                                                location=location,
+                                                quarter=quarter,
+                                                year=year)
+        add_to_db(case_judge_location)

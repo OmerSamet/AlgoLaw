@@ -1,6 +1,6 @@
 import pandas as pd
-from AlgoLawWeb.models import User, Post, ROLES, Vacation, Judge, Hall, Rotation, Case
 from AlgoLawWeb import db, login_manager, bcrypt
+from AlgoLawWeb.models import User, Post, ROLES, Vacation, Judge, Hall, Rotation, Case
 from AlgoLawWeb.utilities import add_to_db
 import datetime
 
@@ -118,16 +118,11 @@ class DBInitiator:
                     case_enrichment_df['Secondary_Type'] == second_type)
 
         c_urg_level = case_enrichment_df[pandas_query]['Urgency_Level'].values[0]
-        c_duration = case_enrichment_df[pandas_query]['Duration'].values[0]
+        c_duration = 35
         c_location = case_enrichment_df[pandas_query]['Location'].values[0]
         c_weight = case_enrichment_df[pandas_query]['Weight'].values[0]
 
         return c_urg_level, c_duration, c_location, c_weight
-
-    @staticmethod
-    def get_now_quarter():
-        quarter_string = f'Y:{datetime.datetime.now().year} Q:{(datetime.datetime.now().month-1 // 3) + 1}'
-        return quarter_string
 
     def add_cases_to_db(self):
         case_enrichment_df = pd.read_csv(self.case_enrichment_data_path).fillna('NO DATA')
@@ -147,7 +142,8 @@ class DBInitiator:
                             duration=duration,
                             location=location,
                             weight=weight,
-                            quarter=self.get_now_quarter())
+                            quarter=((datetime.datetime.now().month-1) // 3) + 1,
+                            year=datetime.datetime.now().year)
 
             add_to_db(new_case)
 

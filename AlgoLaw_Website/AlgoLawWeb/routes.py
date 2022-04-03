@@ -8,44 +8,10 @@ import datetime
 from AlgoLawBackEnd import judge_divider
 from AlgoLawWeb.utilities import check_if_already_vacation, save_csv_file, \
     get_all_vacations, get_all_judges, check_date_earlier_than_today, check_not_short_vaca, add_to_db, check_logged_in, \
-    return_role_page
+    return_role_page, insert_output_to_db, get_all_cases, get_all_events
 import json
 from AlgoLawWeb.db_initiator import DBInitiator
-
-
-events = [
-        {
-            'todo': 'my event1',
-            'date': '2022-01-30',
-        },
-        {
-            'todo': 'my event2',
-            'date': '2022-01-31',
-        }
-    ]
-
-buttons = [
-    {
-        'Name': 'Upload New Cases',
-        'redirect': 'upload_cases'
-    },
-    {
-        'Name': 'Get Case Assignments',
-        'redirect': 'judge_case_assignments'
-    },
-    {
-        'Name': 'Run Logic',
-        'redirect': 'run_logic'
-    },
-    {
-        'Name': 'Secretary Space',
-        'redirect': 'secretary_space'
-    },
-    {
-        'Name': 'Judge Personal Space',
-        'redirect': 'judge_personal_space'
-    }
-]
+from AlgoLawWeb.scheduler import CaseScheduler
 
 
 @app.route('/upload_cases', methods=['GET', 'POST'])
@@ -106,22 +72,22 @@ def master_vacation_view(judge_id):  # judge_id = judge_id to see vacations of
 def get_all_judge_events(judge_id):  # judge_id = judge_id to see vacations of
     if judge_id == 'none':
         judge_id = None
-    vacations = get_all_vacations(judge_id)  # dict -> 'judge_id': vacation.judge_id, 'title': 'חופש' + str(vacation.judge_id), 'start': vacation.start_date, 'end': vacation.end_date
-    return json.dumps(vacations)
+    events = get_all_events(judge_id)  # dict -> 'judge_id': , 'title', 'start': , 'end': , 'id'
+    return json.dumps(events)
 
 
 @app.route('/judge_case_assignments', methods=['GET', 'POST'])
 @login_required
 def judge_case_assignments():
-    vacations = get_all_vacations(judge_id=current_user.id)
-    return render_template('judge_case_assignments.html', events=vacations)
+    events = get_all_events(judge_id=current_user.id)
+    return render_template('judge_case_assignments.html', events=events)
 
 
 @app.route('/judge_short_vaca', methods=['GET', 'POST'])
 @login_required
 def judge_short_vaca():
     form = VacaForm()
-    vacations = get_all_vacations(judge_id=current_user.id)
+    events = get_all_events(judge_id=current_user.id)
     if check_date_earlier_than_today(form):
         start_date = datetime.datetime.strptime(form.start_date.raw_data[0], '%Y-%m-%d')
         end_date = datetime.datetime.strptime(form.end_date.raw_data[0], '%Y-%m-%d')
@@ -135,14 +101,14 @@ def judge_short_vaca():
             return redirect(url_for('home'))
         else:
             flash('חופשה קצרה יכולה להיות עד 3 ימים, לחופשה ארוכה יותר נע ללכת ל״בקשה לחופשה ארוכה״', 'danger')
-    return render_template('judge_short_vaca.html', events=vacations, form=form)
+    return render_template('judge_short_vaca.html', events=events, form=form)
 
 
 @app.route('/judge_long_vaca', methods=['GET', 'POST'])
 @login_required
 def judge_long_vaca():
     form = VacaForm()
-    vacations = get_all_vacations(judge_id=current_user.id)
+    events = get_all_events(judge_id=current_user.id)
     if check_date_earlier_than_today(form):
         if check_not_short_vaca(form):
             start_date = datetime.datetime.strptime(form.start_date.raw_data[0], '%Y-%m-%d')
@@ -155,14 +121,14 @@ def judge_long_vaca():
                 # finish
                 return redirect(url_for('home'))
 
-    return render_template('judge_long_vaca.html', events=vacations, form=form)
+    return render_template('judge_long_vaca.html', events=events, form=form)
 
 
 @app.route('/judge_case_search', methods=['GET', 'POST'])
 @login_required
 def judge_case_search():
-    vacations = get_all_vacations(judge_id=current_user.id)
-    return render_template('judge_case_search.html', events=vacations)
+    events = get_all_events(judge_id=current_user.id)
+    return render_template('judge_case_search.html', events=events)
 
 
 @app.route('/judge_personal_space')
@@ -182,6 +148,9 @@ def secretary_space():
 def run_logic():
     judge_divider.handle_cases()
     output_file = 'output.csv'
+    insert_output_to_db(app.config["OUTPUT_DIR"] + '/' + output_file)
+    scheduler = CaseScheduler(datetime.datetime.now())
+    scheduler.schedule_jerusalem_cases()
     return send_from_directory(directory=app.config["OUTPUT_DIR"], path=output_file, as_attachment=True)
 
 
@@ -199,7 +168,7 @@ def home():
         elif role_page_id == 3:
             return secretary_space()
         else:
-            return render_template('home.html', buttons=buttons)
+            return render_template('home.html')
     else:
         return redirect(url_for('login'))
 
@@ -228,11 +197,7 @@ def login():
         # Login check
         if user and bcrypt.check_password_hash(user.password, form.password.data):
             login_user(user, remember=form.remember.data)
-            next_page = request.args.get('next')
-            if next_page:
-                return redirect(next_page)
-            else:
-                return redirect(url_for('home'))
+            return redirect(url_for('home'))
         else:
             flash('Login unsuccessful. Please check email and password', 'danger')
     return render_template('login.html', title='Login', form=form)

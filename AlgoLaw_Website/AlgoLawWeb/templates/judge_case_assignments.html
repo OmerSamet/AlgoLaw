@@ -16,7 +16,9 @@
     <script>
         let calendarEl = document.getElementById('judge_calendar');
         let judge_calendar = new FullCalendar.Calendar(calendarEl, {
+            locale: 'he',
             initialView: 'dayGridMonth',
+            direction: 'rtl',
             events : [
                 {% for event in events %}
                     {

@@ -46,18 +46,11 @@ class Vacation(db.Model):
     type = db.Column(db.String(20), nullable=False)
 
 
-
-
-
-
-
 class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     judge_id = db.Column(db.Integer, db.ForeignKey('judge.id'), nullable=False)
     relevant_emails = db.Column(db.String(120), nullable=False)  # str of list of emails "['email1@gmail.com', 'email2@gmail.com',...]"
     datetime_of_event = db.Column(db.DateTime, nullable=False)
-    def __repr__(self):
-        return f"User:('{self.username}', '{self.email}', '{self.image_file}')"
 
 
 class Judge(db.Model, UserMixin):
@@ -70,9 +63,6 @@ class Judge(db.Model, UserMixin):
     is_in_rotation = db.Column(db.Boolean, nullable=False)
     total_weight = db.Column(db.String(120), nullable=False)  # str of json '{location1: weight, location2: weight... '
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-
-    def __repr__(self):
-        return f"User:('{self.username}', '{self.email}', '{self.image_file}')"
 
 
 class Hall(db.Model):
@@ -97,9 +87,30 @@ class Case(db.Model):
     duration = db.Column(db.Integer, nullable=False)  # Int of how many minutes
     location = db.Column(db.String(100), nullable=False)
     weight = db.Column(db.Integer, nullable=False)
-    quarter = db.Column(db.String(20), nullable=False)  # string that looks like this: Y:2022 Q:1
-    case_datetime = db.Column(db.DateTime, nullable=True, default=datetime.utcnow)  # Nullable so we can add cases before division
-    judge_id = db.Column(db.Integer, db.ForeignKey('judge.id'), nullable=True)  # Nullable so we can add cases before division
+    quarter = db.Column(db.String(20), nullable=False)
+    year = db.Column(db.String(20), nullable=False)
+    # case_datetime = db.Column(db.DateTime, nullable=True, default=datetime.utcnow)  # Nullable so we can add cases before division
+    judge_id = db.Column(db.Integer, db.ForeignKey('judge.id'), nullable=True)
+    is_done = db.Column(db.Boolean, nullable=False, default=False)  # has this case been done yet?
 
-    def __repr__(self):
-        return f"Post:('{self.title}', '{self.date_posted}')"
+
+class CaseSchedule(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    case_id = db.Column(db.Integer, db.ForeignKey('case.id'), nullable=False)
+    hall_id = db.Column(db.Integer, db.ForeignKey('hall.id'), nullable=False)  # id of hall and location in hall table
+    date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)  # actual date of schedule
+    judge_id = db.Column(db.Integer, db.ForeignKey('judge.id'),
+                         nullable=True)  # Nullable so we can add cases before division
+    # start_time and end_time hold str of only the hours to be turned to datetime with date from HallSchedule
+    start_time = db.Column(db.String(100), nullable=True)  # datetime.now().strftime("%H:%M") -> 09:30
+    end_time = db.Column(db.String(100), nullable=True)  # datetime.now().strftime("%H:%M") -> 09:30
+    is_verified = db.Column(db.Boolean, nullable=False, default=False)
+
+
+class CaseJudgeLocation(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    case_id = db.Column(db.Integer, db.ForeignKey('case.id'), nullable=False)
+    judge_id = db.Column(db.Integer, db.ForeignKey('judge.id'), nullable=False)
+    location = db.Column(db.String(20), nullable=False)
+    quarter = db.Column(db.Integer, nullable=False)
+    year = db.Column(db.Integer, nullable=False)
