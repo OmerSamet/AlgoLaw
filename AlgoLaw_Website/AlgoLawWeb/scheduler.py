@@ -1,5 +1,5 @@
 from collections import defaultdict
-from AlgoLawWeb.models import Hall, Case, CaseJudgeLocation, CaseSchedule
+from AlgoLawWeb.models import Hall, Case, CaseJudgeLocation, CaseSchedule, Vacation, Rotation, SickDay
 import datetime, calendar
 import enum
 from AlgoLawWeb import db
@@ -148,6 +148,31 @@ class JerusalemScheduler(LocationScheduler):
         else:
             return judge_id == DayToHallToJudge[day_of_week][hall_number][1]
 
+
+    def isDateBetweenDates(self ,date, startDate, endDate):
+        datetime_date = datetime.datetime(date.year , date.month , date.day)
+        return (datetime_date > startDate) and ( datetime_date < endDate)
+
+
+    def judgeIsAvailable(self, judge_id , date):
+        vacations = db.session.query(Vacation).filter(Vacation.is_verified).all()
+        for vac in vacations:
+            if vac.judge_id == judge_id & self.isDateBetweenDates(date , vac.start_date , vac.end_date):
+                return False
+
+        sick_days = db.session.query(SickDay).filter(SickDay.is_verified).all()
+        for sick_day in sick_days:
+            if sick_day.judge_id == judge_id & self.isDateBetweenDates(date, sick_day.start_date, sick_day.end_date):
+                return False
+
+        rotations = db.session.query(Rotation).filter(SickDay.is_verified).all()
+        for rot in rotations:
+            if rot.judge_id == judge_id & self.isDateBetweenDates(date, rot.start_date, rot.end_date):
+                return False
+
+        return True
+
+
     def add_case_to_schedule(self, case, date, time_slot, hall_number, judge_id):
         self.hall_schedules[date][time_slot][hall_number] = case
         start_time, end_time = time_slot.value.split('-')
@@ -184,7 +209,7 @@ class JerusalemScheduler(LocationScheduler):
                     for hall_number, scheduled_case in hall_dict.items():
                         if not scheduled_case:  # means there is no case there
                             # check if at this time the relevant judge is working
-                            if self.relevant_judge(case_id_to_judge_to_location[case.id], date, hall_number, time_slot):
+                            if (self.relevant_judge(case_id_to_judge_to_location[case.id], date, hall_number, time_slot)) and (self.judgeIsAvailable(case_id_to_judge_to_location[case.id],date)):
                                 self.add_case_to_schedule(case, date, time_slot, hall_number, case_id_to_judge_to_location[case.id])
 
 

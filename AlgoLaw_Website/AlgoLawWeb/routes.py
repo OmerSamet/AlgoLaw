@@ -12,6 +12,7 @@ from AlgoLawWeb.utilities import check_if_already_vacation, save_csv_file, \
 import json
 from AlgoLawWeb.db_initiator import DBInitiator
 from AlgoLawWeb.scheduler import CaseScheduler
+import os
 
 
 @app.route('/upload_cases', methods=['GET', 'POST'])
@@ -148,7 +149,7 @@ def secretary_space():
 def run_logic():
     judge_divider.handle_cases()
     output_file = 'output.csv'
-    insert_output_to_db(app.config["OUTPUT_DIR"] + '/' + output_file)
+    insert_output_to_db(os.path.join(app.config["OUTPUT_DIR"], 'output.csv'))
     scheduler = CaseScheduler(datetime.datetime.now())
     scheduler.schedule_jerusalem_cases()
     return send_from_directory(directory=app.config["OUTPUT_DIR"], path=output_file, as_attachment=True)

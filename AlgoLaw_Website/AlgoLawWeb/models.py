@@ -37,6 +37,7 @@ class Post(db.Model):
         return f"Post:('{self.title}', '{self.date_posted}')"
 
 
+
 class Vacation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     judge_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -44,6 +45,14 @@ class Vacation(db.Model):
     end_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     is_verified = db.Column(db.Boolean, nullable=False)
     type = db.Column(db.String(20), nullable=False)
+
+class SickDay(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    judge_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    start_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    end_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    is_verified = db.Column(db.Boolean, nullable=False)
+
 
 
 class Event(db.Model):
