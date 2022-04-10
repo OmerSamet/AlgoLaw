@@ -119,10 +119,9 @@ class DBInitiator:
 
         c_urg_level = case_enrichment_df[pandas_query]['Urgency_Level'].values[0]
         c_duration = 35
-        c_location = case_enrichment_df[pandas_query]['Location'].values[0]
         c_weight = case_enrichment_df[pandas_query]['Weight'].values[0]
 
-        return c_urg_level, c_duration, c_location, c_weight
+        return c_urg_level, c_duration, c_weight
 
     def add_cases_to_db(self):
         case_enrichment_df = pd.read_csv(self.case_enrichment_data_path).fillna('NO DATA')
@@ -131,8 +130,9 @@ class DBInitiator:
             main_type = row['Case_Main_Type']
             second_type = row['Secondary_Type']
             sub_type = row['Case_sub_type']
+            location = row['Location']
 
-            urg_level, duration, location, weight = self.get_case_db_data(case_enrichment_df, main_type,
+            urg_level, duration, weight = self.get_case_db_data(case_enrichment_df, main_type,
                                                                                   second_type, sub_type)
 
             new_case = Case(first_type=main_type,
