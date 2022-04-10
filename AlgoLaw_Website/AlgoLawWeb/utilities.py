@@ -1,6 +1,6 @@
 from sqlalchemy import or_, and_
 from AlgoLawWeb import app, db
-from AlgoLawWeb.models import User, Post, ROLES, Vacation, CaseJudgeLocation, Case, CaseSchedule, Judge
+from AlgoLawWeb.models import User, Post, ROLES, Vacation, CaseJudgeLocation, Case, MeetingSchedule, Judge
 import datetime
 import os
 from flask import render_template, url_for, flash, redirect, request, send_from_directory
@@ -99,7 +99,7 @@ def get_case_id_to_title(case_id_judge_id):
     return case_id_to_title
 
 
-def get_all_cases(judge_id=None):
+def get_all_meetings(judge_id=None):
     '''
         :param judge_id: if None -> get all cases of all judges, if ID get cases of ID judge
         :return: events - dict -> {
@@ -113,24 +113,24 @@ def get_all_cases(judge_id=None):
     '''
     events = []
     if not judge_id:
-        cases = CaseSchedule.query.all()
+        meetings = MeetingSchedule.query.all()
     else:
-        cases = CaseSchedule.query.filter_by(judge_id=judge_id).all()
+        meetings = MeetingSchedule.query.filter_by(judge_id=judge_id).all()
 
-    case_id_to_title = get_case_id_to_title([(case.case_id,case.judge_id) for case in cases])
-    for case in cases:
-        case_start_time = datetime.datetime.strptime(case.start_time, '%H:%M').time()
-        case_end_time = datetime.datetime.strptime(case.end_time, '%H:%M').time()
-        case_start_date = datetime.datetime.combine(case.date, case_start_time)
-        case_end_date = datetime.datetime.combine(case.date, case_end_time)
+    case_id_to_title = get_case_id_to_title([(meeting.case_id,meeting.judge_id) for meeting in meetings])
+    for meeting in meetings:
+        case_start_time = datetime.datetime.strptime(meeting.start_time, '%H:%M').time()
+        case_end_time = datetime.datetime.strptime(meeting.end_time, '%H:%M').time()
+        case_start_date = datetime.datetime.combine(meeting.date, case_start_time)
+        case_end_date = datetime.datetime.combine(meeting.date, case_end_time)
         event = {
-            'judge_id': case.judge_id,
-            'title': case_id_to_title[case.case_id],
+            'judge_id': meeting.judge_id,
+            'title': case_id_to_title[meeting.case_id],
             'start': str(case_start_date),
             'end': str(case_end_date),
-            'id': case.id
+            'id': meeting.id
         }
-        if case.is_verified:
+        if meeting.is_verified:
             event['color'] = EVENT_COLORS['CASE_CONFIRMED']
         else:
             event['color'] = EVENT_COLORS['CASE_NOT_CONFIRMED']
@@ -183,8 +183,8 @@ def get_all_events(judge_id=None):
     events = []
     vacations = get_all_vacations(judge_id=judge_id)
     events.extend(vacations)
-    cases = get_all_cases(judge_id=judge_id)
-    events.extend(cases)
+    meetings = get_all_meetings(judge_id=judge_id)
+    events.extend(meetings)
 
     return events
 
