@@ -4,7 +4,7 @@ from AlgoLawWeb.forms import RegistrationForm, LoginForm, CasesForm, VacaForm
 from AlgoLawWeb.models import User, ROLES, Vacation, Judge, Hall
 from flask_login import login_user, current_user, logout_user, login_required
 import datetime
-from AlgoLawBackEnd import judge_divider
+from AlgoLawWeb.AlgoLawBackEnd import judge_divider
 from AlgoLawWeb.utilities import check_if_already_vacation, save_csv_file, \
     get_all_relevant_judges, check_date_earlier_than_today, check_not_short_vaca, add_to_db, check_logged_in, \
     return_role_page, insert_output_to_db, get_all_events
@@ -182,7 +182,7 @@ def secretary_space():
 def run_logic():
     judge_divider.handle_cases()
     output_file = 'output.csv'
-    insert_output_to_db(os.path.join(app.config["OUTPUT_DIR"], 'output.csv'))
+    insert_output_to_db(os.path.join(app.config["OUTPUT_DIR"], output_file))
     scheduler = MeetingScheduler(datetime.datetime.now())
     scheduler.schedule_jerusalem_cases()
     return send_from_directory(directory=app.config["OUTPUT_DIR"], path=output_file, as_attachment=True)

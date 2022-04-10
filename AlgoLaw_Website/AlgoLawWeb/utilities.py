@@ -133,6 +133,7 @@ def get_all_meetings(judge_id=None, location=None, hall_number=None):
     if not judge_id:
         relevant_judges_ids, relevant_judges = get_judge_user_ids(location)
         meetings = MeetingSchedule.query.join(Hall).filter(MeetingSchedule.judge_id.in_(relevant_judges_ids),
+                                                           Hall.location.like(location),
                                                            Hall.hall_number.like(hall_number)).all()
         # userList = users.query.join(friendships)
         #                   .add_columns(users.id, users.userName, users.userEmail, friendships.user_id, friendships.friend_id).
@@ -141,6 +142,7 @@ def get_all_meetings(judge_id=None, location=None, hall_number=None):
 
     else:
         meetings = MeetingSchedule.query.join(Hall).filter(MeetingSchedule.judge_id == judge_id,
+                                                           Hall.location.like(location),
                                                            Hall.hall_number.like(hall_number)).all()
 
     case_id_to_title = get_case_id_to_title([(meeting.case_id, meeting.judge_id) for meeting in meetings])

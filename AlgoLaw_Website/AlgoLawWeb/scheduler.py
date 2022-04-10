@@ -19,13 +19,39 @@ class JerusalemTimeSlots(enum.Enum):
 
 
 #  {daynum: {hall_number: [judge1, judge2]
-DayToHallToJudge = {
+DayToHallToJudgeJerusalem = {
     7: {1: [1, 1], 2: [2, 2], 3: [9, 10]},  # Sunday
     1: {1: [3, 3], 2: [4, 4], 3: [7, 8]},  # Monday
     2: {1: [5, 5], 2: [6, 6], 3: [0, 2]},  # Tuesday
     3: {1: [7, 7], 2: [8, 8], 3: [3, 4]},  # Wednesday
     4: {1: [9, 9], 2: [10, 10], 3: [5, 6]}  # Thursday
 }
+
+class JerusalemDay:
+    def __init__(self, date):
+        self.date = date
+        self.day_of_the_week = date.isoweekday()
+        self.schedule = self.create_day_schedule()
+
+    @staticmethod
+    def timeslot_in_first_half_of_day(time_slot):
+        slots = list(JerusalemTimeSlots)
+        slot_index = slots.index(time_slot)
+        if slot_index < len(slots) / 2:
+            return True
+        else:
+            return False
+
+    def create_day_schedule(self):
+        schedule = defaultdict(lambda: defaultdict(lambda: defaultdict(str)))
+        for hall, judges in DayToHallToJudgeJerusalem[self.day_of_the_week].items():
+            for time_slot in JerusalemTimeSlots:
+                if self.timeslot_in_first_half_of_day(time_slot):
+                    schedule[hall][time_slot.value][judges[0]] = ''
+                else:
+                    schedule[hall][time_slot.value][judges[1]] = ''
+
+        return schedule
 
 
 class LocationScheduler:
@@ -42,7 +68,7 @@ class LocationScheduler:
         work_days = []
         for day in range(1, num_days + 1):
             day_date = datetime.date(year, month, day)
-            if day_date.isoweekday() in DayToHallToJudge.keys():
+            if day_date.isoweekday() in DayToHallToJudgeJerusalem.keys():
                 work_days.append(day_date)
         return work_days
 
@@ -56,31 +82,6 @@ class LocationScheduler:
             quarterly_dates.extend(work_days)
 
         return quarterly_dates
-
-    @staticmethod
-    def get_timeslot_dict(halls):
-        '''
-        :input: halls -> list of hall objects
-        {time_slot: {hall_id: case_id,
-                    hall_id: case_id
-                    hall_id: case_id
-        '''
-        timeslot_dict = defaultdict(lambda: defaultdict(Case))
-        for timeslot in JerusalemTimeSlots:
-            for hall in halls:
-                timeslot_dict[timeslot][hall.hall_number] = None
-
-        return timeslot_dict
-    #
-    #             {JerusalemTimeSlots.nine_to_nine_thirty_five: 0,
-    #                         JerusalemTimeSlots.nine_forty_five_to_ten_twenty: 0,
-    #                         JerusalemTimeSlots.ten_thirty_to_eleven_o_five: 0,
-    #                         JerusalemTimeSlots.eleven_fifteen_to_eleven_fifty: 0,
-    #                         JerusalemTimeSlots.twelve_to_twelve_thirty_five: 0,
-    #                         JerusalemTimeSlots.twelve_forty_five_to_one_twenty: 0,
-    #                         JerusalemTimeSlots.one_thirty_to_two_o_five: 0,
-    #                         JerusalemTimeSlots.two_fifteen_to_two_fifty: 0
-    # }
 
     def init_schedule(self, halls):
         '''
@@ -115,10 +116,13 @@ class LocationScheduler:
         :return: empty_schedule
         '''
         quarterly_dates = self.get_quarterly_dates()
-        jerusalem_empty_timeslot_dict = self.get_timeslot_dict(halls)
-        empty_schedule = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: defaultdict(datetime.date))))
+        empty_schedule = defaultdict(lambda: defaultdict(lambda: defaultdict(Case)))
+        empty_case = Case()
         for date in quarterly_dates:
-            empty_schedule[date] = jerusalem_empty_timeslot_dict
+            for time_slot in JerusalemTimeSlots:
+                for day_num, hall_dict in DayToHallToJudgeJerusalem.items():
+                    for hall_num, judges in hall_dict.items():
+                        empty_schedule[str(date)][time_slot.value][hall_num] = empty_case
 
         return empty_schedule
 
@@ -145,10 +149,9 @@ class JerusalemScheduler(LocationScheduler):
     def relevant_judge(self, judge_id, date, hall_number, time_slot):
         day_of_week = date.isoweekday()
         if self.timeslot_in_first_half_of_day(time_slot):
-            return judge_id == DayToHallToJudge[day_of_week][hall_number][0]
+            return judge_id == DayToHallToJudgeJerusalem[day_of_week][hall_number][0]
         else:
-            return judge_id == DayToHallToJudge[day_of_week][hall_number][1]
-
+            return judge_id == DayToHallToJudgeJerusalem[day_of_week][hall_number][1]
 
     def isDateBetweenDates(self ,date, startDate, endDate):
         datetime_date = datetime.datetime(date.year , date.month , date.day)
@@ -157,33 +160,35 @@ class JerusalemScheduler(LocationScheduler):
     def judgeIsAvailable(self, judge_id , date):
         vacations = db.session.query(Vacation).filter(Vacation.is_verified).all()
         for vac in vacations:
-            if vac.judge_id == judge_id & self.isDateBetweenDates(date , vac.start_date , vac.end_date):
+            if vac.judge_id == judge_id and self.isDateBetweenDates(date , vac.start_date , vac.end_date):
                 return False
 
         sick_days = db.session.query(SickDay).filter(SickDay.is_verified).all()
         for sick_day in sick_days:
-            if sick_day.judge_id == judge_id & self.isDateBetweenDates(date, sick_day.start_date, sick_day.end_date):
+            if sick_day.judge_id == judge_id and self.isDateBetweenDates(date, sick_day.start_date, sick_day.end_date):
                 return False
 
-        rotations = db.session.query(Rotation).filter(SickDay.is_verified).all()
+        rotations = db.session.query(Rotation).all()
         for rot in rotations:
-            if rot.judge_id == judge_id & self.isDateBetweenDates(date, rot.start_date, rot.end_date):
+            if rot.judge_id == judge_id and self.isDateBetweenDates(date, rot.start_date, rot.end_date):
                 return False
 
         return True
 
     def add_meeting_to_schedule(self, case, date, time_slot, hall_number, judge_id):
-        self.hall_schedules[date][time_slot][hall_number] = case
-        start_time, end_time = time_slot.value.split('-')
+        # self.hall_schedules[date][time_slot.value][hall_number] = case
+        # date_obj = datetime.datetime.strptime(date, '%Y-%m-%d')
+        date_obj = date
+        start_time, end_time = time_slot.split('-')
         # add meeting to DB
-        quarter = ((date.month - 1) // 3) + 1
+        quarter = ((date_obj.month - 1) // 3) + 1
         meeting = Meeting(case_id=case.id,
                           quarter=quarter,
-                          year=date.year)
+                          year=date_obj.year)
         add_to_db(meeting)
         meeting_id = Meeting.query.filter(Meeting.case_id == case.id,
                                           Meeting.quarter == quarter,
-                                          Meeting.year == date.year).first().id
+                                          Meeting.year == date_obj.year).first().id
         # get hall id from hall number
         hall = Hall.query.filter(Hall.location == case.location,
                                  Hall.hall_number == hall_number).first()
@@ -191,7 +196,7 @@ class JerusalemScheduler(LocationScheduler):
         # add meeting scheduling
         meeting_schedule = MeetingSchedule(case_id=case.id,
                                      hall_id=hall.id,
-                                     date=date,
+                                     date=date_obj,
                                      judge_id=judge_id,
                                      start_time=start_time,
                                      end_time=end_time,
@@ -206,6 +211,21 @@ class JerusalemScheduler(LocationScheduler):
             case_id_to_judge_id[case_judge_location.case_id] = case_judge_location.judge_id
         return case_id_to_judge_id
 
+    def date_relevant_for_case(self, j_date, judge_id):
+        '''
+        input - date, judge_id
+
+        checks if judge of case is working on this date and returns True if yes False if no
+        '''
+        for hall_number, time_slot_dict in j_date.schedule.items():
+            for time_slot, judge_dict in time_slot_dict.items():
+                for judge, case_id in judge_dict.items():
+                    if judge_id == judge and self.judgeIsAvailable(judge_id,j_date.date):
+                        if case_id == '':
+                            return True, hall_number, time_slot
+
+        return False, False, False
+
     def schedule_cases(self):
         '''
         MAIN FUNCTION
@@ -213,18 +233,97 @@ class JerusalemScheduler(LocationScheduler):
         '''
         ordered_cases = self.order_cases()
         case_id_to_judge_to_location = self.get_case_id_to_judge_id()
+        sanity_counter = 0
+        quarterly_dates = self.get_quarterly_dates()
+        quarterly_J_days = [JerusalemDay(date) for date in quarterly_dates]
         # case object
         for case in ordered_cases:
-            # datetime, dict -> {timeslot: {hall_number: case object ...
-            for date, time_slot_dict in self.hall_schedules.items():
-                # timeslot  ,dict -> {hall_number: case object ...
-                for time_slot, hall_dict in time_slot_dict.items():
-                    # hall_number, case object
-                    for hall_number, scheduled_case in hall_dict.items():
-                        if not scheduled_case:  # means there is no case there
-                            # check if at this time the relevant judge is working
-                            if (self.relevant_judge(case_id_to_judge_to_location[case.id], date, hall_number, time_slot)) and (self.judgeIsAvailable(case_id_to_judge_to_location[case.id],date)):
-                                self.add_meeting_to_schedule(case, date, time_slot, hall_number, case_id_to_judge_to_location[case.id])
+            judge_id = case_id_to_judge_to_location[case.id]
+            been_placed_in_calendar = False
+            for J_date in quarterly_J_days:
+                if been_placed_in_calendar:
+                    break
+                relevant, hall_number, time_slot = self.date_relevant_for_case(J_date, judge_id)
+                if relevant:
+                    been_placed_in_calendar = True
+                    J_date.schedule[hall_number][time_slot][judge_id] = case.id
+                    self.add_meeting_to_schedule(case, J_date.date, time_slot, hall_number,
+                                                 case_id_to_judge_to_location[case.id])
+
+            if not been_placed_in_calendar:
+                print('got here')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            #
+            #     judge_id = case_id_to_judge_to_location[case.id]
+            #     relevant, hall_number = self.date_relevant_for_case(date, judge_id)
+            #     if relevant:
+            #         if str(date) in self.hall_schedules.keys():
+            #             for time_slot in JerusalemTimeSlots:
+            #                 if time_slot.value in self.hall_schedules.keys():
+            #
+            #                 else:
+            #                     self.hall_schedules[str(date)][time_slot.value][hall_number]
+            #
+            #
+            #
+            #
+            #
+            #     if str(date) in self.hall_schedules.keys():
+            #         # continue looking
+            #         for time_slot in JerusalemTimeSlots:
+            #             if time_slot in self.hall_schedules[str(date)].keys():
+            #                 # continue looking
+            #             else:
+            #                 # create first timeslot in
+            #             for day_num, hall_dict in DayToHallToJudgeJerusalem.items():
+            #                 for hall_num, judges in hall_dict.items():
+            #                     empty_schedule[str(date)][time_slot.value][hall_num] = empty_case
+            #     else:
+            #         # add key and put in first relevant slot
+            #
+            #
+            # # datetime, dict -> {timeslot: {hall_number: case object ...
+            # for date, time_slot_dict in self.hall_schedules.items():
+            #     date_obj = datetime.datetime.strptime(date, '%Y-%m-%d')
+            #     if been_placed_in_calendar:
+            #         break
+            #     # timeslot  ,dict -> {hall_number: case object ...
+            #     for time_slot, hall_dict in time_slot_dict.items():
+            #         if been_placed_in_calendar:
+            #             break
+            #         # hall_number, case object
+            #         for hall_number, scheduled_case in hall_dict.items():
+            #             if been_placed_in_calendar:
+            #                 break
+            #             if not scheduled_case:  # means there is no case there
+            #                 # check if at this time the relevant judge is working
+            #                 if (self.relevant_judge(case_id_to_judge_to_location[case.id], date_obj, hall_number, time_slot)) and (self.judgeIsAvailable(case_id_to_judge_to_location[case.id],date_obj)):
+            #                     self.add_meeting_to_schedule(case, date, time_slot, hall_number, case_id_to_judge_to_location[case.id])
+            #                     been_placed_in_calendar = True
+            #                 if sanity_counter > 40:
+            #                     print('got here!')
+        #     if not been_placed_in_calendar:
+        #         print('got here')
+        #     sanity_counter += 1
+        #
+        #
+        # print(sanity_counter)
 
 
 class MeetingScheduler:
