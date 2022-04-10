@@ -3,16 +3,18 @@ from AlgoLawWeb import db, login_manager, bcrypt
 from AlgoLawWeb.models import User, Post, ROLES, Vacation, Judge, Hall, Rotation, Case
 from AlgoLawWeb.utilities import add_to_db
 import datetime
+from AlgoLawWeb import app
+import os
 
 
 class DBInitiator:
     def __init__(self, db):
         self.db = db
-        self.case_enrichment_data_path = r'/Users/omersamet/Documents/Personal Docs/Google/AlgoLaw/DB_DATA/Case_Data.csv'
-        self.fake_cases_csv_path = r'/Users/omersamet/Documents/Personal Docs/Google/AlgoLaw/DB_DATA/Fake_case_data.csv'
-        self.judge_data_csv_path = r'/Users/omersamet/Documents/Personal Docs/Google/AlgoLaw/DB_DATA/Judge_Data.csv'
-        self.halls_data_csv_path = r'/Users/omersamet/Documents/Personal Docs/Google/AlgoLaw/DB_DATA/Halls.csv'
-        self.rotation_data_csv_path = r'/Users/omersamet/Documents/Personal Docs/Google/AlgoLaw/DB_DATA/Judge_Rotation_Schedule.csv'
+        self.case_enrichment_data_path = os.path.join(app.root_path, 'DB_DATA', 'Case_Data.csv')
+        self.fake_cases_csv_path = os.path.join(app.root_path, 'DB_DATA', 'Fake_case_data.csv')
+        self.judge_data_csv_path = os.path.join(app.root_path, 'DB_DATA', 'Judge_Data.csv')
+        self.halls_data_csv_path = os.path.join(app.root_path, 'DB_DATA', 'Halls.csv')
+        self.rotation_data_csv_path = os.path.join(app.root_path, 'DB_DATA', 'Judge_Rotation_Schedule.csv')
 
     def import_data_to_db(self):
         # Delete current DB and create empty DB

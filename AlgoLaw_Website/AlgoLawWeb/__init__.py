@@ -2,11 +2,12 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
+import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'd1457561a9e312a6f439aa6185a41de2'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
-app.config["OUTPUT_DIR"] = '/Users/omersamet/Documents/Personal Docs/Google/AlgoLaw'
+app.config["OUTPUT_DIR"] = os.path.join(app.root_path, 'blablabla', 'blablabablbablalbla.csv')
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)

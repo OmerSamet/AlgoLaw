@@ -32,10 +32,10 @@ def check_available_directory():
     return f'{app.root_path}/Cases_Uploaded/{current_year}_quarter_{current_quarter}'
 
 
-def save_csv_file(form_csv_file):
+def save_csv_file(form_csv_file, variable):
     output_dir = check_available_directory()
     uploader_username = current_user.username
-    csv_path = os.path.join(app.root_path, output_dir, uploader_username+'_Case_Data.csv')
+    csv_path = os.path.join(app.root_path, output_dir, uploader_username, '_', variable, '.csv')
     form_csv_file.save(csv_path)
     return csv_path
 

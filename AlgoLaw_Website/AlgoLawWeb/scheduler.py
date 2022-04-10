@@ -1,10 +1,11 @@
 from collections import defaultdict
+from AlgoLawWeb import db, app
 from AlgoLawWeb.models import Hall, Case, CaseJudgeLocation, MeetingSchedule, Meeting, Vacation, Rotation, SickDay
-import datetime, calendar
+import datetime
+import calendar
 import enum
-from AlgoLawWeb import db
 from AlgoLawWeb.utilities import add_to_db
-
+import os
 
 class JerusalemTimeSlots(enum.Enum):
     nine_to_nine_thirty_five = '09:00-09:35'
@@ -230,7 +231,7 @@ class MeetingScheduler:
     def __init__(self, start_date):
         self.start_date = start_date  # start of quarter
         self.quarter = ((start_date.month - 1) // 3) + 1
-        self.output_path = r'/Users/omersamet/Documents/Personal Docs/Google/AlgoLaw/AlgoLaw_Website/output.csv'
+        self.output_path = os.path.join(app.root_path, 'output.csv')
         self.year = start_date.year
         self.location_to_cases = self.divide_cases_to_location()  # dict { 'location': [cases] ...
 

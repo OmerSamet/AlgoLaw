@@ -1,8 +1,9 @@
 import pandas as pd
 from collections import defaultdict
 from datetime import datetime
-from AlgoLawBackEnd.config import JudgeDataDir, CaseDataDir, CaseDBDataDir
-
+from AlgoLawWeb import app
+from AlgoLawWeb.AlgoLawBackEnd.config import JudgeDataDir, CaseDataDir, CaseDBDataDir
+import os
 
 class Judge:
     def __init__(self, id, name, locations, is_in_rotation):
@@ -168,7 +169,8 @@ class Divider:
         return False
 
     def write_csv(self):
-        with open('output.csv', 'w', encoding='UTF8', newline='') as f:
+        output_path = os.path.join(app.root_path, 'DB_DATA', 'output.csv')
+        with open(output_path, 'w', encoding='UTF8', newline='') as f:
             f.write('ID Case,ID judge,Location\n')
             for judge in self.judges:
                 for case in judge.cases:

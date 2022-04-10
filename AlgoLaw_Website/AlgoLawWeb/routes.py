@@ -1,13 +1,12 @@
-import secrets
-from flask import render_template, url_for, flash, redirect, request, send_from_directory
+from flask import render_template, url_for, flash, redirect, send_from_directory
 from AlgoLawWeb import app, db, bcrypt
-from AlgoLawWeb.forms import RegistrationForm, LoginForm, UpdateAccountForm, CasesForm, VacaForm
-from AlgoLawWeb.models import User, Post, ROLES, Vacation, Judge, Hall
+from AlgoLawWeb.forms import RegistrationForm, LoginForm, CasesForm, VacaForm
+from AlgoLawWeb.models import User, ROLES, Vacation, Judge, Hall
 from flask_login import login_user, current_user, logout_user, login_required
 import datetime
 from AlgoLawBackEnd import judge_divider
 from AlgoLawWeb.utilities import check_if_already_vacation, save_csv_file, \
-    get_all_vacations, get_all_relevant_judges, check_date_earlier_than_today, check_not_short_vaca, add_to_db, check_logged_in, \
+    get_all_relevant_judges, check_date_earlier_than_today, check_not_short_vaca, add_to_db, check_logged_in, \
     return_role_page, insert_output_to_db, get_all_events
 import json
 from AlgoLawWeb.db_initiator import DBInitiator
@@ -21,7 +20,7 @@ def upload_cases():
     form = CasesForm()
     if form.validate_on_submit():
         if form.csv_file.data:
-            new_file = save_csv_file(form.csv_file.data)
+            new_file = save_csv_file(form.csv_file.data, 'Case_Data')
             flash('File uploaded!', 'success')
             return redirect(url_for('home'))
 
@@ -34,7 +33,7 @@ def upload_generic(variable):
     form = CasesForm()
     if form.validate_on_submit():
         if form.csv_file.data:
-            new_file = save_csv_file(form.csv_file.data)
+            new_file = save_csv_file(form.csv_file.data, variable)
             flash('File uploaded!', 'success')
             return redirect(url_for('home'))
 
