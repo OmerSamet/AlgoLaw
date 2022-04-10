@@ -8,10 +8,10 @@ import datetime
 from AlgoLawBackEnd import judge_divider
 from AlgoLawWeb.utilities import check_if_already_vacation, save_csv_file, \
     get_all_vacations, get_all_judges, check_date_earlier_than_today, check_not_short_vaca, add_to_db, check_logged_in, \
-    return_role_page, insert_output_to_db, get_all_cases, get_all_events
+    return_role_page, insert_output_to_db, get_all_events
 import json
 from AlgoLawWeb.db_initiator import DBInitiator
-from AlgoLawWeb.scheduler import CaseScheduler
+from AlgoLawWeb.scheduler import MeetingScheduler
 import os
 
 
@@ -150,7 +150,7 @@ def run_logic():
     judge_divider.handle_cases()
     output_file = 'output.csv'
     insert_output_to_db(os.path.join(app.config["OUTPUT_DIR"], 'output.csv'))
-    scheduler = CaseScheduler(datetime.datetime.now())
+    scheduler = MeetingScheduler(datetime.datetime.now())
     scheduler.schedule_jerusalem_cases()
     return send_from_directory(directory=app.config["OUTPUT_DIR"], path=output_file, as_attachment=True)
 

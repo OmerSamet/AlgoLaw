@@ -142,8 +142,8 @@ class DBInitiator:
                             duration=duration,
                             location=location,
                             weight=weight,
-                            quarter=((datetime.datetime.now().month-1) // 3) + 1,
-                            year=datetime.datetime.now().year)
+                            quarter_created=((datetime.datetime.now().month-1) // 3) + 1,
+                            year_created=datetime.datetime.now().year)
 
             add_to_db(new_case)
 

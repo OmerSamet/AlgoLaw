@@ -96,16 +96,23 @@ class Case(db.Model):
     duration = db.Column(db.Integer, nullable=False)  # Int of how many minutes
     location = db.Column(db.String(100), nullable=False)
     weight = db.Column(db.Integer, nullable=False)
-    quarter = db.Column(db.String(20), nullable=False)
-    year = db.Column(db.String(20), nullable=False)
-    # case_datetime = db.Column(db.DateTime, nullable=True, default=datetime.utcnow)  # Nullable so we can add cases before division
+    quarter_created = db.Column(db.String(20), nullable=False)
+    year_created = db.Column(db.String(20), nullable=False)
     judge_id = db.Column(db.Integer, db.ForeignKey('judge.id'), nullable=True)
     is_done = db.Column(db.Boolean, nullable=False, default=False)  # has this case been done yet?
 
 
-class CaseSchedule(db.Model):
+class Meeting(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     case_id = db.Column(db.Integer, db.ForeignKey('case.id'), nullable=False)
+    quarter = db.Column(db.String(20), nullable=False)
+    year = db.Column(db.String(20), nullable=False)
+
+
+class MeetingSchedule(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    case_id = db.Column(db.Integer, db.ForeignKey('case.id'), nullable=False)
+    meeting_id = db.Column(db.Integer, db.ForeignKey('meeting.id'), nullable=False)
     hall_id = db.Column(db.Integer, db.ForeignKey('hall.id'), nullable=False)  # id of hall and location in hall table
     date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)  # actual date of schedule
     judge_id = db.Column(db.Integer, db.ForeignKey('judge.id'),
@@ -119,6 +126,7 @@ class CaseSchedule(db.Model):
 class CaseJudgeLocation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     case_id = db.Column(db.Integer, db.ForeignKey('case.id'), nullable=False)
+    meeting_id = db.Column(db.Integer, db.ForeignKey('meeting.id'), nullable=True)
     judge_id = db.Column(db.Integer, db.ForeignKey('judge.id'), nullable=False)
     location = db.Column(db.String(20), nullable=False)
     quarter = db.Column(db.Integer, nullable=False)

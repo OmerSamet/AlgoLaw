@@ -1,5 +1,5 @@
 from collections import defaultdict
-from AlgoLawWeb.models import Hall, Case, CaseJudgeLocation, CaseSchedule, Vacation, Rotation, SickDay
+from AlgoLawWeb.models import Hall, Case, CaseJudgeLocation, MeetingSchedule, Meeting, Vacation, Rotation, SickDay
 import datetime, calendar
 import enum
 from AlgoLawWeb import db
@@ -115,7 +115,7 @@ class LocationScheduler:
         '''
         quarterly_dates = self.get_quarterly_dates()
         jerusalem_empty_timeslot_dict = self.get_timeslot_dict(halls)
-        empty_schedule = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: defaultdict)))
+        empty_schedule = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: defaultdict(datetime.date))))
         for date in quarterly_dates:
             empty_schedule[date] = jerusalem_empty_timeslot_dict
 
@@ -153,7 +153,6 @@ class JerusalemScheduler(LocationScheduler):
         datetime_date = datetime.datetime(date.year , date.month , date.day)
         return (datetime_date > startDate) and ( datetime_date < endDate)
 
-
     def judgeIsAvailable(self, judge_id , date):
         vacations = db.session.query(Vacation).filter(Vacation.is_verified).all()
         for vac in vacations:
@@ -172,17 +171,27 @@ class JerusalemScheduler(LocationScheduler):
 
         return True
 
-
-    def add_case_to_schedule(self, case, date, time_slot, hall_number, judge_id):
+    def add_meeting_to_schedule(self, case, date, time_slot, hall_number, judge_id):
         self.hall_schedules[date][time_slot][hall_number] = case
         start_time, end_time = time_slot.value.split('-')
-        case_schedule = CaseSchedule(case_id=case.id,
+        # add meeting to DB
+        quarter = ((date.month - 1) // 3) + 1
+        meeting = Meeting(case_id=case.id,
+                          quarter=quarter,
+                          year=date.year)
+        add_to_db(meeting)
+        meeting_id = Meeting.query.filter(Meeting.case_id == case.id,
+                                          Meeting.quarter == quarter,
+                                          Meeting.year == date.year).first().id
+        # add meeting scheduling
+        meeting_schedule = MeetingSchedule(case_id=case.id,
                                      hall_id=hall_number,
                                      date=date,
                                      judge_id=judge_id,
                                      start_time=start_time,
-                                     end_time=end_time)
-        add_to_db(case_schedule)
+                                     end_time=end_time,
+                                     meeting_id=meeting_id)
+        add_to_db(meeting_schedule)
 
     def get_case_id_to_judge_id(self):
         case_judge_locations = db.session.query(CaseJudgeLocation).filter(
@@ -210,10 +219,10 @@ class JerusalemScheduler(LocationScheduler):
                         if not scheduled_case:  # means there is no case there
                             # check if at this time the relevant judge is working
                             if (self.relevant_judge(case_id_to_judge_to_location[case.id], date, hall_number, time_slot)) and (self.judgeIsAvailable(case_id_to_judge_to_location[case.id],date)):
-                                self.add_case_to_schedule(case, date, time_slot, hall_number, case_id_to_judge_to_location[case.id])
+                                self.add_meeting_to_schedule(case, date, time_slot, hall_number, case_id_to_judge_to_location[case.id])
 
 
-class CaseScheduler:
+class MeetingScheduler:
     def __init__(self, start_date):
         self.start_date = start_date  # start of quarter
         self.quarter = ((start_date.month - 1) // 3) + 1
