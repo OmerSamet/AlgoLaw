@@ -169,7 +169,7 @@ class Divider:
         return False
 
     def write_csv(self):
-        output_path = os.path.join(app.root_path, 'DB_DATA', 'output.csv')
+        output_path = os.path.join(app.config["OUTPUT_DIR"], 'output.csv')
         with open(output_path, 'w', encoding='UTF8', newline='') as f:
             f.write('ID Case,ID judge,Location\n')
             for judge in self.judges:

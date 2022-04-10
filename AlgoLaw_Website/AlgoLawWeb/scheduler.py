@@ -231,7 +231,7 @@ class MeetingScheduler:
     def __init__(self, start_date):
         self.start_date = start_date  # start of quarter
         self.quarter = ((start_date.month - 1) // 3) + 1
-        self.output_path = os.path.join(app.root_path, 'output.csv')
+        self.output_path = os.path.join(app.config["OUTPUT_DIR"], 'output.csv')
         self.year = start_date.year
         self.location_to_cases = self.divide_cases_to_location()  # dict { 'location': [cases] ...
 

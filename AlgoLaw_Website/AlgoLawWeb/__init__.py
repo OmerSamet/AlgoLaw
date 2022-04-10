@@ -7,7 +7,7 @@ import os
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'd1457561a9e312a6f439aa6185a41de2'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
-app.config["OUTPUT_DIR"] = os.path.join(app.root_path, 'blablabla', 'blablabablbablalbla.csv')
+app.config["OUTPUT_DIR"] = os.path.join(app.root_path, 'DB_DATA')
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
