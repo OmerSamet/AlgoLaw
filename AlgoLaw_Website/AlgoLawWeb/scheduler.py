@@ -183,9 +183,13 @@ class JerusalemScheduler(LocationScheduler):
         meeting_id = Meeting.query.filter(Meeting.case_id == case.id,
                                           Meeting.quarter == quarter,
                                           Meeting.year == date.year).first().id
+        # get hall id from hall number
+        hall = Hall.query.filter(Hall.location == case.location,
+                                 Hall.hall_number == hall_number).first()
+
         # add meeting scheduling
         meeting_schedule = MeetingSchedule(case_id=case.id,
-                                     hall_id=hall_number,
+                                     hall_id=hall.id,
                                      date=date,
                                      judge_id=judge_id,
                                      start_time=start_time,

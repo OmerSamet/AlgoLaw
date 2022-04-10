@@ -7,25 +7,8 @@ ID Case,ID judge,Location
 21,1,Haifa
 24,1,Haifa
 29,1,Haifa
-4,1,Haifa
-11,1,Haifa
-13,1,Haifa
-18,1,Haifa
-21,1,Haifa
-24,1,Haifa
-29,1,Haifa
 3,2,Jerusalem
-2,2,Jerusalem
-28,2,Jerusalem
 7,3,Jerusalem
-3,3,Jerusalem
-5,4,Beer Sheva
-10,4,Beer Sheva
-12,4,Beer Sheva
-15,4,Beer Sheva
-19,4,Beer Sheva
-22,4,Beer Sheva
-27,4,Beer Sheva
 5,4,Beer Sheva
 10,4,Beer Sheva
 12,4,Beer Sheva
@@ -34,28 +17,15 @@ ID Case,ID judge,Location
 22,4,Beer Sheva
 27,4,Beer Sheva
 14,5,Jerusalem
-7,5,Jerusalem
 16,6,Jerusalem
-14,6,Jerusalem
 26,7,Jerusalem
-16,7,Jerusalem
 28,8,Jerusalem
-26,8,Jerusalem
 1,9,Tel Aviv
-9,9,Tel Aviv
-17,9,Tel Aviv
-30,9,Tel Aviv
 9,9,Tel Aviv
 17,9,Tel Aviv
 30,9,Tel Aviv
 6,10,Tel Aviv
 20,10,Tel Aviv
-1,10,Tel Aviv
-8,10,Tel Aviv
-23,10,Tel Aviv
-25,10,Tel Aviv
 8,11,Tel Aviv
 23,11,Tel Aviv
 25,11,Tel Aviv
-6,11,Tel Aviv
-20,11,Tel Aviv

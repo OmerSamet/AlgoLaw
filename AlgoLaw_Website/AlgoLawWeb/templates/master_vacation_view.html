@@ -3,44 +3,116 @@
     <link href='fullcalendar/main.css' rel='stylesheet'/>
     <script src='fullcalendar/main.js'></script>
     <script src='fullcalendar/core/locales/he.js'></script>
+    <script src="//code.jquery.com/jquery-2.1.1.min.js"></script>
 
     <div class="d-flex">
         <div id="judge_calendar" class="col-md-11"></div>
         <div class="col-md-3">
             <h2 class="form-group text-right" style="font-weight: bold;"> חופשות </h2>
               <ul class="list-group">
-                  <form>
-                      <h3 class="form-group text-right" style="font-weight: bold;">בחירת דיין</h3>
-                      <select onchange="renderCalendar(judges_options.value)" class="form-group text-right" id="judges_options">
-                          <option value="All">הכל</option>
-                      </select>
-                  </form>
-                  <script src="//code.jquery.com/jquery-2.1.1.min.js"></script>
-                  <script>
-                    "use strict";
-                    var judges_options = $('select#judges_options');
 
-                    {% for judge in judges %}
-                        judges_options.append($('<option value={{judge["id"]}}>{{judge['name']}}</option>'));
-                    {% endfor %}
-                  </script>
+                <h3 class="form-group text-right" style="font-weight: bold;">מחוז</h3>
+                <select onchange="renderCalendar(judges_options.value , location_choice.value); addJudgeOptions(location_choice.value)" class="form-group text-right" id="location_choice">
+                  <option value="Jerusalem" selected="selected">ירושלים</option>
+                  <option value="Tel Aviv">תל אביב</option>
+                  <option value="Haifa">חיפה</option>
+                  <option value="Beer Sheva">באר שבע</option>
+                </select>
+
+                  <h3 class="form-group text-right" style="font-weight: bold;">אולמות</h3>
+                  <select onchange="renderCalendar(judges_options.value , location_choice.value, hall_options.value);" class="form-group text-right" id="hall_options">
+                      <option value="All">הכל</option>
+                  </select>
+
+                  <h3 class="form-group text-right" style="font-weight: bold;">בחירת דיין</h3>
+                  <select onchange="renderCalendar(judges_options.value, location_choice.value)" class="form-group text-right" id="judges_options">
+                      <option value="All">הכל</option>
+                  </select>
+
+
 
               </ul>
           </div>
     </div>
     <script>
-        const renderCalendar = async (judgeId) => {
+        "use strict";
+        var judges_options = document.getElementById('judges_options');
+        var location_choice = document.getElementById('location_choice');
+        var hall_options = document.getElementById('hall_options');
+    </script>
+<script>
+        const addHallOptions = async (Location) => {
+            if (Location == undefined) {
+                LocationToUse = 'Jerusalem'
+            } else {
+                LocationToUse = Location
+            }
+            hall_options.innerHTML = null;
+            let opt = document.createElement('option');
+            opt.value = "All";
+            opt.innerHTML = 'הכל';
+            hall_options.appendChild(opt);
+            let result = await fetch(`/${LocationToUse}/get_all_location_halls`)
+            let body = await result.json();
+            for (let hall of body) {
+                let opt = document.createElement('option');
+                opt.value = hall.id;
+                opt.innerHTML = hall.name;
+                hall_options.appendChild(opt);
+
+            }
+            }
+    </script>
+    <script>
+        const addJudgeOptions = async (Location) => {
+            if (Location == undefined) {
+                LocationToUse = 'Jerusalem'
+            } else {
+                LocationToUse = Location
+            }
+            judges_options.innerHTML = null;
+            let opt = document.createElement('option');
+            opt.value = "All";
+            opt.innerHTML = 'הכל';
+            judges_options.appendChild(opt);
+            let result = await fetch(`/${LocationToUse}/get_all_location_judges`)
+            let body = await result.json();
+            for (let judge of body) {
+                let opt = document.createElement('option');
+                opt.value = judge.id;
+                opt.innerHTML = judge.name;
+                judges_options.appendChild(opt);
+
+            }
+            await addHallOptions(Location);
+            }
+    </script>
+    <script>
+        const renderCalendar = async (judgeId, Location, Hall) => {
             if (judgeId == undefined | judgeId == "All") {
                 judgeIdToUse = 'none'
                 }
             else{
                 judgeIdToUse = judgeId
             }
-            let result = await fetch(`/${judgeIdToUse}/get_all_judge_events`)
+            if (Location == undefined){
+                LocationToUse = 'Jerusalem'
+            }
+            else{
+                LocationToUse = Location
+            }
+            if (Hall == undefined){
+                HallToUse = 'none'
+            }
+            else{
+                HallToUse = Hall
+            }
+            let result = await fetch(`/${judgeIdToUse}-${LocationToUse}-${HallToUse}/get_all_judge_events`)
             let body = await result.json();
+            console.log(body)
             let eventsForCal = [];
             for (let event of body){
-                let currentPush ={title: event.title,
+                let currentPush = {title: event.title,
                             start: Date.parse(event.start),
                             end: Date.parse(event.end),
                             backgroundColor: event.color,
@@ -48,7 +120,6 @@
                 eventsForCal.push(currentPush)
 
                         }
-            console.log(body);
             let calendarEl = document.getElementById('judge_calendar');
             let judge_calendar = new FullCalendar.Calendar(calendarEl, {
                     locale: 'he',
@@ -75,7 +146,9 @@
     </script>
     <script>
         renderCalendar();
+        addJudgeOptions();
     </script>
+
 
 {% endblock content %}
 

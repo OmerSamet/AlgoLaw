@@ -1,6 +1,6 @@
 from sqlalchemy import or_, and_
 from AlgoLawWeb import app, db
-from AlgoLawWeb.models import User, Post, ROLES, Vacation, CaseJudgeLocation, Case, MeetingSchedule, Judge
+from AlgoLawWeb.models import User, Judge, ROLES, Vacation, CaseJudgeLocation, Case, MeetingSchedule, Judge, Hall
 import datetime
 import os
 from flask import render_template, url_for, flash, redirect, request, send_from_directory
@@ -99,9 +99,25 @@ def get_case_id_to_title(case_id_judge_id):
     return case_id_to_title
 
 
-def get_all_meetings(judge_id=None):
+def get_judge_user_ids(location):
+    relevant_users = User.query.filter(User.role == ROLES_EN_TO_HE['Judge']).all()
+    relevant_user_judges_ids = [user.id for user in relevant_users]
+    relevant_judges = Judge.query.filter(Judge.user_id.in_(relevant_user_judges_ids),
+                                         Judge.locations.like(location)).all()
+    relevant_judges_ids = [judge.user_id for judge in relevant_judges]
+    return relevant_judges_ids, relevant_judges
+
+
+def check_location_and_hall_number(location):
+    if location is None:
+        return '%'
+    return '%' + location + '%'
+
+
+def get_all_meetings(judge_id=None, location=None, hall_number=None):
     '''
         :param judge_id: if None -> get all cases of all judges, if ID get cases of ID judge
+        :param location: get meetings of people from this location
         :return: events - dict -> {
             judge_id
             title
@@ -111,13 +127,23 @@ def get_all_meetings(judge_id=None):
             color
         }
     '''
+    location = check_location_and_hall_number(location)
+    hall_number = check_location_and_hall_number(hall_number)
     events = []
     if not judge_id:
-        meetings = MeetingSchedule.query.all()
-    else:
-        meetings = MeetingSchedule.query.filter_by(judge_id=judge_id).all()
+        relevant_judges_ids, relevant_judges = get_judge_user_ids(location)
+        meetings = MeetingSchedule.query.join(Hall).filter(MeetingSchedule.judge_id.in_(relevant_judges_ids),
+                                                           Hall.hall_number.like(hall_number)).all()
+        # userList = users.query.join(friendships)
+        #                   .add_columns(users.id, users.userName, users.userEmail, friendships.user_id, friendships.friend_id).
+        #                   filter(users.id == friendships.friend_id).
+        #                   filter(friendships.user_id == userID).paginate(page, 1, False)
 
-    case_id_to_title = get_case_id_to_title([(meeting.case_id,meeting.judge_id) for meeting in meetings])
+    else:
+        meetings = MeetingSchedule.query.join(Hall).filter(MeetingSchedule.judge_id == judge_id,
+                                                           Hall.hall_number.like(hall_number)).all()
+
+    case_id_to_title = get_case_id_to_title([(meeting.case_id, meeting.judge_id) for meeting in meetings])
     for meeting in meetings:
         case_start_time = datetime.datetime.strptime(meeting.start_time, '%H:%M').time()
         case_end_time = datetime.datetime.strptime(meeting.end_time, '%H:%M').time()
@@ -138,9 +164,10 @@ def get_all_meetings(judge_id=None):
     return events
 
 
-def get_all_vacations(judge_id=None):
+def get_all_vacations(judge_id=None, location=None):
     '''
     :param judge_id: if None -> get all vacations of all judges, if ID get vacations of ID judge
+    :param location: get vacations of people from this location
     :return: events - dict -> {
         judge_id
         title
@@ -150,10 +177,11 @@ def get_all_vacations(judge_id=None):
         color
     }
     '''
+    location = check_location_and_hall_number(location)
     events = []
     if not judge_id:
-        vacations = Vacation.query.all()
-        relevant_judges = User.query.filter_by(role=ROLES_EN_TO_HE['Judge']).all()
+        relevant_judges_ids, relevant_judges = get_judge_user_ids(location)
+        vacations = Vacation.query.filter(Vacation.judge_id.in_(relevant_judges_ids)).all()
     else:
         vacations = Vacation.query.filter_by(judge_id=judge_id).all()
         relevant_judges = User.query.filter_by(id=judge_id).all()
@@ -175,30 +203,32 @@ def get_all_vacations(judge_id=None):
     return events
 
 
-def get_all_events(judge_id=None):
+def get_all_events(judge_id=None, location=None, hall_number=None):
     '''
-    :param judge_id:
+    :param judge_id: judge_id to get events of
+    :param location: location of events
     :return:
     '''
     events = []
-    vacations = get_all_vacations(judge_id=judge_id)
+    vacations = get_all_vacations(judge_id=judge_id, location=location)
     events.extend(vacations)
-    meetings = get_all_meetings(judge_id=judge_id)
+    meetings = get_all_meetings(judge_id=judge_id, location=location, hall_number=hall_number)
     events.extend(meetings)
 
     return events
 
 ###################################### MASTER FUNCTIONS ############################################
-def get_all_judges():
-    users = User.query.all()
+def get_all_relevant_judges(location='Jerusalem'):
+    # relevant_user_ids = get_judge_user_ids(location)
+    # location = '%' + location + '%'
+    location_judges = Judge.query.filter(Judge.locations.like(location)).all()
     judges = []
-    for user in users:
-        if user.role == 'דיין/דיינת':
-            judge = {
-                'id': user.id,
-                'name': user.username
-            }
-            judges.append(judge)
+    for user in location_judges:
+        judge = {
+            'id': user.id,
+            'name': user.username
+        }
+        judges.append(judge)
     return judges
 
 

@@ -2,12 +2,12 @@ import secrets
 from flask import render_template, url_for, flash, redirect, request, send_from_directory
 from AlgoLawWeb import app, db, bcrypt
 from AlgoLawWeb.forms import RegistrationForm, LoginForm, UpdateAccountForm, CasesForm, VacaForm
-from AlgoLawWeb.models import User, Post, ROLES, Vacation
+from AlgoLawWeb.models import User, Post, ROLES, Vacation, Judge, Hall
 from flask_login import login_user, current_user, logout_user, login_required
 import datetime
 from AlgoLawBackEnd import judge_divider
 from AlgoLawWeb.utilities import check_if_already_vacation, save_csv_file, \
-    get_all_vacations, get_all_judges, check_date_earlier_than_today, check_not_short_vaca, add_to_db, check_logged_in, \
+    get_all_vacations, get_all_relevant_judges, check_date_earlier_than_today, check_not_short_vaca, add_to_db, check_logged_in, \
     return_role_page, insert_output_to_db, get_all_events
 import json
 from AlgoLawWeb.db_initiator import DBInitiator
@@ -60,21 +60,55 @@ def verification_of_vacations(vaca_id):
 @app.route('/<judge_id>/master_vacation_view', methods=['GET', 'POST'])
 @login_required
 def master_vacation_view(judge_id):  # judge_id = judge_id to see vacations of
-    if judge_id == 'none':
-        judge_id = None
-    vacations = get_all_vacations(judge_id)  # dict -> 'judge_id': vacation.judge_id, 'title': 'חופש' + str(vacation.judge_id), 'start': vacation.start_date, 'end': vacation.end_date
-    judges = get_all_judges()  # dict -> id: judge_id, name: judge_name
+    # if judge_id == 'none':
+    #     judge_id = None
+    # vacations = get_all_vacations(judge_id)  # dict -> 'judge_id': vacation.judge_id, 'title': 'חופש' + str(vacation.judge_id), 'start': vacation.start_date, 'end': vacation.end_date
+    judges = get_all_relevant_judges()  # dict -> id: judge_id, name: judge_name
     return render_template('master_vacation_view.html', title='Vacations View',
-                           judge_id=current_user.id,username=current_user.username,
-                           events=vacations, judges=judges)
+                           judge_id=current_user.id, username=current_user.username, judges=judges)
 
-@app.route('/<judge_id>/get_all_judge_events')
+@app.route('/<judge_id_location>/get_all_judge_events')
 @login_required
-def get_all_judge_events(judge_id):  # judge_id = judge_id to see vacations of
+def get_all_judge_events(judge_id_location):  # judge_id_location = judge_id-location to see events of
+    # split judge_id_location to -> judge_id, location
+    judge_id, location, hall_number = judge_id_location.split('-')
     if judge_id == 'none':
         judge_id = None
-    events = get_all_events(judge_id)  # dict -> 'judge_id': , 'title', 'start': , 'end': , 'id'
+    if hall_number == 'none':
+        hall_number = None
+    events = get_all_events(judge_id, location, hall_number)  # dict -> 'judge_id': , 'title', 'start': , 'end': , 'id'
     return json.dumps(events)
+
+
+@app.route('/<location>/get_all_location_judges')
+@login_required
+def get_all_location_judges(location):
+    location = '%' + location + '%'
+    judges_objects = Judge.query.filter(Judge.locations.like(location)).all()
+    judges = []
+    for judge in judges_objects:
+        judges.append(
+            {
+                'id': judge.id,
+                'name': judge.username
+            }
+        )
+    return json.dumps(judges)
+
+
+@app.route('/<location>/get_all_location_halls')
+@login_required
+def get_all_location_halls(location):
+    hall_objects = Hall.query.filter(Hall.location == location).all()
+    halls = []
+    for hall in hall_objects:
+        halls.append(
+            {
+                'id': hall.hall_number,
+                'name': hall.hall_number
+            }
+        )
+    return json.dumps(halls)
 
 
 @app.route('/judge_case_assignments', methods=['GET', 'POST'])
