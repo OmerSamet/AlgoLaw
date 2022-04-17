@@ -220,7 +220,7 @@ class JerusalemScheduler(LocationScheduler):
         for hall_number, time_slot_dict in j_date.schedule.items():
             for time_slot, judge_dict in time_slot_dict.items():
                 for judge, case_id in judge_dict.items():
-                    if judge_id == judge and self.judgeIsAvailable(judge_id,j_date.date):
+                    if judge_id == judge and self.judgeIsAvailable(judge_id, j_date.date):
                         if case_id == '':
                             return True, hall_number, time_slot
 
@@ -233,7 +233,6 @@ class JerusalemScheduler(LocationScheduler):
         '''
         ordered_cases = self.order_cases()
         case_id_to_judge_to_location = self.get_case_id_to_judge_id()
-        sanity_counter = 0
         quarterly_dates = self.get_quarterly_dates()
         quarterly_J_days = [JerusalemDay(date) for date in quarterly_dates]
         # case object
@@ -252,78 +251,6 @@ class JerusalemScheduler(LocationScheduler):
 
             if not been_placed_in_calendar:
                 print('got here')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            #
-            #     judge_id = case_id_to_judge_to_location[case.id]
-            #     relevant, hall_number = self.date_relevant_for_case(date, judge_id)
-            #     if relevant:
-            #         if str(date) in self.hall_schedules.keys():
-            #             for time_slot in JerusalemTimeSlots:
-            #                 if time_slot.value in self.hall_schedules.keys():
-            #
-            #                 else:
-            #                     self.hall_schedules[str(date)][time_slot.value][hall_number]
-            #
-            #
-            #
-            #
-            #
-            #     if str(date) in self.hall_schedules.keys():
-            #         # continue looking
-            #         for time_slot in JerusalemTimeSlots:
-            #             if time_slot in self.hall_schedules[str(date)].keys():
-            #                 # continue looking
-            #             else:
-            #                 # create first timeslot in
-            #             for day_num, hall_dict in DayToHallToJudgeJerusalem.items():
-            #                 for hall_num, judges in hall_dict.items():
-            #                     empty_schedule[str(date)][time_slot.value][hall_num] = empty_case
-            #     else:
-            #         # add key and put in first relevant slot
-            #
-            #
-            # # datetime, dict -> {timeslot: {hall_number: case object ...
-            # for date, time_slot_dict in self.hall_schedules.items():
-            #     date_obj = datetime.datetime.strptime(date, '%Y-%m-%d')
-            #     if been_placed_in_calendar:
-            #         break
-            #     # timeslot  ,dict -> {hall_number: case object ...
-            #     for time_slot, hall_dict in time_slot_dict.items():
-            #         if been_placed_in_calendar:
-            #             break
-            #         # hall_number, case object
-            #         for hall_number, scheduled_case in hall_dict.items():
-            #             if been_placed_in_calendar:
-            #                 break
-            #             if not scheduled_case:  # means there is no case there
-            #                 # check if at this time the relevant judge is working
-            #                 if (self.relevant_judge(case_id_to_judge_to_location[case.id], date_obj, hall_number, time_slot)) and (self.judgeIsAvailable(case_id_to_judge_to_location[case.id],date_obj)):
-            #                     self.add_meeting_to_schedule(case, date, time_slot, hall_number, case_id_to_judge_to_location[case.id])
-            #                     been_placed_in_calendar = True
-            #                 if sanity_counter > 40:
-            #                     print('got here!')
-        #     if not been_placed_in_calendar:
-        #         print('got here')
-        #     sanity_counter += 1
-        #
-        #
-        # print(sanity_counter)
 
 
 class MeetingScheduler:
