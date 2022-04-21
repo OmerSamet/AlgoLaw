@@ -108,6 +108,12 @@ class Meeting(db.Model):
     quarter = db.Column(db.String(20), nullable=False)
     year = db.Column(db.String(20), nullable=False)
 
+class Lawyer(db.Model):
+    name = db.Column(db.String(100), primary_key=False)
+    last_name = db.Column(db.String(100), primary_key=False)
+    lawyer_id = db.Column(db.String(100), primary_key=True)
+    mail = db.Column(db.String(100), primary_key=False)
+    phone_number = db.Column(db.String(100), primary_key=False)
 
 class MeetingSchedule(db.Model):
     id = db.Column(db.Integer, primary_key=True)
