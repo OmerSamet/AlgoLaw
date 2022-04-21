@@ -27,6 +27,7 @@ DayToHallToJudgeJerusalem = {
     4: {1: [9, 9], 2: [10, 10], 3: [5, 6]}  # Thursday
 }
 
+
 class JerusalemDay:
     def __init__(self, date):
         self.date = date
@@ -232,12 +233,12 @@ class JerusalemScheduler(LocationScheduler):
         :return:
         '''
         ordered_cases = self.order_cases()
-        case_id_to_judge_to_location = self.get_case_id_to_judge_id()
+        case_id_to_judge_id = self.get_case_id_to_judge_id()
         quarterly_dates = self.get_quarterly_dates()
         quarterly_J_days = [JerusalemDay(date) for date in quarterly_dates]
         # case object
         for case in ordered_cases:
-            judge_id = case_id_to_judge_to_location[case.id]
+            judge_id = case_id_to_judge_id[case.id]
             been_placed_in_calendar = False
             for J_date in quarterly_J_days:
                 if been_placed_in_calendar:
@@ -247,7 +248,7 @@ class JerusalemScheduler(LocationScheduler):
                     been_placed_in_calendar = True
                     J_date.schedule[hall_number][time_slot][judge_id] = case.id
                     self.add_meeting_to_schedule(case, J_date.date, time_slot, hall_number,
-                                                 case_id_to_judge_to_location[case.id])
+                                                 case_id_to_judge_id[case.id])
 
             if not been_placed_in_calendar:
                 print('got here')
