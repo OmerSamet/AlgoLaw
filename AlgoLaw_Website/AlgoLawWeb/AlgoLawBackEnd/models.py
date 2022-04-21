@@ -1,3 +1,5 @@
+import time
+
 import pandas as pd
 from collections import defaultdict
 from datetime import datetime
@@ -90,11 +92,12 @@ class DBReader:
             c_main_type = row['Case_Main_Type']
             c_secondary_type = row['Secondary_Type']
             c_sub_type = row['Case_sub_type']
+            location = row['Location']
 
-            c_urg_level, c_duration, c_location, c_weight = self.get_case_db_data(case_db_data, c_main_type,
+            c_urg_level, c_duration, c_weight = self.get_case_db_data(case_db_data, c_main_type,
                                                                              c_secondary_type, c_sub_type)
 
-            case = Case(c_id, c_main_type, c_secondary_type, c_sub_type, c_urg_level, c_duration, c_location, c_weight)
+            case = Case(c_id, c_main_type, c_secondary_type, c_sub_type, c_urg_level, c_duration, location, c_weight)
             cases.append(case)
         return cases
 
@@ -110,10 +113,9 @@ class DBReader:
 
         c_urg_level = case_db_data[pandas_query]['Urgency_Level'].values[0]
         c_duration = case_db_data[pandas_query]['Duration'].values[0]
-        c_location = case_db_data[pandas_query]['Location'].values[0]
         c_weight = case_db_data[pandas_query]['Weight'].values[0]
 
-        return c_urg_level, c_duration, c_location, c_weight
+        return c_urg_level, c_duration, c_weight
 
 
 class Divider:
@@ -127,7 +129,6 @@ class Divider:
         self.write_csv()
 
     def send_case(self, case):
-        case.location = self.get_case_location(case)
         relevant_judges = [judge for judge in self.judges if self.is_valid_judge(judge, case)]
         if not relevant_judges:
             return None
@@ -135,18 +136,6 @@ class Divider:
         sort_judges_by_weight = sorted(relevant_judges, key=lambda x: x.get_weight())
         sort_judges_by_weight[0].add_case(case)
         return sort_judges_by_weight[0]
-
-    def get_case_location(self, case):
-        locations_map = self.calc_locations()
-        if case.location in locations_map.keys():
-            return case.location
-        elif case.location == '/ Not jerusalem':
-            del (locations_map['Jerusalem'])
-        elif case.location == 'Tel Aviv / Jerusalem':
-            del (locations_map['Beer Sheva'])
-            del (locations_map['Haifa'])
-        min_location = min(locations_map, key=locations_map.get)
-        return min_location
 
     def calc_locations(self):
         locations_map = {'Haifa': 0,
@@ -170,6 +159,9 @@ class Divider:
 
     def write_csv(self):
         output_path = os.path.join(app.config["OUTPUT_DIR"], 'output.csv')
+        while os.path.exists(output_path):
+            os.remove(output_path)
+            time.sleep(1)
         with open(output_path, 'w', encoding='UTF8', newline='') as f:
             f.write('ID Case,ID judge,Location\n')
             for judge in self.judges:
