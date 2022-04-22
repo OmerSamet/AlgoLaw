@@ -13,11 +13,22 @@ from collections import defaultdict
 import time
 
 
+#  {daynum: {hall_number: [judge1, judge2]
+DayToHallToJudgeJerusalem = {
+    7: {1: [1, 1], 2: [2, 2], 3: [9, 10]},  # Sunday
+    1: {1: [3, 3], 2: [4, 4], 3: [7, 8]},  # Monday
+    2: {1: [5, 5], 2: [6, 6], 3: [0, 2]},  # Tuesday
+    3: {1: [7, 7], 2: [8, 8], 3: [3, 4]},  # Wednesday
+    4: {1: [9, 9], 2: [10, 10], 3: [5, 6]}  # Thursday
+}
+
+
 EVENT_COLORS = {
     'VACATION_VERIFIED': '#3CB371',
     'VACATION_UNVERIFIED': '#DC143C',
     'CASE_CONFIRMED': '#6495ED',
-    'CASE_NOT_CONFIRMED': '#8B0000'
+    'CASE_NOT_CONFIRMED': '#8B0000',
+    'MONTHLY_EVENT': '#7B68EE'
 }
 
 ROLES_EN_TO_HE = {
@@ -185,6 +196,97 @@ def check_date_earlier_than_today(form):
         return False
     return True
 
+# ROLES = {
+#     'דיין/דיינת': 'Judge',
+#     'מזכיר/ה ראשי/ת': 'Master Secretary',
+#     'מזכיר/ה מחוזית ירושלים': 'Jerusalem Secretary',
+#     'מזכיר/ה מחוזית חיפה': 'Haifa Secretary',
+#     'מזכיר/ה מחוזית תל אביב': 'Tel Aviv Secretary',
+#     'מזכיר/ה מחוזית באר שבע': 'Beer Sheva Secretary',
+#     'הנהלה': 'Master'
+# }
+def role_to_location(role):
+    if 'Master' in role:
+        return None  # to get all locations
+    elif 'Jerusalem' in role:
+        return 'Jerusalem'
+    elif 'Haifa' in role:
+        return 'Haifa'
+    elif 'Tel Aviv' in role:
+        return 'Tel Aviv'
+    elif 'Beer Sheva' in role:
+        return 'Beer Sheva'
+
+
+def get_events_by_role(role, judge_id=None, monthly=False, location=None, hall_number=None):
+    if role == 'Judge':
+        events = get_all_events(judge_id=judge_id, location=location, hall_number=hall_number)
+    else:
+        if not location:
+            location = role_to_location(role)
+        events = get_all_events(judge_id=judge_id, location=location, hall_number=hall_number)
+
+    if monthly:
+        events = turn_events_to_monthly(events)
+    return events
+
+
+def turn_events_to_monthly(events):
+    daily_events = []
+    date_to_hall_number_to_judge = defaultdict(lambda: defaultdict(set))
+    for event in events:
+        if event['type'] == 'meeting':
+            event_date = str(datetime.datetime.strptime(event['start'], '%Y-%m-%d %H:%M:%S').date())
+            event_hall_id = event['hall_id']
+            judge_id = event['judge_id']  # ID in Judge table
+
+            event_hall_number = Hall.query.filter(Hall.id == event_hall_id).first().hall_number
+
+            date_to_hall_number_to_judge[event_date][event_hall_number].add(judge_id)
+        else:
+            daily_events.append(event)
+
+    for event_date, hall_number_dict in date_to_hall_number_to_judge.items():
+        # date_title = ''
+        for hall_number, judge_ids in hall_number_dict.items():
+            for judge_id in judge_ids:
+                judge_name = Judge.query.filter(Judge.id == judge_id).first().username
+                # date_title = judge_name + ' ' + str(hall_number) + ' - אולם'
+                date_title = 'אולם ' + str(hall_number) + ' - ' + judge_name
+                start = '09:00'
+                end = '14:50'
+                event_date_obj = datetime.datetime.strptime(event_date, '%Y-%m-%d')
+                event_start_time = datetime.datetime.strptime(start, '%H:%M').time()
+                event_start_time = datetime.datetime.combine(event_date_obj, event_start_time)
+                event_end_time = datetime.datetime.strptime(end, '%H:%M').time()
+                event_end_time = datetime.datetime.combine(event_date_obj, event_end_time)
+                daily_event = {
+                    'title': date_title,
+                    'start': str(event_start_time),
+                    'end': str(event_end_time),
+                    'color': EVENT_COLORS['MONTHLY_EVENT'],
+                    'display': 'block',
+                    'allDay': True
+                }
+                daily_events.append(daily_event)
+
+        # start = '09:00'
+        # end = '14:50'
+        # event_date_obj = datetime.datetime.strptime(event_date, '%Y-%m-%d')
+        # event_start_time = datetime.datetime.strptime(start, '%H:%M').time()
+        # event_start_time = datetime.datetime.combine(event_date_obj, event_start_time)
+        # event_end_time = datetime.datetime.strptime(end, '%H:%M').time()
+        # event_end_time = datetime.datetime.combine(event_date_obj, event_end_time)
+        # daily_event = {
+        #     'title': date_title,
+        #     'start': str(event_start_time),
+        #     'end': str(event_end_time),
+        #     'color': EVENT_COLORS['MONTHLY_EVENT'],
+        #     'display': 'block',
+        #     'allDay': False
+        # }
+        # daily_events.append(daily_event)
+    return daily_events
 
 ###################################### VACATION FUNCTIONS #############################################################
 def check_if_already_vacation(start_date, end_date, judge_id):
@@ -289,7 +391,11 @@ def get_all_meetings(judge_id=None, location=None, hall_number=None):
             'title': case_id_to_title[meeting.case_id],
             'start': str(case_start_date),
             'end': str(case_end_date),
-            'id': meeting.id
+            'id': meeting.id,
+            'type': 'meeting',
+            'hall_id': meeting.hall_id,
+            'display': 'block',
+            'allDay': False
         }
         if meeting.is_verified:
             event['color'] = EVENT_COLORS['CASE_CONFIRMED']
@@ -323,12 +429,19 @@ def get_all_vacations(judge_id=None, location=None):
 
     judges_dict = {judge.id: judge.username for judge in relevant_judges}
     for vacation in vacations:
+        if vacation.type in ('Short', 'Long'):
+            title = 'חופש ' + judges_dict[vacation.judge_id]
+        else:
+            title = vacation.type
         event = {
             'judge_id': vacation.judge_id,
-            'title': 'חופש ' + judges_dict[vacation.judge_id],
+            'title': title,
             'start': str(vacation.start_date),
             'end': str(vacation.end_date),
-            'id': vacation.id
+            'id': vacation.id,
+            'type': 'vacation',
+            'display': 'block',
+            'allDay': True
         }
         if vacation.is_verified:
             event['color'] = EVENT_COLORS['VACATION_VERIFIED']
@@ -380,7 +493,7 @@ def return_role_page(cur_role):
         return 1
     elif cur_role == 'Judge':
         return 2
-    elif cur_role == 'Secretary':
+    elif 'Secretary' in cur_role:
         return 3
     else:
         return 4

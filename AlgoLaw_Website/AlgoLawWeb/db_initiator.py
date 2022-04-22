@@ -38,19 +38,32 @@ class DBInitiator:
                      email="TestJudge@justice.com",
                      password=bcrypt.generate_password_hash("TestJudge123!@#").decode('utf-8'),
                      role="דיין/דיינת")
-        user2 = User(username="TestSecretary",
+        user2 = User(username="TestSecretarMaster",
                      email="TestSecretary@justice.com",
                      password=bcrypt.generate_password_hash("TestSecretary123!@#").decode('utf-8'),
-                     role="מזכיר/מזכירה")
+                     role="מזכיר/ה ראשי/ת")
         user3 = User(username="TestMaster",
                      email="TestMaster@justice.com",
                      password=bcrypt.generate_password_hash("TestMaster123!@#").decode('utf-8'),
                      role="הנהלה")
-        user4 = User(username="TestJudge2",
-                     email="TestJudge2@justice.com",
-                     password=bcrypt.generate_password_hash("TestJudge123!@#").decode('utf-8'),
-                     role="דיין/דיינת")
-        users = [user1, user2, user3, user4]
+        user4 = User(username="TestSecretaryJersulam",
+                     email="TestSecretaryJ@justice.com",
+                     password=bcrypt.generate_password_hash("TestSecretary123!@#").decode('utf-8'),
+                     role="מזכיר/ה מחוז ירושלים")
+        user5 = User(username="TestSecretarHaifa",
+                     email="TestSecretaryH@justice.com",
+                     password=bcrypt.generate_password_hash("TestSecretary123!@#").decode('utf-8'),
+                     role="מזכיר/ה מחוז חיפה")
+        user6 = User(username="TestSecretarTelAviv",
+                     email="TestSecretaryT@justice.com",
+                     password=bcrypt.generate_password_hash("TestSecretary123!@#").decode('utf-8'),
+                     role="מזכיר/ה מחוז תל אביב")
+        user7 = User(username="TestSecretarBeerSheva",
+                     email="TestSecretaryB@justice.com",
+                     password=bcrypt.generate_password_hash("TestSecretary123!@#").decode('utf-8'),
+                     role="מזכיר/ה מחוז באר שבע")
+
+        users = [user1, user2, user3, user4, user5, user6, user7]
         for user in users:
             db.session.add(user)
         db.session.commit()

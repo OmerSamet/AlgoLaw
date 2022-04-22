@@ -6,7 +6,7 @@ from AlgoLawWeb.models import Hall, Case, CaseJudgeLocation, MeetingSchedule, Me
 import datetime
 import calendar
 import enum
-from AlgoLawWeb.utilities import add_to_db, insert_output_to_db
+from AlgoLawWeb.utilities import add_to_db, insert_output_to_db, DayToHallToJudgeJerusalem
 import os
 from flask import flash
 
@@ -20,16 +20,6 @@ class JerusalemTimeSlots(enum.Enum):
     twelve_forty_five_to_one_twenty = '12:45-13:20'
     one_thirty_to_two_o_five = '13:30-14:05'
     two_fifteen_to_two_fifty = '14:15-14:50'
-
-
-#  {daynum: {hall_number: [judge1, judge2]
-DayToHallToJudgeJerusalem = {
-    7: {1: [1, 1], 2: [2, 2], 3: [9, 10]},  # Sunday
-    1: {1: [3, 3], 2: [4, 4], 3: [7, 8]},  # Monday
-    2: {1: [5, 5], 2: [6, 6], 3: [0, 2]},  # Tuesday
-    3: {1: [7, 7], 2: [8, 8], 3: [3, 4]},  # Wednesday
-    4: {1: [9, 9], 2: [10, 10], 3: [5, 6]}  # Thursday
-}
 
 
 class JerusalemDay:

@@ -4,7 +4,11 @@ from flask_login import UserMixin
 
 ROLES = {
     'דיין/דיינת': 'Judge',
-    'מזכיר/מזכירה': 'Secretary',
+    'מזכיר/ה ראשי/ת': 'Master Secretary',
+    'מזכיר/ה מחוז ירושלים': 'Jerusalem Secretary',
+    'מזכיר/ה מחוז חיפה': 'Haifa Secretary',
+    'מזכיר/ה מחוז תל אביב': 'Tel Aviv Secretary',
+    'מזכיר/ה מחוז באר שבע': 'Beer Sheva Secretary',
     'הנהלה': 'Master'
 }
 

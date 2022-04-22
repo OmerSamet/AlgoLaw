@@ -8,7 +8,7 @@ from AlgoLawWeb.AlgoLawBackEnd import judge_divider
 from AlgoLawWeb.utilities import check_if_already_vacation, save_csv_file, \
     get_all_relevant_judges, check_date_earlier_than_today, check_not_short_vaca, add_to_db, check_logged_in, \
     return_role_page, insert_output_to_db, get_all_events, load_cases_to_db, load_holidays_to_db, load_rotations_to_db, \
-    load_mishmoret_to_db, get_upload_div_colors
+    load_mishmoret_to_db, get_upload_div_colors, get_events_by_role
 import json
 from AlgoLawWeb.db_initiator import DBInitiator
 from AlgoLawWeb.scheduler import run_division_logic
@@ -67,16 +67,21 @@ def master_vacation_view(judge_id):  # judge_id = judge_id to see vacations of
     return render_template('master_vacation_view.html', title='Vacations View',
                            judge_id=current_user.id, username=current_user.username, judges=judges)
 
-@app.route('/<judge_id_location>/get_all_judge_events')
+@app.route('/get_all_judge_events/<judge_id_location>')
 @login_required
 def get_all_judge_events(judge_id_location):  # judge_id_location = judge_id-location to see events of
-    # split judge_id_location to -> judge_id, location
-    judge_id, location, hall_number = judge_id_location.split('-')
+    # split judge_id_location to -> judge_id, location, hall_number
+    cur_role = ROLES[current_user.role]
+    judge_id, location, hall_number, monthly = judge_id_location.split('-')
     if judge_id == 'none':
         judge_id = None
     if hall_number == 'none':
         hall_number = None
-    events = get_all_events(judge_id, location, hall_number)  # dict -> 'judge_id': , 'title', 'start': , 'end': , 'id'
+    if monthly == 'true':
+        events = get_events_by_role(cur_role, judge_id=judge_id, monthly=True, hall_number=hall_number, location=location)
+    else:
+        # events = get_all_events(judge_id, location, hall_number)  # dict -> 'judge_id': , 'title', 'start': , 'end': , 'id'
+        events = get_events_by_role(cur_role, judge_id=judge_id, monthly=False, hall_number=hall_number, location=location)
     return json.dumps(events)
 
 
@@ -297,3 +302,14 @@ def initiate_db():
     initiator.import_data_to_db()
     flash('Initiated DB', 'info')
     return redirect(url_for('home'))
+
+
+@app.route('/calendar')
+@login_required
+def calendar():
+    cur_role = ROLES[current_user.role]
+    master_view = False
+    if 'Master' in cur_role:
+        master_view = True
+    # events = get_events_by_role(cur_role, judge_id=current_user.id, monthly=True)
+    return render_template('calendar.html', master_view=master_view)

@@ -1,16 +1,25 @@
 {% extends "layout.html" %}
 {% block content %}
-    <link href='fullcalendar/main.css' rel='stylesheet'/>
+    <link href='fullcalendar/main.css' rel='stylesheet' />
     <script src='fullcalendar/main.js'></script>
     <script src='fullcalendar/core/locales/he.js'></script>
-    <script src="//code.jquery.com/jquery-2.1.1.min.js"></script>
 
     <div class="d-flex">
         <div id="judge_calendar" class="col-md-11"></div>
         <div class="col-md-3">
-            <h2 class="form-group text-right" style="font-weight: bold;"> כולל </h2>
-              <ul class="list-group">
+            <h2 class="form-group text-right" style="font-weight: bold;"> {{title}} </h2>
+            <ul class="list-group">
+                {% if master_view == False%}
+                <h3 class="text-right">הודעות</h3>
+                <div class="content-section">
 
+                </div>
+                <br>
+                <br>
+                <br>
+                <br>
+                {% endif %}
+                {% if master_view == True %}
                 <h3 class="form-group text-right" style="font-weight: bold;">מחוז</h3>
                 <select onchange="renderCalendar(judges_options.value , location_choice.value); addJudgeOptions(location_choice.value)" class="form-group text-right" id="location_choice">
                   <option value="Jerusalem" selected="selected">ירושלים</option>
@@ -18,24 +27,30 @@
                   <option value="Haifa">חיפה</option>
                   <option value="Beer Sheva">באר שבע</option>
                 </select>
+                {% endif %}
+                <h3 class="form-group text-right" style="font-weight: bold;">אולמות</h3>
+                <select onchange="renderCalendar(judges_options.value , location_choice.value, hall_options.value);" class="form-group text-right" id="hall_options">
+                  <option value="All">הכל</option>
+                </select>
 
-                  <h3 class="form-group text-right" style="font-weight: bold;">אולמות</h3>
-                  <select onchange="renderCalendar(judges_options.value , location_choice.value, hall_options.value);" class="form-group text-right" id="hall_options">
-                      <option value="All">הכל</option>
-                  </select>
+                <h3 class="form-group text-right" style="font-weight: bold;">בחירת דיין</h3>
+                <select onchange="renderCalendar(judges_options.value, location_choice.value, hall_options.value)" class="form-group text-right" id="judges_options">
+                  <option value="All">הכל</option>
+                </select>
 
-                  <h3 class="form-group text-right" style="font-weight: bold;">בחירת דיין</h3>
-                  <select onchange="renderCalendar(judges_options.value, location_choice.value)" class="form-group text-right" id="judges_options">
-                      <option value="All">הכל</option>
-                  </select>
-
-
-
+                <br>
+                <br>
+                <br>
+                <br>
+                <button onclick="monthly=true;renderCalendar(judges_options.value , location_choice.value, hall_options.value, 'dayGridMonth')" class="btn btn-outline-info">חודשי</button>
+                <button onclick="monthly=true;renderCalendar(judges_options.value , location_choice.value, hall_options.value, 'dayGridWeek')" class="btn btn-outline-info">שבועי</button>
+                <button onclick="monthly=false;renderCalendar(judges_options.value , location_choice.value, hall_options.value, 'timeGridDay')" class="btn btn-outline-info">יומי</button>
               </ul>
           </div>
     </div>
     <script>
         "use strict";
+        let monthly = true
         var judges_options = document.getElementById('judges_options');
         var location_choice = document.getElementById('location_choice');
         var hall_options = document.getElementById('hall_options');
@@ -88,26 +103,29 @@
             }
     </script>
     <script>
-        const renderCalendar = async (judgeId, Location, Hall) => {
+        const renderCalendar = async (judgeId, Location, Hall, CalView) => {
             if (judgeId == undefined | judgeId == "All") {
                 judgeIdToUse = 'none'
-                }
-            else{
+            } else {
                 judgeIdToUse = judgeId
             }
-            if (Location == undefined){
+            if (Location == undefined) {
                 LocationToUse = 'Jerusalem'
-            }
-            else{
+            } else {
                 LocationToUse = Location
             }
-            if (Hall == undefined | Hall == 'All'){
+            if (Hall == undefined | Hall == 'All') {
                 HallToUse = 'none'
-            }
-            else{
+            } else {
                 HallToUse = Hall
             }
-            let result = await fetch(`/get_all_judge_events/${judgeIdToUse}-${LocationToUse}-${HallToUse}`)
+            if (CalView == undefined) {
+                CalViewToUse = 'dayGridMonth'
+            } else {
+                CalViewToUse = CalView
+            }
+
+            let result = await fetch(`/get_all_judge_events/${judgeIdToUse}-${LocationToUse}-${HallToUse}-${monthly}`)
             let body = await result.json();
             console.log(body)
             let eventsForCal = [];
@@ -116,32 +134,22 @@
                             start: Date.parse(event.start),
                             end: Date.parse(event.end),
                             backgroundColor: event.color,
-                            id: event.id}
+                            id: event.id,
+                            display: event.display,
+                            allDay: event.allDay}
                 eventsForCal.push(currentPush)
+                }
 
-                        }
             let calendarEl = document.getElementById('judge_calendar');
             let judge_calendar = new FullCalendar.Calendar(calendarEl, {
-                    locale: 'he',
-                    initialView: 'dayGridMonth',
-                    selectable: true,
-                    direction: 'rtl',
-                    events: eventsForCal,
-                    eventClick: function (info) {
-                        var eventObj = info.event;
-                        if (eventObj.backgroundColor == '#DC143C') {
-                            let isVerified = confirm("חופשה מאושרת?")
-                            if (isVerified) {
-                                var xhr = new XMLHttpRequest();
-                                xhr.open("POST", `/verification_of_vacations/${eventObj.id}`, true);
-                                xhr.send();
-                            }
-                            }
-                        }
+                locale: 'he',
+                initialView: CalViewToUse,
+                expandRows: true,
+                selectable: true,
+                direction: 'rtl',
+                events: eventsForCal,
             });
             judge_calendar.render();
-
-
         }
     </script>
     <script>
@@ -151,17 +159,3 @@
 
 
 {% endblock content %}
-
-
-
-            {#timeZone: 'UTC',#}
-{#            initialView: 'dayGridMonth', dayGridWeek', 'timeGridDay', 'listWeek#}
-            {#height: '100%',#}
-            {#events: 'https://fullcalendar.io/api/demo-feeds/events.json'#}
-            {#events: [#}
-            {#    {#}
-            {#        title:#}
-            {#        start:#}
-            {#        end:#}
-            {#    }#}
-            {#]#}
