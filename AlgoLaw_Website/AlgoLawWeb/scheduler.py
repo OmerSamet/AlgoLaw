@@ -1,11 +1,15 @@
 from collections import defaultdict
+
+from AlgoLawBackEnd import judge_divider
 from AlgoLawWeb import db, app
 from AlgoLawWeb.models import Hall, Case, CaseJudgeLocation, MeetingSchedule, Meeting, Vacation, Rotation, SickDay
 import datetime
 import calendar
 import enum
-from AlgoLawWeb.utilities import add_to_db
+from AlgoLawWeb.utilities import add_to_db, insert_output_to_db
 import os
+from flask import flash
+
 
 class JerusalemTimeSlots(enum.Enum):
     nine_to_nine_thirty_five = '09:00-09:35'
@@ -289,3 +293,12 @@ class MeetingScheduler:
     def schedule_jerusalem_cases(self):
         j_scheduler = JerusalemScheduler(self.location_to_cases['Jerusalem'])
         j_scheduler.schedule_cases()
+
+
+def run_division_logic():
+    judge_divider.handle_cases()
+    output_file = 'output.csv'
+    insert_output_to_db(os.path.join(app.config["OUTPUT_DIR"], output_file))
+    scheduler = MeetingScheduler(datetime.datetime.now())
+    scheduler.schedule_jerusalem_cases()
+    flash('תיקים חולקו ושובצו בהצלחה', 'success')

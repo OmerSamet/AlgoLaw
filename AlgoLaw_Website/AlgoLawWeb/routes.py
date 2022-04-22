@@ -1,16 +1,17 @@
 from flask import render_template, url_for, flash, redirect, send_from_directory
 from AlgoLawWeb import app, db, bcrypt
-from AlgoLawWeb.forms import RegistrationForm, LoginForm, CasesForm, VacaForm
+from AlgoLawWeb.forms import RegistrationForm, LoginForm, CasesForm, VacaForm, UploadFilesForm
 from AlgoLawWeb.models import User, ROLES, Vacation, Judge, Hall
 from flask_login import login_user, current_user, logout_user, login_required
 import datetime
 from AlgoLawWeb.AlgoLawBackEnd import judge_divider
 from AlgoLawWeb.utilities import check_if_already_vacation, save_csv_file, \
     get_all_relevant_judges, check_date_earlier_than_today, check_not_short_vaca, add_to_db, check_logged_in, \
-    return_role_page, insert_output_to_db, get_all_events
+    return_role_page, insert_output_to_db, get_all_events, load_cases_to_db, load_holidays_to_db, load_rotations_to_db, \
+    load_mishmoret_to_db, get_upload_div_colors
 import json
 from AlgoLawWeb.db_initiator import DBInitiator
-from AlgoLawWeb.scheduler import MeetingScheduler
+from AlgoLawWeb.scheduler import run_division_logic
 import os
 
 
@@ -177,14 +178,61 @@ def secretary_space():
     return render_template('secretary_space.html', title='Secretary Space')
 
 
+@app.route('/secretary_upload_files_and_split_cases', methods=['GET', 'POST'])
+@login_required
+def secretary_upload_files_and_split_cases():
+    form = UploadFilesForm()
+    colors = get_upload_div_colors()
+    if form.validate_on_submit():
+        today_date = str(datetime.datetime.now().date())
+        files_added = []
+        added = False
+        secretary_upload_directory = 'Secretary_Upload_Files'
+        if form.new_cases_file.data:
+            case_csv_file_path = save_csv_file(form.new_cases_file.data, secretary_upload_directory,
+                                               'cases_{}.csv'.format(today_date))
+            load_cases_to_db(case_csv_file_path)
+            files_added.append('תיקים')
+            added = True
+        if form.holidays_file.data:
+            holiday_csv_file = save_csv_file(form.holidays_file.data, secretary_upload_directory,
+                                             'holidays_{}.csv'.format(today_date))
+            load_holidays_to_db(holiday_csv_file)
+            files_added.append('חגים')
+            added = True
+        if form.rotation_file.data:
+            rotation_csv_file = save_csv_file(form.rotation_file.data, secretary_upload_directory,
+                                              'rotations_{}.csv'.format(today_date))
+            load_rotations_to_db(rotation_csv_file)
+            files_added.append('תורנות')
+            added = True
+        if form.mishmoret_file.data:
+            mishmoret_csv_file = save_csv_file(form.mishmoret_file.data, secretary_upload_directory,
+                                               'mishmoret_{}.csv'.format(today_date))
+            load_mishmoret_to_db(mishmoret_csv_file)
+            files_added.append('משמורת')
+            added = True
+
+        if added:
+            # Flash message
+            flash_str = 'קבצים :'
+            for filename in files_added:
+                flash_str += ' {}'.format(filename)
+            flash_str += ' הועלו בהצלחה '
+            flash(flash_str, 'success')
+        # Run logic
+        run_division_logic()
+        # Redirect home
+        return redirect(url_for('home'))
+
+    return render_template('secretary_upload_files_and_split_cases.html', form=form, colors=colors)
+
+
 @app.route('/run_logic')
 @login_required
 def run_logic():
-    judge_divider.handle_cases()
+    run_division_logic()
     output_file = 'output.csv'
-    insert_output_to_db(os.path.join(app.config["OUTPUT_DIR"], output_file))
-    scheduler = MeetingScheduler(datetime.datetime.now())
-    scheduler.schedule_jerusalem_cases()
     return send_from_directory(directory=app.config["OUTPUT_DIR"], path=output_file, as_attachment=True)
 
 

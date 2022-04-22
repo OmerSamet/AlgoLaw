@@ -62,6 +62,14 @@ class CasesForm(FlaskForm):
     submit = SubmitField('העלה')
 
 
+class UploadFilesForm(FlaskForm):
+    mishmoret_file = FileField('mishmoret CSV file', validators=[])
+    rotation_file = FileField('rotation CSV file', validators=[])
+    holidays_file = FileField('holidays CSV file', validators=[])
+    new_cases_file = FileField('new cases CSV file', validators=[])
+    submit = SubmitField('חלוקה ושיבוץ תיקים')
+
+
 class VacaForm(FlaskForm):
     start_date = DateField('תחילת חופש', validators=[DataRequired()], format='%Y/%m/%d')
     end_date = DateField('סוף חופש', validators=[DataRequired()], format='%Y/%m/%d')

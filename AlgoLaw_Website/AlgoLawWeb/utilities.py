@@ -1,12 +1,16 @@
 from sqlalchemy import or_, and_
+
+from AlgoLawBackEnd import judge_divider
 from AlgoLawWeb import app, db
-from AlgoLawWeb.models import User, Judge, ROLES, Vacation, CaseJudgeLocation, Case, MeetingSchedule, Judge, Hall
+from AlgoLawWeb.models import User, Judge, ROLES, Vacation, CaseJudgeLocation, Case, MeetingSchedule, Judge, Hall, \
+    Rotation
 import datetime
 import os
-from flask import render_template, url_for, flash, redirect, request, send_from_directory
+from flask import flash, redirect, request, send_from_directory
 from flask_login import login_user, current_user, logout_user, login_required
 import pandas as pd
 from collections import defaultdict
+import time
 
 
 EVENT_COLORS = {
@@ -32,12 +36,141 @@ def check_available_directory():
     return f'{app.root_path}/Cases_Uploaded/{current_year}_quarter_{current_quarter}'
 
 
-def save_csv_file(form_csv_file, variable):
-    output_dir = check_available_directory()
-    uploader_username = current_user.username
-    csv_path = os.path.join(app.root_path, output_dir, uploader_username, '_', variable, '.csv')
+def save_csv_file(form_csv_file, output_directory, file_name):
+    csv_path = os.path.join(app.root_path, output_directory, file_name)
     form_csv_file.save(csv_path)
     return csv_path
+
+
+def get_case_db_data(case_enrichment_df, main_type, second_type, sub_type):
+        if type(sub_type) == str:
+            pandas_query = (case_enrichment_df['Main_Type'] == main_type) & (
+                    case_enrichment_df['Secondary_Type'] == second_type) & (
+                                   case_enrichment_df['Sub_Type'] == sub_type)
+        else:
+            pandas_query = (case_enrichment_df['Main_Type'] == main_type) & (
+                    case_enrichment_df['Secondary_Type'] == second_type)
+
+        c_urg_level = case_enrichment_df[pandas_query]['Urgency_Level'].values[0]
+        c_duration = 35
+        c_weight = case_enrichment_df[pandas_query]['Weight'].values[0]
+
+        return c_urg_level, c_duration, c_weight
+
+
+def load_cases_to_db(case_file_path):
+    case_enrichment_data_path = os.path.join(app.root_path, 'DB_DATA', 'Case_Data.csv')
+
+    case_enrichment_df = pd.read_csv(case_enrichment_data_path).fillna('NO DATA')
+    cases_df = pd.read_csv(case_file_path).fillna('NO DATA')
+    for index, row in cases_df.iterrows():
+        main_type = row['Case_Main_Type']
+        second_type = row['Secondary_Type']
+        sub_type = row['Case_sub_type']
+        location = row['Location']
+
+        urg_level, duration, weight = get_case_db_data(case_enrichment_df, main_type,
+                                                       second_type, sub_type)
+
+        new_case = Case(first_type=main_type,
+                        second_type=second_type,
+                        third_type=sub_type,
+                        urgency_level=urg_level,
+                        duration=duration,
+                        location=location,
+                        weight=weight,
+                        quarter_created=((datetime.datetime.now().month - 1) // 3) + 1,
+                        year_created=datetime.datetime.now().year)
+
+        add_to_db(new_case)
+
+    return True
+
+
+def load_holidays_to_db(holiday_csv_file):
+    holidays_df = pd.read_csv(holiday_csv_file)
+
+    all_judges = Judge.query.all()
+    all_judge_ids = [judge.user_id for judge in all_judges]
+
+    for index, row in holidays_df.iterrows():
+
+        start_date = datetime.datetime.strptime(row['Start_Date'], '%d/%m/%Y')
+        end_date = datetime.datetime.strptime(row['End_Date'], '%d/%m/%Y')
+        name = row['Holiday']
+        for judge_id in all_judge_ids:
+            vacation = Vacation(judge_id=judge_id,
+                                start_date=start_date,
+                                end_date=end_date,
+                                is_verified=True,
+                                type=name)
+            add_to_db(vacation)
+
+
+def load_rotations_to_db(rotation_csv_file):
+    rotation_df = pd.read_csv(rotation_csv_file)
+    for index, row in rotation_df.iterrows():
+        rotation = Rotation(judge_id=row['Judge_ID'],
+                            start_date=datetime.datetime.strptime(row['Start_Date'], '%Y-%m-%d'),
+                            end_date=datetime.datetime.strptime(row['End_Date'], '%Y-%m-%d'))
+        add_to_db(rotation)
+
+    return True
+
+
+def load_mishmoret_to_db(mishmoret_csv_file):
+    mishmoret_df = pd.read_csv(mishmoret_csv_file)
+
+    for index, row in mishmoret_df.iterrrows():
+        start_date = row['Start_Date']
+        end_date = row['End_Date']
+        judge_id = row['Judge_ID']
+        vacation = Vacation(judge_id=judge_id,
+                            start_date=start_date,
+                            end_date=end_date,
+                            is_verified=True,
+                            type='Mishmoret')
+        add_to_db(vacation)
+
+
+def check_later_date(file_path, latest_date):
+    file_date = time.ctime(os.path.getmtime(file_path))
+    file_date = datetime.datetime.strptime(file_date, "%a %b %d %H:%M:%S %Y")
+    if file_date > latest_date:
+        return file_date
+    else:
+        return latest_date
+
+
+def get_upload_div_colors():
+    colors = {'cases': '#FFE4B5',
+              'holidays': '#FFE4B5',
+              'rotations': '#FFE4B5',
+              'mishmoret': '#FFE4B5'}
+    file_names = os.listdir(os.path.join(app.root_path, 'Secretary_Upload_Files'))
+    most_recent_dates = {
+        'cases': datetime.datetime.now()-datetime.timedelta(days=1000),
+        'holidays': datetime.datetime.now()-datetime.timedelta(days=1000),
+        'rotations': datetime.datetime.now()-datetime.timedelta(days=1000),
+        'mishmoret': datetime.datetime.now()-datetime.timedelta(days=1000)
+        }
+    for file_name in file_names:
+        file_path = os.path.join(app.root_path, 'Secretary_Upload_Files', file_name)
+        if os.path.isfile(file_path):
+            if 'cases' in file_path:
+                most_recent_dates['cases'] = check_later_date(file_path, most_recent_dates['cases'])
+            elif 'holidays' in file_path:
+                most_recent_dates['holidays'] = check_later_date(file_path, most_recent_dates['holidays'])
+            elif 'rotations' in file_path:
+                most_recent_dates['rotations'] = check_later_date(file_path, most_recent_dates['rotations'])
+            elif 'mishmoret' in file_path:
+                most_recent_dates['mishmoret'] = check_later_date(file_path, most_recent_dates['mishmoret'])
+
+    for event_type, latest_date in most_recent_dates.items():
+        if latest_date > datetime.datetime.now()-datetime.timedelta(days=30):
+            colors[event_type] = '#87CEFA'
+
+    return colors
 
 
 ###################################### CALENDAR FUNCTIONS ############################################
@@ -235,7 +368,11 @@ def get_all_relevant_judges(location='Jerusalem'):
 
 
 ###################################### SECRATARY FUNCTIONS ############################################
-
+def get_upload_button_colors():
+    #os.path.getmtime()
+    #os.path.getctime()
+    #os.path.join(app.root_path, 'DB_DATA', 'Judge_Data.csv')
+    pass
 
 ###################################### LOGIN / LOGOUT FUNCTIONS #####################################################
 def return_role_page(cur_role):
