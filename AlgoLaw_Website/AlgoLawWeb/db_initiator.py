@@ -1,6 +1,6 @@
 import pandas as pd
 from AlgoLawWeb import db, login_manager, bcrypt
-from AlgoLawWeb.models import User, Post, ROLES, Vacation, Judge, Hall, Rotation, Case
+from AlgoLawWeb.models import User, Post, ROLES, Vacation, Judge, Hall, Rotation, Case,Lawyer
 from AlgoLawWeb.utilities import add_to_db
 import datetime
 from AlgoLawWeb import app
@@ -15,6 +15,7 @@ class DBInitiator:
         self.judge_data_csv_path = os.path.join(app.root_path, 'DB_DATA', 'Judge_Data.csv')
         self.halls_data_csv_path = os.path.join(app.root_path, 'DB_DATA', 'Halls.csv')
         self.rotation_data_csv_path = os.path.join(app.root_path, 'DB_DATA', 'Judge_Rotation_Schedule.csv')
+        self.lawyers_csv_path = os.path.join(app.root_path, 'DB_DATA','Lawyers.csv')
 
     def import_data_to_db(self):
         # Delete current DB and create empty DB
@@ -190,6 +191,18 @@ class DBInitiator:
             hall = Hall(hall_number=row['Hall_id'],
                         location=row['Location'])
             add_to_db(hall)
+
+        return True
+
+    def add_lawyers_to_db(self):
+        lawyers_df = pd.read_csv(self.lawyers_csv_path)
+        for index, row in lawyers_df.iterrows():
+            lawyer = Lawyer(name=row['Name'],
+                        last_name=row['Last_name'],
+                            lawyer_id=row['ID'],
+                            mail=row['Mail'],
+                            phone_number=row['Phone_number'])
+            add_to_db(lawyer)
 
         return True
 
