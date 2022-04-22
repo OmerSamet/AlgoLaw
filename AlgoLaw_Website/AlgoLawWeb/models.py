@@ -100,6 +100,7 @@ class Case(db.Model):
     year_created = db.Column(db.String(20), nullable=False)
     judge_id = db.Column(db.Integer, db.ForeignKey('judge.id'), nullable=True)
     is_done = db.Column(db.Boolean, nullable=False, default=False)  # has this case been done yet?
+    lawyer_id = db.Column(db.String(100),nulable=True)
 
 
 class Meeting(db.Model):
@@ -127,6 +128,8 @@ class MeetingSchedule(db.Model):
     start_time = db.Column(db.String(100), nullable=True)  # datetime.now().strftime("%H:%M") -> 09:30
     end_time = db.Column(db.String(100), nullable=True)  # datetime.now().strftime("%H:%M") -> 09:30
     is_verified = db.Column(db.Boolean, nullable=False, default=False)
+    lawyer_id = db.Column(db.String(100), nulable=False)
+    location = db.Column(db.String(100) ,nulable=False )
 
 
 class CaseJudgeLocation(db.Model):

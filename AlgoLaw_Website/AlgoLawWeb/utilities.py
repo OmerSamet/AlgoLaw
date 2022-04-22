@@ -313,7 +313,7 @@ def find_lawyer(name , last_name , lawyer_id, mail,phone_number):
         phone_number_filter = Lawyer.phone_number.like(phone_number)
     else:
         phone_number_filter = True
-    found_lawyers = Lawyer.query.filter(name_filter,last_name_filter,lawyer_id_filter,mail,phone_number).all()
+    found_lawyers = Lawyer.query.filter(name_filter,last_name_filter,lawyer_id_filter,mail_filter,phone_number_filter).all()
     lawyers = []
     for found in found_lawyers:
          lawyer = {

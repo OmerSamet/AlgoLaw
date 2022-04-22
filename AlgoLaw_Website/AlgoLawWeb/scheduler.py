@@ -127,6 +127,24 @@ class LocationScheduler:
 
         return empty_schedule
 
+    def lawyer_is_not_in_different_city(self, date , lawyer_id , location):
+        if lawyer_id != '':
+            lawyers_cases_that_day = db.session.query(MeetingSchedule).filter(MeetingSchedule.lawyer_id == lawyer_id ,
+                                                                              MeetingSchedule.date == date ,
+                                                                              MeetingSchedule.location != location).all()
+            return len(lawyers_cases_that_day) == 0
+        return True
+
+
+    def lawyer_is_not_boocked(self, time_slot , case , location):
+        lawyer_id = case.lawyer_id
+        start_time, end_time = time_slot.split('-')
+        lawyers_cases_that_day = db.session.query(MeetingSchedule).filter(MeetingSchedule.lawyer_id == lawyer_id,
+                                                                          MeetingSchedule.start_time == start_time ,
+                                                                          MeetingSchedule.location == location).all()
+        return len(lawyers_cases_that_day) == 0
+
+
 
 class JerusalemScheduler(LocationScheduler):
     def __init__(self, cases):
@@ -176,9 +194,8 @@ class JerusalemScheduler(LocationScheduler):
 
         return True
 
-    def add_meeting_to_schedule(self, case, date, time_slot, hall_number, judge_id):
-        # self.hall_schedules[date][time_slot.value][hall_number] = case
-        # date_obj = datetime.datetime.strptime(date, '%Y-%m-%d')
+    def add_meeting_to_schedule(self, case, date, time_slot, hall_number, judge_id,lawyer_id):
+
         date_obj = date
         start_time, end_time = time_slot.split('-')
         # add meeting to DB
@@ -201,7 +218,9 @@ class JerusalemScheduler(LocationScheduler):
                                      judge_id=judge_id,
                                      start_time=start_time,
                                      end_time=end_time,
-                                     meeting_id=meeting_id)
+                                     meeting_id=meeting_id,
+                                     lawyer_id=lawyer_id,
+                                     location='Jerusalem')
         add_to_db(meeting_schedule)
 
     def get_case_id_to_judge_id(self):
@@ -212,7 +231,8 @@ class JerusalemScheduler(LocationScheduler):
             case_id_to_judge_id[case_judge_location.case_id] = case_judge_location.judge_id
         return case_id_to_judge_id
 
-    def date_relevant_for_case(self, j_date, judge_id):
+
+    def date_relevant_for_case(self, j_date, judge_id, case):
         '''
         input - date, judge_id
 
@@ -220,12 +240,16 @@ class JerusalemScheduler(LocationScheduler):
         '''
         for hall_number, time_slot_dict in j_date.schedule.items():
             for time_slot, judge_dict in time_slot_dict.items():
-                for judge, case_id in judge_dict.items():
-                    if judge_id == judge and self.judgeIsAvailable(judge_id, j_date.date):
-                        if case_id == '':
-                            return True, hall_number, time_slot
-
+                lawyer_available = self.lawyer_is_not_boocked(time_slot,case , 'Jerusalem')
+                if lawyer_available:
+                    for judge, case_id in judge_dict.items():
+                        if judge_id == judge and self.judgeIsAvailable(judge_id, j_date.date):
+                            if case_id == '':
+                                return True, hall_number, time_slot
         return False, False, False
+
+
+
 
     def schedule_cases(self):
         '''
@@ -243,13 +267,14 @@ class JerusalemScheduler(LocationScheduler):
             for J_date in quarterly_J_days:
                 if been_placed_in_calendar:
                     break
-                relevant, hall_number, time_slot = self.date_relevant_for_case(J_date, judge_id)
-                if relevant:
-                    been_placed_in_calendar = True
-                    J_date.schedule[hall_number][time_slot][judge_id] = case.id
-                    self.add_meeting_to_schedule(case, J_date.date, time_slot, hall_number,
-                                                 case_id_to_judge_id[case.id])
-
+                lawyer_available = self.lawyer_is_not_in_different_city(J_date.date, case.lawyer_id, 'Jerusalem')
+                if lawyer_available:
+                    relevant, hall_number, time_slot = self.date_relevant_for_case(J_date, judge_id ,case)
+                    if relevant:
+                        been_placed_in_calendar = True
+                        J_date.schedule[hall_number][time_slot][judge_id] = case.id
+                        self.add_meeting_to_schedule(case, J_date.date, time_slot, hall_number,
+                                                     case_id_to_judge_id[case.id],case.lawyer_id)
             if not been_placed_in_calendar:
                 print('got here')
 
