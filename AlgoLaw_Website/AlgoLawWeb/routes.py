@@ -397,3 +397,7 @@ def search_cases():
     return render_template('search_cases.html', form=form)
 
 
+@app.route('/lawyer_lookup', methods=['GET', 'POST'])
+@login_required
+def lawyer_lookup():
+    pass

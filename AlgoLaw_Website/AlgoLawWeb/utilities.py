@@ -1,7 +1,7 @@
 from sqlalchemy import or_, and_
 
-from AlgoLawBackEnd import judge_divider
 from AlgoLawWeb import app, db
+from AlgoLawWeb.AlgoLawBackEnd import judge_divider
 from AlgoLawWeb.models import User, Judge, ROLES, Vacation, CaseJudgeLocation, Case, MeetingSchedule, Judge, Hall, \
     Rotation, Event, Lawyer
 import datetime
@@ -357,12 +357,12 @@ def check_if_short_vaca(form):
 
 def get_case_id_to_title(case_id_judge_id):
     case_id_to_title = defaultdict(str)
-    for case_id, judge_id, laywer_id_1, lawyer_id_2 in case_id_judge_id:
+    for case_id, judge_id, lawyer_id_1, lawyer_id_2 in case_id_judge_id:
         case = Case.query.filter(Case.id == case_id).first()
         judge = Judge.query.filter(Judge.id == judge_id).first()
         lawyer_2 = Lawyer.query.filter(Lawyer.lawyer_id == lawyer_id_2).first()
         lawyer_1 = Lawyer.query.filter(Lawyer.lawyer_id == lawyer_id_1).first()
-        case_id_to_title[case.id] = lawyer_2.name + ' ' + lawyer_2.last_name + ' - ' + lawyer_1.name + ' ' + lawyer_1.last_name
+        case_id_to_title[case.id] = lawyer_id_1 + ' - ' + lawyer_id_2
 
     return case_id_to_title
 
