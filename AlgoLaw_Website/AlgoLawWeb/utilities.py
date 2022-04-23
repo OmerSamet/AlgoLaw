@@ -357,10 +357,12 @@ def check_if_short_vaca(form):
 
 def get_case_id_to_title(case_id_judge_id):
     case_id_to_title = defaultdict(str)
-    for case_id, judge_id in case_id_judge_id:
+    for case_id, judge_id, laywer_id_1, lawyer_id_2 in case_id_judge_id:
         case = Case.query.filter(Case.id == case_id).first()
         judge = Judge.query.filter(Judge.id == judge_id).first()
-        case_id_to_title[case.id] = judge.username + ' - ' + case.first_type
+        lawyer_2 = Lawyer.query.filter(Lawyer.lawyer_id == lawyer_id_2).first()
+        lawyer_1 = Lawyer.query.filter(Lawyer.lawyer_id == lawyer_id_1).first()
+        case_id_to_title[case.id] = lawyer_2.name + ' ' + lawyer_2.last_name + ' - ' + lawyer_1.name + ' ' + lawyer_1.last_name
 
     return case_id_to_title
 
@@ -407,7 +409,7 @@ def get_all_meetings(judge_id=None, location=None, hall_number=None):
                                                            Hall.location.like(location),
                                                            Hall.hall_number.like(hall_number)).all()
 
-    case_id_to_title = get_case_id_to_title([(meeting.case_id, meeting.judge_id) for meeting in meetings])
+    case_id_to_title = get_case_id_to_title([(meeting.case_id, meeting.judge_id, meeting.lawyer_id_1, meeting.lawyer_id_2) for meeting in meetings])
     for meeting in meetings:
         case_start_time = datetime.datetime.strptime(meeting.start_time, '%H:%M').time()
         case_end_time = datetime.datetime.strptime(meeting.end_time, '%H:%M').time()
