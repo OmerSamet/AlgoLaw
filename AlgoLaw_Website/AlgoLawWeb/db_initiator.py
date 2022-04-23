@@ -27,6 +27,7 @@ class DBInitiator:
         halls = self.add_halls_to_db()
         rotation_dates = self.add_rotation_dates_to_db()
         cases = self.add_cases_to_db()
+        self.add_lawyers_to_db()
 
         self.check_csv_imports(cases, judges, halls, rotation_dates)
 
