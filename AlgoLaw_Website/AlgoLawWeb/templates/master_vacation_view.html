@@ -40,7 +40,7 @@
         var location_choice = document.getElementById('location_choice');
         var hall_options = document.getElementById('hall_options');
     </script>
-<script>
+    <script>
         const addHallOptions = async (Location) => {
             if (Location == undefined) {
                 LocationToUse = 'Jerusalem'
@@ -107,7 +107,7 @@
             else{
                 HallToUse = Hall
             }
-            let result = await fetch(`/${judgeIdToUse}-${LocationToUse}-${HallToUse}/get_all_judge_events`)
+            let result = await fetch(`/get_all_judge_events/${judgeIdToUse}-${LocationToUse}-${HallToUse}`)
             let body = await result.json();
             console.log(body)
             let eventsForCal = [];

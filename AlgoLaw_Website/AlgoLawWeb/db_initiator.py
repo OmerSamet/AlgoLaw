@@ -38,20 +38,40 @@ class DBInitiator:
         user1 = User(username="TestJudge",
                      email="TestJudge@justice.com",
                      password=bcrypt.generate_password_hash("TestJudge123!@#").decode('utf-8'),
-                     role="דיין/דיינת")
-        user2 = User(username="TestSecretary",
+                     role="דיין/דיינת",
+                     is_validated=True)
+        user2 = User(username="TestSecretarMaster",
                      email="TestSecretary@justice.com",
                      password=bcrypt.generate_password_hash("TestSecretary123!@#").decode('utf-8'),
-                     role="מזכיר/מזכירה")
+                     role="מזכיר/ה ראשי/ת",
+                     is_validated=True)
         user3 = User(username="TestMaster",
                      email="TestMaster@justice.com",
                      password=bcrypt.generate_password_hash("TestMaster123!@#").decode('utf-8'),
-                     role="הנהלה")
-        user4 = User(username="TestJudge2",
-                     email="TestJudge2@justice.com",
-                     password=bcrypt.generate_password_hash("TestJudge123!@#").decode('utf-8'),
-                     role="דיין/דיינת")
-        users = [user1, user2, user3, user4]
+                     role="הנהלה",
+                     is_validated=True)
+        user4 = User(username="TestSecretaryJersulam",
+                     email="TestSecretaryJ@justice.com",
+                     password=bcrypt.generate_password_hash("TestSecretary123!@#").decode('utf-8'),
+                     role="מזכיר/ה מחוז ירושלים",
+                     is_validated=True)
+        user5 = User(username="TestSecretarHaifa",
+                     email="TestSecretaryH@justice.com",
+                     password=bcrypt.generate_password_hash("TestSecretary123!@#").decode('utf-8'),
+                     role="מזכיר/ה מחוז חיפה",
+                     is_validated=True)
+        user6 = User(username="TestSecretarTelAviv",
+                     email="TestSecretaryT@justice.com",
+                     password=bcrypt.generate_password_hash("TestSecretary123!@#").decode('utf-8'),
+                     role="מזכיר/ה מחוז תל אביב",
+                     is_validated=True)
+        user7 = User(username="TestSecretarBeerSheva",
+                     email="TestSecretaryB@justice.com",
+                     password=bcrypt.generate_password_hash("TestSecretary123!@#").decode('utf-8'),
+                     role="מזכיר/ה מחוז באר שבע",
+                     is_validated=True)
+
+        users = [user1, user2, user3, user4, user5, user6, user7]
         for user in users:
             db.session.add(user)
         db.session.commit()
@@ -161,7 +181,7 @@ class DBInitiator:
         default_password = 'Pass123987'
         hashed_password = bcrypt.generate_password_hash(default_password).decode('utf-8')
         username = email.split('@')[0]
-        user = User(username=username, email=email, password=hashed_password, role=role)
+        user = User(username=username, email=email, password=hashed_password, role=role, is_validated=True)
         add_to_db(user)
         return user
 

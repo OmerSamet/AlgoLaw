@@ -4,7 +4,11 @@ from flask_login import UserMixin
 
 ROLES = {
     'דיין/דיינת': 'Judge',
-    'מזכיר/מזכירה': 'Secretary',
+    'מזכיר/ה ראשי/ת': 'Master Secretary',
+    'מזכיר/ה מחוז ירושלים': 'Jerusalem Secretary',
+    'מזכיר/ה מחוז חיפה': 'Haifa Secretary',
+    'מזכיר/ה מחוז תל אביב': 'Tel Aviv Secretary',
+    'מזכיר/ה מחוז באר שבע': 'Beer Sheva Secretary',
     'הנהלה': 'Master'
 }
 
@@ -21,6 +25,7 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(60), nullable=False)
     posts = db.relationship('Post', backref='author', lazy=True)
     role = db.Column(db.String(20), nullable=False, default='None')
+    is_validated = db.Column(db.Boolean, nullable=False, default=False)
 
     def __repr__(self):
         return f"User:('{self.username}', '{self.email}', '{self.image_file}','{self.role}')"
@@ -37,7 +42,6 @@ class Post(db.Model):
         return f"Post:('{self.title}', '{self.date_posted}')"
 
 
-
 class Vacation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     judge_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -45,6 +49,7 @@ class Vacation(db.Model):
     end_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     is_verified = db.Column(db.Boolean, nullable=False)
     type = db.Column(db.String(20), nullable=False)
+
 
 class SickDay(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -54,12 +59,12 @@ class SickDay(db.Model):
     is_verified = db.Column(db.Boolean, nullable=False)
 
 
-
 class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     judge_id = db.Column(db.Integer, db.ForeignKey('judge.id'), nullable=False)
     relevant_emails = db.Column(db.String(120), nullable=False)  # str of list of emails "['email1@gmail.com', 'email2@gmail.com',...]"
-    datetime_of_event = db.Column(db.DateTime, nullable=False)
+    start_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    end_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
 
 class Judge(db.Model, UserMixin):
@@ -108,8 +113,9 @@ class Case(db.Model):
     year_created = db.Column(db.String(20), nullable=False)
     judge_id = db.Column(db.Integer, db.ForeignKey('judge.id'), nullable=True)
     is_done = db.Column(db.Boolean, nullable=False, default=False)  # has this case been done yet?
-    lawyer_id_1 = db.Column(db.String(100),nullable=True)
+    lawyer_id_1 = db.Column(db.String(100), nullable=True)
     lawyer_id_2 = db.Column(db.String(100), nullable=True)
+    # orer_id = db.Column(db.Integer, nullable=False)
 
 
 class Meeting(db.Model):
@@ -128,7 +134,7 @@ class MeetingSchedule(db.Model):
     date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)  # actual date of schedule
     judge_id = db.Column(db.Integer, db.ForeignKey('judge.id'),
                          nullable=True)  # Nullable so we can add cases before division
-    # start_time and end_time hold str of only the hours to be turned to datetime with date from HallSchedule
+    # start_time and end_time hold str of only the hours to be turned to datetime with date
     start_time = db.Column(db.String(100), nullable=True)  # datetime.now().strftime("%H:%M") -> 09:30
     end_time = db.Column(db.String(100), nullable=True)  # datetime.now().strftime("%H:%M") -> 09:30
     is_verified = db.Column(db.Boolean, nullable=False, default=False)

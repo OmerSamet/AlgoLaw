@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block content %}
-    <div class="content-section">
+    <div class="content-section text-right">
         <form method="POST" action="">
             {{ form.hidden_tag() }}
             <fieldset class="form-group">
@@ -69,7 +69,7 @@
                             {% endfor %}
                         </div>
                     {% else %}
-                        {{ form.role(class="form-control form-control-lg") }}
+                        {{ form.role(class="form-control form-control-lg text-right") }}
                     {% endif %}
                 </div>
                 <div class="form-group">

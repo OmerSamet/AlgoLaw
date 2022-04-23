@@ -1,11 +1,15 @@
 from collections import defaultdict
+
+from AlgoLawWeb.AlgoLawBackEnd import judge_divider
 from AlgoLawWeb import db, app
 from AlgoLawWeb.models import Hall, Case, CaseJudgeLocation, MeetingSchedule, Meeting, Vacation, Rotation, SickDay
 import datetime
 import calendar
 import enum
-from AlgoLawWeb.utilities import add_to_db
+from AlgoLawWeb.utilities import add_to_db, insert_output_to_db, DayToHallToJudgeJerusalem
 import os
+from flask import flash
+
 
 class JerusalemTimeSlots(enum.Enum):
     nine_to_nine_thirty_five = '09:00-09:35'
@@ -16,16 +20,6 @@ class JerusalemTimeSlots(enum.Enum):
     twelve_forty_five_to_one_twenty = '12:45-13:20'
     one_thirty_to_two_o_five = '13:30-14:05'
     two_fifteen_to_two_fifty = '14:15-14:50'
-
-
-#  {daynum: {hall_number: [judge1, judge2]
-DayToHallToJudgeJerusalem = {
-    7: {1: [1, 1], 2: [2, 2], 3: [9, 10]},  # Sunday
-    1: {1: [3, 3], 2: [4, 4], 3: [7, 8]},  # Monday
-    2: {1: [5, 5], 2: [6, 6], 3: [0, 2]},  # Tuesday
-    3: {1: [7, 7], 2: [8, 8], 3: [3, 4]},  # Wednesday
-    4: {1: [9, 9], 2: [10, 10], 3: [5, 6]}  # Thursday
-}
 
 
 class JerusalemDay:
@@ -127,25 +121,25 @@ class LocationScheduler:
 
         return empty_schedule
 
-    def lawyer_is_not_in_different_city(self, date , lawyer_id_1 , lawyer_id_2 , location):
-        if (lawyer_id_1 != '') and (lawyer_id_2 != ''):
+    def lawyer_is_not_in_different_city(self, date, lawyer_id_1, lawyer_id_2, location):
+        if lawyer_id_1 != '' and lawyer_id_2 != '':
             lawyers_1_cases_that_day = db.session.query(MeetingSchedule).filter(MeetingSchedule.lawyer_id_1 == lawyer_id_1,
                                                                               MeetingSchedule.date == date,
                                                                               MeetingSchedule.location != location).all()
             lawyers_2_cases_that_day = db.session.query(MeetingSchedule).filter(MeetingSchedule.lawyer_id_2 == lawyer_id_2,
                                                                               MeetingSchedule.date == date,
                                                                               MeetingSchedule.location != location).all()
-            return (len(lawyers_1_cases_that_day) == 0) and (len(lawyers_2_cases_that_day) == 0)
-        if (lawyer_id_1 != '') and (lawyer_id_2 == ''):
+            return len(lawyers_1_cases_that_day) == 0 and len(lawyers_2_cases_that_day) == 0
+        if lawyer_id_1 != '' and lawyer_id_2 == '':
             lawyers_1_cases_that_day = db.session.query(MeetingSchedule).filter(MeetingSchedule.lawyer_id_1 == lawyer_id_1,
                                                                               MeetingSchedule.date == date,
                                                                               MeetingSchedule.location != location).all()
-            return (len(lawyers_1_cases_that_day) == 0)
-        if (lawyer_id_1 == '') and (lawyer_id_2 != ''):
+            return len(lawyers_1_cases_that_day) == 0
+        if lawyer_id_1 == '' and lawyer_id_2 != '':
             lawyers_2_cases_that_day = db.session.query(MeetingSchedule).filter(MeetingSchedule.lawyer_id_2 == lawyer_id_2,
                                                                               MeetingSchedule.date == date,
                                                                               MeetingSchedule.location != location).all()
-            return (len(lawyers_2_cases_that_day) == 0)
+            return len(lawyers_2_cases_that_day) == 0
         return True
 
 
@@ -269,7 +263,7 @@ class JerusalemScheduler(LocationScheduler):
         '''
         for hall_number, time_slot_dict in j_date.schedule.items():
             for time_slot, judge_dict in time_slot_dict.items():
-                lawyers_available = (self.lawyer_is_not_booked(time_slot,case.lawyer_id_1,case.lawyer_id_2, 'Jerusalem'))
+                lawyers_available = (self.lawyer_is_not_booked(time_slot,case.lawyer_id_1, case.lawyer_id_2, 'Jerusalem'))
                 if lawyers_available:
                     for judge, case_id in judge_dict.items():
                         if judge_id == judge and self.judgeIsAvailable(judge_id, j_date.date):
@@ -296,7 +290,7 @@ class JerusalemScheduler(LocationScheduler):
             for J_date in quarterly_J_days:
                 if been_placed_in_calendar:
                     break
-                lawyers_available =(self.lawyer_is_not_in_different_city(J_date.date, case.lawyer_id_1, case.lawyer_id_2, 'Jerusalem'))
+                lawyers_available = self.lawyer_is_not_in_different_city(J_date.date, case.lawyer_id_1, case.lawyer_id_2, 'Jerusalem')
                 if lawyers_available:
                     relevant, hall_number, time_slot = self.date_relevant_for_case(J_date, judge_id ,case)
                     if relevant:
@@ -343,3 +337,12 @@ class MeetingScheduler:
     def schedule_jerusalem_cases(self):
         j_scheduler = JerusalemScheduler(self.location_to_cases['Jerusalem'])
         j_scheduler.schedule_cases()
+
+
+def run_division_logic():
+    judge_divider.handle_cases()
+    output_file = 'output.csv'
+    insert_output_to_db(os.path.join(app.config["OUTPUT_DIR"], output_file))
+    scheduler = MeetingScheduler(datetime.datetime.now())
+    scheduler.schedule_jerusalem_cases()
+    flash('תיקים חולקו ושובצו בהצלחה', 'success')

@@ -1,0 +1,237 @@
+{% extends "layout.html" %}
+{% block content %}
+    <link href='fullcalendar/main.css' rel='stylesheet' />
+    <script src='fullcalendar/main.js'></script>
+    <script src='fullcalendar/core/locales/he.js'></script>
+
+    <div class="d-flex">
+        <div id="judge_calendar" class="col-md-11"></div>
+        <div class="col-md-3">
+            <h2 class="form-group text-right" style="font-weight: bold;"> {{title}} </h2>
+            <ul class="list-group">
+                {% if master_view == False and judge_view == False %}
+                <h3 class="text-right">הודעות</h3>
+                <div class="content-section">
+
+                </div>
+                <br>
+                <br>
+                <br>
+                <br>
+                {% endif %}
+                {% if master_view == True %}
+                <h3 class="form-group text-right" style="font-weight: bold;">מחוז</h3>
+                <select onchange="renderCalendar(); addJudgeOptions(location_choice.value)" class="form-group text-right" id="location_choice">
+                  <option value="Jerusalem" selected="selected">ירושלים</option>
+                  <option value="Tel Aviv">תל אביב</option>
+                  <option value="Haifa">חיפה</option>
+                  <option value="Beer Sheva">באר שבע</option>
+                </select>
+                {% endif %}
+                {% if judge_view == False %}
+                <h3 class="form-group text-right" style="font-weight: bold;">אולמות</h3>
+                <select onchange="renderCalendar();" class="form-group text-right" id="hall_options">
+                  <option value="All">הכל</option>
+                </select>
+
+                <h3 class="form-group text-right" style="font-weight: bold;">בחירת דיין</h3>
+                <select onchange="renderCalendar()" class="form-group text-right" id="judges_options">
+                  <option value="All">הכל</option>
+                </select>
+                {% endif %}
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <form method="POST" action="" class="text-right">
+                    {{ event_from.hidden_tag() }}
+                    <div hidden>
+                        {{event_from.start_date(id="event_start_date_value")}}
+                        {{event_from.end_date(id="event_end_date_value")}}
+                    </div>
+                    {{ event_from.submit(class="btn btn-outline-info", style="background-color: coral; color: #444444", id="event_submit") }}
+                </form>
+                <br>
+                {% if judge_view == True%}
+                <form method="POST" action="" class="text-right">
+                    {{ vacation_form.hidden_tag() }}
+                    <div hidden>
+                        {{vacation_form.start_date(id="start_date_value")}}
+                        {{vacation_form.end_date(id="end_date_value")}}
+                    </div>
+                    {{ vacation_form.submit(class="btn btn-outline-info", style="background-color: coral; color: #444444", id="vacation_submit") }}
+                </form>
+                {% endif %}
+                <br>
+                <br>
+                <br>
+                <button onclick="monthly=true;renderCalendar('dayGridMonth')" class="btn btn-outline-info">חודשי</button>
+                <button onclick="monthly=true;renderCalendar('dayGridWeek')" class="btn btn-outline-info">שבועי</button>
+                <button onclick="monthly=false;renderCalendar('timeGridDay')" class="btn btn-outline-info">יומי</button>
+              </ul>
+          </div>
+    </div>
+    {% if judge_view == True %}
+    <script>
+        let JudgeIdPage={{cur_user_id}};
+        let IsJudgePage = true
+    </script>
+    {% else %}
+    <script>
+        let JudgeIdPage = 'none'
+        IsJudgePage = false
+    </script>
+    {% endif %}
+    <script>
+        "use strict";
+        let monthly = true
+        var judges_options = document.getElementById('judges_options');
+        var location_choice = document.getElementById('location_choice');
+        var hall_options = document.getElementById('hall_options');
+        let CalViewToUse = 'dayGridMonth';
+    </script>
+    <script>
+        const addHallOptions = async (Location) => {
+            if (Location == undefined) {
+                LocationToUse = 'Jerusalem'
+            } else {
+                LocationToUse = Location
+            }
+            hall_options.innerHTML = null;
+            let opt = document.createElement('option');
+            opt.value = "All";
+            opt.innerHTML = 'הכל';
+            hall_options.appendChild(opt);
+            let result = await fetch(`/${LocationToUse}/get_all_location_halls`)
+            let body = await result.json();
+            for (let hall of body) {
+                let opt = document.createElement('option');
+                opt.value = hall.id;
+                opt.innerHTML = hall.name;
+                hall_options.appendChild(opt);
+
+            }
+            }
+    </script>
+    <script>
+        const addJudgeOptions = async (Location) => {
+            if (Location == undefined) {
+                LocationToUse = 'Jerusalem'
+            } else {
+                LocationToUse = Location
+            }
+            if (IsJudgePage == false) {
+                judges_options.innerHTML = null;
+                let opt = document.createElement('option');
+                opt.value = "All";
+                opt.innerHTML = 'הכל';
+                judges_options.appendChild(opt);
+                let result = await fetch(`/${LocationToUse}/get_all_location_judges`)
+                let body = await result.json();
+                for (let judge of body) {
+                    let opt = document.createElement('option');
+                    opt.value = judge.id;
+                    opt.innerHTML = judge.name;
+                    judges_options.appendChild(opt);
+
+                }
+                await addHallOptions(Location);
+            }
+        }
+    </script>
+    <script>
+        const renderCalendar = async (CalView) => {
+            JudgeChoice = document.getElementById('judges_options');
+            // JudgeId = JudgeChoice.value
+            LocationChoice = document.getElementById('location_choice');
+            // Location = LocationChoice.value
+            HallChoice = document.getElementById('hall_options');
+            // Hall = HallChoice.value
+            if (JudgeChoice) {
+               JudgeId = judges_options.value
+               if (JudgeId == "All") {
+                   judgeIdToUse = 'none'
+               }
+               else {
+                judgeIdToUse = JudgeId
+               }
+            }
+            else {
+                judgeIdToUse = JudgeIdPage
+            }
+
+
+            if (LocationChoice) {
+                UserLocation = location_choice.value
+                if (UserLocation == 'All'){
+                    LocationToUse = 'none'
+                }
+                else {
+                    LocationToUse = UserLocation
+                }
+            }
+            else {
+                LocationToUse = 'none'
+            }
+
+            if (HallChoice){
+                HallId = hall_options.value
+                if (HallId == 'All') {
+                    HallToUse = 'none'
+                } else {
+                    HallToUse = HallId
+                }
+            }
+            else {
+                HallToUse = 'none'
+            }
+
+            if (CalView) {
+                CalViewToUse = CalView
+            }
+
+
+            let result = await fetch(`/get_all_judge_events/${judgeIdToUse}-${LocationToUse}-${HallToUse}-${monthly}`)
+            let body = await result.json();
+            let eventsForCal = [];
+            for (let event of body){
+                let currentPush = {title: event.title,
+                            start: Date.parse(event.start),
+                            end: Date.parse(event.end),
+                            backgroundColor: event.color,
+                            id: event.id,
+                            display: event.display,
+                            allDay: event.allDay}
+                eventsForCal.push(currentPush)
+                }
+
+            let calendarEl = document.getElementById('judge_calendar');
+            let judge_calendar = new FullCalendar.Calendar(calendarEl, {
+                locale: 'he',
+                initialView: CalViewToUse,
+                expandRows: true,
+                selectable: true,
+                direction: 'rtl',
+                events: eventsForCal,
+                select: function(info) {
+                    let vaca_start_div = document.getElementById('start_date_value');
+                    vaca_start_div.value = info.startStr
+                    let vaca_end_div = document.getElementById('end_date_value');
+                    vaca_end_div.value = info.endStr
+                    let event_start_div = document.getElementById('event_start_date_value');
+                    event_start_div.value = info.startStr
+                    let event_end_div = document.getElementById('event_end_date_value');
+                    event_end_div.value = info.endStr
+                }
+            });
+            judge_calendar.render();
+        }
+    </script>
+    <script>
+        renderCalendar();
+        addJudgeOptions();
+    </script>
+
+
+{% endblock content %}
