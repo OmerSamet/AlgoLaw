@@ -134,6 +134,7 @@ class DBInitiator:
             second_type = row['Secondary_Type']
             sub_type = row['Case_sub_type']
             location = row['Location']
+            lawyer=row['Lawyer_ID']
 
             urg_level, duration, weight = self.get_case_db_data(case_enrichment_df, main_type,
                                                                                   second_type, sub_type)
@@ -146,7 +147,8 @@ class DBInitiator:
                             location=location,
                             weight=weight,
                             quarter_created=((datetime.datetime.now().month-1) // 3) + 1,
-                            year_created=datetime.datetime.now().year)
+                            year_created=datetime.datetime.now().year,
+                            lawyer_id=lawyer)
 
             add_to_db(new_case)
 
@@ -198,7 +200,7 @@ class DBInitiator:
         lawyers_df = pd.read_csv(self.lawyers_csv_path)
         for index, row in lawyers_df.iterrows():
             lawyer = Lawyer(name=row['Name'],
-                        last_name=row['Last_name'],
+                            last_name=row['Last_name'],
                             lawyer_id=row['ID'],
                             mail=row['Mail'],
                             phone_number=row['Phone_number'])

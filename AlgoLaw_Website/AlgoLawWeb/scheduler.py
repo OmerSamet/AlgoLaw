@@ -129,14 +129,14 @@ class LocationScheduler:
 
     def lawyer_is_not_in_different_city(self, date , lawyer_id , location):
         if lawyer_id != '':
-            lawyers_cases_that_day = db.session.query(MeetingSchedule).filter(MeetingSchedule.lawyer_id == lawyer_id ,
-                                                                              MeetingSchedule.date == date ,
+            lawyers_cases_that_day = db.session.query(MeetingSchedule).filter(MeetingSchedule.lawyer_id == lawyer_id,
+                                                                              MeetingSchedule.date == date,
                                                                               MeetingSchedule.location != location).all()
             return len(lawyers_cases_that_day) == 0
         return True
 
 
-    def lawyer_is_not_boocked(self, time_slot , case , location):
+    def lawyer_is_not_booked(self, time_slot , case , location):
         lawyer_id = case.lawyer_id
         start_time, end_time = time_slot.split('-')
         lawyers_cases_that_day = db.session.query(MeetingSchedule).filter(MeetingSchedule.lawyer_id == lawyer_id,
@@ -240,7 +240,7 @@ class JerusalemScheduler(LocationScheduler):
         '''
         for hall_number, time_slot_dict in j_date.schedule.items():
             for time_slot, judge_dict in time_slot_dict.items():
-                lawyer_available = self.lawyer_is_not_boocked(time_slot,case , 'Jerusalem')
+                lawyer_available = self.lawyer_is_not_booked(time_slot,case , 'Jerusalem')
                 if lawyer_available:
                     for judge, case_id in judge_dict.items():
                         if judge_id == judge and self.judgeIsAvailable(judge_id, j_date.date):
@@ -275,8 +275,8 @@ class JerusalemScheduler(LocationScheduler):
                         J_date.schedule[hall_number][time_slot][judge_id] = case.id
                         self.add_meeting_to_schedule(case, J_date.date, time_slot, hall_number,
                                                      case_id_to_judge_id[case.id],case.lawyer_id)
-            if not been_placed_in_calendar:
-                print('got here')
+            #if not been_placed_in_calendar:
+                #print('got here')
 
 
 class MeetingScheduler:
