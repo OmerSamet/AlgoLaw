@@ -89,3 +89,11 @@ class CaseSearchForm(FlaskForm):
     main_type = StringField('קטגוריה ראשית', validators=[])
     secondary_type = StringField('קטגוריה משנית', validators=[])
     submit = SubmitField('חיפוש')
+
+class lawyerSearchForm(FlaskForm):
+    lawyer_name = StringField('שם פרטי', validators=[])
+    lawyer_last_name = StringField('שם משפחה', validators=[])
+    lawyer_id = StringField('מספר זיהוי', validators=[])
+    lawyer_mail = StringField('כתובת דואר אלקטרוני', validators=[])
+    lawyer_phone = StringField('מספר טלפון', validators=[])
+    submit = SubmitField('חיפוש')

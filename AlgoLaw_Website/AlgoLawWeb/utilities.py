@@ -597,10 +597,10 @@ def find_lawyer(name , last_name , lawyer_id, mail,phone_number):
     for found in found_lawyers:
          lawyer = {
             'name': found.name,
-            'last name': found.last_name,
+            'last_name': found.last_name,
              'id': found.lawyer_id,
              'mail': found.mail,
-             'phone number':found.phone_number
+             'phone_number':found.phone_number
          }
          lawyers.append(lawyer)
     return lawyers
