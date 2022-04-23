@@ -53,6 +53,7 @@
                     {{ event_from.submit(class="btn btn-outline-info", style="background-color: coral; color: #444444", id="event_submit") }}
                 </form>
                 <br>
+                {% if judge_view == True%}
                 <form method="POST" action="" class="text-right">
                     {{ vacation_form.hidden_tag() }}
                     <div hidden>
@@ -61,6 +62,7 @@
                     </div>
                     {{ vacation_form.submit(class="btn btn-outline-info", style="background-color: coral; color: #444444", id="vacation_submit") }}
                 </form>
+                {% endif %}
                 <br>
                 <br>
                 <br>

@@ -2,7 +2,7 @@ from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed, FileRequired
 from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, DateField, DateTimeField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
-from AlgoLawWeb.models import User, datetime
+from AlgoLawWeb.models import User, datetime, ROLES
 from flask_login import current_user
 
 
@@ -12,7 +12,7 @@ class RegistrationForm(FlaskForm):
     email = StringField('מייל',
                         validators=[DataRequired(), Email()])
     password = PasswordField('סיסמא', validators=[DataRequired()])
-    role = SelectField('תפקיד', validators=[DataRequired()], choices=['דיין/דיינת','מזכיר/מזכירה','הנהלה'])
+    role = SelectField('תפקיד', validators=[DataRequired()], choices=list(ROLES.keys()))
     confirm_password = PasswordField('חזור על סיסמא',
                                      validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('הירשם')

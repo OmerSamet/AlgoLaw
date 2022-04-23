@@ -273,7 +273,7 @@ def register():
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
         user = User(username=form.username.data, email=form.email.data, password=hashed_password, role=form.role.data)
         add_to_db(user)
-        flash(f'Your account has been created! You can now login', 'success')
+        flash(f'נוצר יוזר חדש! נא חכה לאישור יוזר ע״י הנהלה', 'success')
         return redirect(url_for('login'))
     return render_template('register.html', title='Register', form=form)
 
@@ -287,8 +287,11 @@ def login():
         user = User.query.filter_by(email=form.email.data).first()
         # Login check
         if user and bcrypt.check_password_hash(user.password, form.password.data):
-            login_user(user, remember=form.remember.data)
-            return redirect(url_for('home'))
+            if user.is_validated:
+                login_user(user, remember=form.remember.data)
+                return redirect(url_for('home'))
+            else:
+                flash('משתמש עוד לא מאושר, נא לפנות להנהלה', 'danger')
         else:
             flash('Login unsuccessful. Please check email and password', 'danger')
     return render_template('login.html', title='Login', form=form)
@@ -411,3 +414,34 @@ def search_cases():
 
     return render_template('search_cases.html', form=form)
 
+
+@app.route('/master_validate_users', methods=['GET', 'POST'])
+@login_required
+def master_validate_users():
+    unvalidated_users = User.query.filter(User.is_validated == False).all()
+
+    return render_template('master_validate_users.html', unvalidated_users=unvalidated_users,
+                           num_unvalidated_users=len(unvalidated_users), roles=ROLES.keys())
+
+
+@app.route('/verify_user/<user_id>/<role>', methods=['GET', 'POST'])
+@app.route('/verify_user/<user_id>/<role>/<role2>', methods=['GET', 'POST'])
+@app.route('/verify_user/<user_id>/<role>/<role2>/<role3>', methods=['GET', 'POST'])
+@app.route('/verify_user/<user_id>/<role>/<role2>/<role3>/<role4>', methods=['GET', 'POST'])
+@login_required
+def verify_user(user_id, role, role2=None, role3=None, role4=None):
+    cur_user = User.query.filter_by(id=user_id).first()
+    if cur_user:
+        cur_user.is_validated = True
+        if role2:
+            role = role + '/' + role2
+        if role3:
+            role = role + '/' + role3
+        if role4:
+            role = role + '/' + role4
+
+        if cur_user.role != role:
+            cur_user.role = role
+        db.session.commit()
+        flash('משתמש {} אושר במערכת בתפקיד {} בהצלחה'.format(cur_user.username, cur_user.role), 'success')
+    return redirect(url_for('master_validate_users'))

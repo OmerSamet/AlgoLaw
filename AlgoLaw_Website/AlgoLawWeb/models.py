@@ -25,6 +25,7 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(60), nullable=False)
     posts = db.relationship('Post', backref='author', lazy=True)
     role = db.Column(db.String(20), nullable=False, default='None')
+    is_validated = db.Column(db.Boolean, nullable=False, default=False)
 
     def __repr__(self):
         return f"User:('{self.username}', '{self.email}', '{self.image_file}','{self.role}')"
@@ -112,8 +113,9 @@ class Case(db.Model):
     year_created = db.Column(db.String(20), nullable=False)
     judge_id = db.Column(db.Integer, db.ForeignKey('judge.id'), nullable=True)
     is_done = db.Column(db.Boolean, nullable=False, default=False)  # has this case been done yet?
-    lawyer_id_1 = db.Column(db.String(100),nullable=True)
+    lawyer_id_1 = db.Column(db.String(100), nullable=True)
     lawyer_id_2 = db.Column(db.String(100), nullable=True)
+    # orer_id = db.Column(db.Integer, nullable=False)
 
 
 class Meeting(db.Model):
