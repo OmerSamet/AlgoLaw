@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h2 class="text-right">חיפוש תיקים</h2>
+    <br>
+    <h2 class="text-right"> נמצאו {{ cases_found_num }} עורכי דין</h2>
+    {% for lawyer in lawyers %}
+        <article class="text-right media content-section">
+            <div class="media-body">
+                <h2>{{ lawyer['name'] }} :שם פרטי</h2>
+                <h2>{{ lawyer['last_name'] }} :שם משפחה</h2>
+                <h2>{{ lawyer['id'] }} :מספר זיהוי</h2>
+                <h2>{{ lawyer['mail'] }} :כתובת דואר אלקטרוני</h2>
+                <h2>מספר טלפון: {{ lawyer['phone_number'] }} </h2>
+            </div>
+        </article>
+    {% endfor %}
+
+{% endblock content %}
