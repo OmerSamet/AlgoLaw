@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h2 class="text-right">אישור משתמשים</h2>
+    <br>
+    <h2 class="text-right"> נמצאו {{ num_unvalidated_users }} משתמשים לא מאושרים</h2>
+    {% for user in unvalidated_users %}
+        <div class="col container" style="border:1px solid dodgerblue;">
+            <div style="padding-top:5px;">
+                <a id="validate_{{user.id}}" class="btn btn-outline-info" href="">אשר</a>
+            </div>
+            <article class="media-body text-right">
+                <h4>{{ user.username }} :שם</h4>
+                <h4>{{ user.email }} :מייל</h4>
+                <h4>:תפקיד</h4>
+
+                <div class="row text-right justify-content-end" style="padding-bottom:5px; padding-right: 20px">
+                    <select onchange="changeHref{{user.id}}()" class="text-right role-selector" id="role_options{{user.id}}" dir="rtl">
+                        {% for role in roles %}
+                            <option value="{{role}}" class="text-right" {% if role == user.role %} selected {% endif %}>{{role}}</option>
+                        {% endfor %}
+                    </select>
+                    <script>
+                        const changeHref{{user.id}} = async () => {
+                            let cur_href = document.getElementById('validate_{{user.id}}');
+                            let role_options = document.getElementById('role_options{{user.id}}');
+                            cur_href.setAttribute("href",'/verify_user/{{user.id}}/'+role_options.value);
+                        }
+                        changeHref{{user.id}}()
+                    </script>
+                </div>
+            </article>
+        </div>
+        <br>
+    {% endfor %}
+
+{% endblock content %}
