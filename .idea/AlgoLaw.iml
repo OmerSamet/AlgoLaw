@@ -5,7 +5,7 @@
       <sourceFolder url="file://$MODULE_DIR$/AlgoLaw_Website" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/AlgoLaw_Website/AlgoLawWeb" isTestSource="false" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.9" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.10" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>
