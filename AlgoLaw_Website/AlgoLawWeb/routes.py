@@ -2,7 +2,7 @@ from flask import render_template, url_for, flash, redirect, send_from_directory
 from AlgoLawWeb import app, db, bcrypt
 from AlgoLawWeb.forms import RegistrationForm, LoginForm, CasesForm, VacaForm, UploadFilesForm, CaseSearchForm, \
     EventForm
-from AlgoLawWeb.models import User, ROLES, Vacation, Judge, Hall, Case, MeetingSchedule
+from AlgoLawWeb.models import User, ROLES, Vacation, Judge, Hall, Case, MeetingSchedule, Lawyer
 from flask_login import login_user, current_user, logout_user, login_required
 import datetime
 from AlgoLawWeb.AlgoLawBackEnd import judge_divider
@@ -376,28 +376,31 @@ def search_cases():
                                   secondary_type_filter).all()
         final_cases = []
         for case in cases:
-            # lawyer_name = Lawyer.query.filter(Lawyer.name == case.lawyer_id).first()
+            lawyer_1_id = Lawyer.query.filter(Lawyer.lawyer_id == case.lawyer_id_1).first()
+            if lawyer_1_id:
+                lawyer_1_id = lawyer_1_id.lawyer_id
+            lawyer_2_id = Lawyer.query.filter(Lawyer.lawyer_id == case.lawyer_id_2).first()
+            if lawyer_2_id:
+                lawyer_2_id = lawyer_2_id.lawyer_id
             schedule = MeetingSchedule.query.join(Hall).\
                             filter(MeetingSchedule.case_id == case.id).\
                             add_column(Hall.hall_number).add_column(Hall.location).\
                             order_by(MeetingSchedule.date.desc()).first()
-            schedule = schedule.location + ', ' + schedule.hall_number + ', ' + schedule.start + ' - ' + schedule.end
-            final_cases.append(
-                {
-                    'case_id': case.id,
-                    'first_type': case.first_type,
-                    'second_type': case.second_type,
-                    # 'lawyer_name': lawyer_name,
-                    'location': schedule
-                }
-            )
+            if schedule:
+                schedule, hall_number, location = schedule
+                schedule = location + ', ' + str(hall_number) + ', ' + schedule.start_time + ' - ' + schedule.end_time
+                final_cases.append(
+                    {
+                        'case_id': case.id,
+                        'first_type': case.first_type,
+                        'second_type': case.second_type,
+                        'lawyer_1_id': lawyer_1_id,
+                        'lawyer_2_id': lawyer_2_id,
+                        'location': schedule
+                    }
+                )
 
         return render_template('show_cases_search.html', cases=final_cases, cases_found_num=len(cases))
 
     return render_template('search_cases.html', form=form)
 
-
-@app.route('/lawyer_lookup', methods=['GET', 'POST'])
-@login_required
-def lawyer_lookup():
-    pass

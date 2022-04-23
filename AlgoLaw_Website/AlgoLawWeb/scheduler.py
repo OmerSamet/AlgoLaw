@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from AlgoLawBackEnd import judge_divider
+from AlgoLawWeb.AlgoLawBackEnd import judge_divider
 from AlgoLawWeb import db, app
 from AlgoLawWeb.models import Hall, Case, CaseJudgeLocation, MeetingSchedule, Meeting, Vacation, Rotation, SickDay
 import datetime
