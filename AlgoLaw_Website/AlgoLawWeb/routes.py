@@ -1,7 +1,7 @@
 from flask import render_template, url_for, flash, redirect, send_from_directory, request
 from AlgoLawWeb import app, db, bcrypt
 from AlgoLawWeb.forms import RegistrationForm, LoginForm, CasesForm, VacaForm, UploadFilesForm, CaseSearchForm, \
-    EventForm
+    EventForm, lawyerSearchForm
 from AlgoLawWeb.models import User, ROLES, Vacation, Judge, Hall, Case, MeetingSchedule, Lawyer
 from flask_login import login_user, current_user, logout_user, login_required
 import datetime
@@ -10,7 +10,7 @@ from AlgoLawWeb.utilities import check_if_already_vacation, save_csv_file, \
     get_all_relevant_judges, add_to_db, check_logged_in, \
     return_role_page, insert_output_to_db, get_all_events, load_cases_to_db, load_holidays_to_db, load_rotations_to_db, \
     load_mishmoret_to_db, get_upload_div_colors, get_events_by_role, get_location_by_role, handle_vacation_form, \
-    handle_event
+    handle_event , find_lawyer
 import json
 from AlgoLawWeb.db_initiator import DBInitiator
 from AlgoLawWeb.scheduler import run_division_logic
@@ -331,7 +331,14 @@ def calendar():
 
     return render_template('calendar.html', master_view=master_view, judge_view=judge_view, cur_user_id=current_user.id,
                            vacation_form=vacation_form, event_from=event_from)
-
+@app.route('/secretary_lawyer_search', methods=['GET', 'POST'])
+@login_required
+def secretary_lawyer_search():
+    form = lawyerSearchForm()
+    if form.validate_on_submit():
+        layers_found = find_lawyer(form.lawyer_name.data , form.lawyer_last_name.data , form.lawyer_id.data, form.lawyer_mail.data,form.lawyer_phone.data)
+        return render_template('show_lawyers_search.html', lawyers=layers_found, num_lawyers_found=len(layers_found))
+    return render_template('secretary_lawyer_search.html',form=form)
 
 @app.route('/search_cases', methods=['GET', 'POST'])
 @login_required
