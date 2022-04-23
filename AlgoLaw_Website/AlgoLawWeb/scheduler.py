@@ -127,23 +127,51 @@ class LocationScheduler:
 
         return empty_schedule
 
-    def lawyer_is_not_in_different_city(self, date , lawyer_id , location):
-        if lawyer_id != '':
-            lawyers_cases_that_day = db.session.query(MeetingSchedule).filter(MeetingSchedule.lawyer_id == lawyer_id,
+    def lawyer_is_not_in_different_city(self, date , lawyer_id_1 , lawyer_id_2 , location):
+        if (lawyer_id_1 != '') and (lawyer_id_2 != ''):
+            lawyers_1_cases_that_day = db.session.query(MeetingSchedule).filter(MeetingSchedule.lawyer_id_1 == lawyer_id_1,
                                                                               MeetingSchedule.date == date,
                                                                               MeetingSchedule.location != location).all()
-            return len(lawyers_cases_that_day) == 0
+            lawyers_2_cases_that_day = db.session.query(MeetingSchedule).filter(MeetingSchedule.lawyer_id_2 == lawyer_id_2,
+                                                                              MeetingSchedule.date == date,
+                                                                              MeetingSchedule.location != location).all()
+            return (len(lawyers_1_cases_that_day) == 0) and (len(lawyers_2_cases_that_day) == 0)
+        if (lawyer_id_1 != '') and (lawyer_id_2 == ''):
+            lawyers_1_cases_that_day = db.session.query(MeetingSchedule).filter(MeetingSchedule.lawyer_id_1 == lawyer_id_1,
+                                                                              MeetingSchedule.date == date,
+                                                                              MeetingSchedule.location != location).all()
+            return (len(lawyers_1_cases_that_day) == 0)
+        if (lawyer_id_1 == '') and (lawyer_id_2 != ''):
+            lawyers_2_cases_that_day = db.session.query(MeetingSchedule).filter(MeetingSchedule.lawyer_id_2 == lawyer_id_2,
+                                                                              MeetingSchedule.date == date,
+                                                                              MeetingSchedule.location != location).all()
+            return (len(lawyers_2_cases_that_day) == 0)
         return True
 
 
-    def lawyer_is_not_booked(self, time_slot , case , location):
-        lawyer_id = case.lawyer_id
-        start_time, end_time = time_slot.split('-')
-        lawyers_cases_that_day = db.session.query(MeetingSchedule).filter(MeetingSchedule.lawyer_id == lawyer_id,
-                                                                          MeetingSchedule.start_time == start_time ,
-                                                                          MeetingSchedule.location == location).all()
-        return len(lawyers_cases_that_day) == 0
-
+    def lawyer_is_not_booked(self, time_slot , lawyer_id_1 , lawyer_id_2 , location):
+        if (lawyer_id_1 != '') and (lawyer_id_2 != ''):
+            start_time, end_time = time_slot.split('-')
+            lawyers_1_cases_that_day = db.session.query(MeetingSchedule).filter(MeetingSchedule.lawyer_id_1 == lawyer_id_1,
+                                                                              MeetingSchedule.start_time == start_time ,
+                                                                              MeetingSchedule.location == location).all()
+            lawyers_2_cases_that_day = db.session.query(MeetingSchedule).filter(MeetingSchedule.lawyer_id_2 == lawyer_id_2,
+                                                                MeetingSchedule.start_time == start_time,
+                                                                MeetingSchedule.location == location).all()
+            return (len(lawyers_1_cases_that_day) == 0) and (len(lawyers_2_cases_that_day) == 0)
+        if (lawyer_id_1 != '') and (lawyer_id_2 == ''):
+            start_time, end_time = time_slot.split('-')
+            lawyers_1_cases_that_day = db.session.query(MeetingSchedule).filter(MeetingSchedule.lawyer_id_1 == lawyer_id_1,
+                                                                              MeetingSchedule.start_time == start_time ,
+                                                                              MeetingSchedule.location == location).all()
+            return (len(lawyers_1_cases_that_day) == 0)
+        if  (lawyer_id_2 != '') and (lawyer_id_1 == '') :
+            start_time, end_time = time_slot.split('-')
+            lawyers_1_cases_that_day = db.session.query(MeetingSchedule).filter(MeetingSchedule.lawyer_id_2 == lawyer_id_2,
+                                                                              MeetingSchedule.start_time == start_time ,
+                                                                              MeetingSchedule.location == location).all()
+            return (len(lawyers_1_cases_that_day) == 0)
+        return True
 
 
 class JerusalemScheduler(LocationScheduler):
@@ -194,7 +222,7 @@ class JerusalemScheduler(LocationScheduler):
 
         return True
 
-    def add_meeting_to_schedule(self, case, date, time_slot, hall_number, judge_id,lawyer_id):
+    def add_meeting_to_schedule(self, case, date, time_slot, hall_number, judge_id,lawyer_id_1 , lawyer_id_2):
 
         date_obj = date
         start_time, end_time = time_slot.split('-')
@@ -219,7 +247,8 @@ class JerusalemScheduler(LocationScheduler):
                                      start_time=start_time,
                                      end_time=end_time,
                                      meeting_id=meeting_id,
-                                     lawyer_id=lawyer_id,
+                                     lawyer_id_1=lawyer_id_1,
+                                     lawyer_id_2 = lawyer_id_2,
                                      location='Jerusalem')
         add_to_db(meeting_schedule)
 
@@ -240,8 +269,8 @@ class JerusalemScheduler(LocationScheduler):
         '''
         for hall_number, time_slot_dict in j_date.schedule.items():
             for time_slot, judge_dict in time_slot_dict.items():
-                lawyer_available = self.lawyer_is_not_booked(time_slot,case , 'Jerusalem')
-                if lawyer_available:
+                lawyers_available = (self.lawyer_is_not_booked(time_slot,case.lawyer_id_1,case.lawyer_id_2, 'Jerusalem'))
+                if lawyers_available:
                     for judge, case_id in judge_dict.items():
                         if judge_id == judge and self.judgeIsAvailable(judge_id, j_date.date):
                             if case_id == '':
@@ -267,14 +296,14 @@ class JerusalemScheduler(LocationScheduler):
             for J_date in quarterly_J_days:
                 if been_placed_in_calendar:
                     break
-                lawyer_available = self.lawyer_is_not_in_different_city(J_date.date, case.lawyer_id, 'Jerusalem')
-                if lawyer_available:
+                lawyers_available =(self.lawyer_is_not_in_different_city(J_date.date, case.lawyer_id_1, case.lawyer_id_2, 'Jerusalem'))
+                if lawyers_available:
                     relevant, hall_number, time_slot = self.date_relevant_for_case(J_date, judge_id ,case)
                     if relevant:
                         been_placed_in_calendar = True
                         J_date.schedule[hall_number][time_slot][judge_id] = case.id
                         self.add_meeting_to_schedule(case, J_date.date, time_slot, hall_number,
-                                                     case_id_to_judge_id[case.id],case.lawyer_id)
+                                                     case_id_to_judge_id[case.id],case.lawyer_id_1 , case.lawyer_id_2)
             #if not been_placed_in_calendar:
                 #print('got here')
 

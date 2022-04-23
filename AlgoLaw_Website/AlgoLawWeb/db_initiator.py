@@ -134,7 +134,8 @@ class DBInitiator:
             second_type = row['Secondary_Type']
             sub_type = row['Case_sub_type']
             location = row['Location']
-            lawyer=row['Lawyer_ID']
+            lawyer_1 = row['Lawyer_ID_1']
+            lawyer_2 = row['Lawyer_ID_2']
 
             urg_level, duration, weight = self.get_case_db_data(case_enrichment_df, main_type,
                                                                                   second_type, sub_type)
@@ -148,7 +149,8 @@ class DBInitiator:
                             weight=weight,
                             quarter_created=((datetime.datetime.now().month-1) // 3) + 1,
                             year_created=datetime.datetime.now().year,
-                            lawyer_id=lawyer)
+                            lawyer_id_1=lawyer_1,
+                            lawyer_id_2=lawyer_2)
 
             add_to_db(new_case)
 
