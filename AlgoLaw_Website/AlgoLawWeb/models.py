@@ -62,7 +62,8 @@ class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     judge_id = db.Column(db.Integer, db.ForeignKey('judge.id'), nullable=False)
     relevant_emails = db.Column(db.String(120), nullable=False)  # str of list of emails "['email1@gmail.com', 'email2@gmail.com',...]"
-    datetime_of_event = db.Column(db.DateTime, nullable=False)
+    start_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    end_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
 
 class Judge(db.Model, UserMixin):
@@ -120,7 +121,7 @@ class MeetingSchedule(db.Model):
     date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)  # actual date of schedule
     judge_id = db.Column(db.Integer, db.ForeignKey('judge.id'),
                          nullable=True)  # Nullable so we can add cases before division
-    # start_time and end_time hold str of only the hours to be turned to datetime with date from HallSchedule
+    # start_time and end_time hold str of only the hours to be turned to datetime with date
     start_time = db.Column(db.String(100), nullable=True)  # datetime.now().strftime("%H:%M") -> 09:30
     end_time = db.Column(db.String(100), nullable=True)  # datetime.now().strftime("%H:%M") -> 09:30
     is_verified = db.Column(db.Boolean, nullable=False, default=False)

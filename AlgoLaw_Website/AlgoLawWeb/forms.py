@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed, FileRequired
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, DateField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, DateField, DateTimeField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 from AlgoLawWeb.models import User, datetime
 from flask_login import current_user
@@ -73,7 +73,13 @@ class UploadFilesForm(FlaskForm):
 class VacaForm(FlaskForm):
     start_date = DateField('תחילת חופש', validators=[DataRequired()], format='%Y/%m/%d')
     end_date = DateField('סוף חופש', validators=[DataRequired()], format='%Y/%m/%d')
-    submit = SubmitField('הגש/י')
+    submit = SubmitField('זמן חופשה')
+
+
+class EventForm(FlaskForm):
+    start_date = DateTimeField('תחילת אירוע', validators=[DataRequired()], format='YYYY/MM/DD hh:mm')
+    end_date = DateTimeField('סוף אירוע', validators=[DataRequired()], format='YYYY/MM/DD hh:mm')
+    submit = SubmitField('זמן אירוע')
 
 
 class CaseSearchForm(FlaskForm):

@@ -3,7 +3,7 @@ from sqlalchemy import or_, and_
 from AlgoLawBackEnd import judge_divider
 from AlgoLawWeb import app, db
 from AlgoLawWeb.models import User, Judge, ROLES, Vacation, CaseJudgeLocation, Case, MeetingSchedule, Judge, Hall, \
-    Rotation
+    Rotation, Event
 import datetime
 import os
 from flask import flash, redirect, request, send_from_directory
@@ -185,12 +185,49 @@ def get_upload_div_colors():
 
 
 ###################################### CALENDAR FUNCTIONS ############################################
-def check_date_earlier_than_today(form):
-    if form.start_date.raw_data is not None:
+def check_event_is_same_day(start_date, end_date):
+    return start_date.date() == end_date.date()
+
+
+def handle_event(form):
+    if check_date_earlier_than_today(form):
+        start_date = datetime.datetime.strptime(form.start_date.raw_data[0], '%Y-%m-%dT%H:%M:%S%z')
+        end_date = datetime.datetime.strptime(form.end_date.raw_data[0], '%Y-%m-%dT%H:%M:%S%z')
+        if check_event_is_same_day(start_date, end_date):
+            event = Event(judge_id=current_user.id, start_time=start_date, end_time=end_date)
+            add_to_db(event)
+            flash('נוצר אירוע', 'success')
+            pass
+        pass
+
+
+def handle_vacation_form(form):
+    if check_date_earlier_than_today(form):
         start_date = datetime.datetime.strptime(form.start_date.raw_data[0], '%Y-%m-%d')
         end_date = datetime.datetime.strptime(form.end_date.raw_data[0], '%Y-%m-%d')
-        if start_date < datetime.datetime.today():
-            flash('תאריך תחילת חופש צריך להיות לפחות היום או מאוחר יותר', 'danger')
+        if not check_if_already_vacation(start_date, end_date, current_user.id):
+            if check_if_short_vaca(form):
+                # Got short Vacation
+                vacation = Vacation(judge_id=current_user.id, is_verified=True, type='Short',
+                                                   start_date=start_date, end_date=end_date)
+                add_to_db(vacation)
+                flash('בקשה לחופשה קצרה הוגשה', 'success')
+            else:
+                # Got long vacation
+                vacation = Vacation(judge_id=current_user.id, is_verified=False, type='Long',
+                                                   start_date=start_date, end_date=end_date)
+                add_to_db(vacation)
+                flash('בקשה לחופשה ארוכה הוגשה', 'success')
+
+
+def check_date_earlier_than_today(form):
+    if form.start_date.raw_data is not None:
+        try:
+            start_date = datetime.datetime.strptime(form.start_date.raw_data[0], '%Y-%m-%d')
+        except:
+            start_date = datetime.datetime.strptime(form.start_date.raw_data[0], '%Y-%m-%dT%H:%M:%S%z').replace(tzinfo=None)
+        if start_date <= datetime.datetime.today():
+            flash('תאריך צריך להיות לפחות היום או מאוחר יותר', 'danger')
             return False
     else:
         return False
@@ -216,15 +253,6 @@ def get_location_by_role(cur_role, current_user_id):
         else:
             return location
 
-# ROLES = {
-#     'דיין/דיינת': 'Judge',
-#     'מזכיר/ה ראשי/ת': 'Master Secretary',
-#     'מזכיר/ה מחוזית ירושלים': 'Jerusalem Secretary',
-#     'מזכיר/ה מחוזית חיפה': 'Haifa Secretary',
-#     'מזכיר/ה מחוזית תל אביב': 'Tel Aviv Secretary',
-#     'מזכיר/ה מחוזית באר שבע': 'Beer Sheva Secretary',
-#     'הנהלה': 'Master'
-# }
 def role_to_location(role):
     if 'Master' in role:
         return None  # to get all locations
@@ -315,14 +343,13 @@ def check_if_already_vacation(start_date, end_date, judge_id):
     return False
 
 
-def check_not_short_vaca(form):
+def check_if_short_vaca(form):
     if form.start_date.raw_data is not None:
         start_date = datetime.datetime.strptime(form.start_date.raw_data[0], '%Y-%m-%d')
         end_date = datetime.datetime.strptime(form.end_date.raw_data[0], '%Y-%m-%d')
         delta = end_date - start_date
         if delta.days <= 3:
-            flash('הבקשה היא לחופשה קצרה נא ללכת ל״חופשה קצרה״', 'warning')
-            return False
+            return True
     else:
         return False
     return True

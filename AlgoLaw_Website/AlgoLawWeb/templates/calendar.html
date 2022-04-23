@@ -9,7 +9,7 @@
         <div class="col-md-3">
             <h2 class="form-group text-right" style="font-weight: bold;"> {{title}} </h2>
             <ul class="list-group">
-                {% if master_view == False%}
+                {% if master_view == False and judge_view == False %}
                 <h3 class="text-right">הודעות</h3>
                 <div class="content-section">
 
@@ -28,6 +28,7 @@
                   <option value="Beer Sheva">באר שבע</option>
                 </select>
                 {% endif %}
+                {% if judge_view == False %}
                 <h3 class="form-group text-right" style="font-weight: bold;">אולמות</h3>
                 <select onchange="renderCalendar();" class="form-group text-right" id="hall_options">
                   <option value="All">הכל</option>
@@ -37,8 +38,29 @@
                 <select onchange="renderCalendar()" class="form-group text-right" id="judges_options">
                   <option value="All">הכל</option>
                 </select>
-
+                {% endif %}
                 <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <form method="POST" action="" class="text-right">
+                    {{ event_from.hidden_tag() }}
+                    <div hidden>
+                        {{event_from.start_date(id="event_start_date_value")}}
+                        {{event_from.end_date(id="event_end_date_value")}}
+                    </div>
+                    {{ event_from.submit(class="btn btn-outline-info", style="background-color: coral; color: #444444") }}
+                </form>
+                <br>
+                <form method="POST" action="" class="text-right">
+                    {{ vacation_form.hidden_tag() }}
+                    <div hidden>
+                        {{vacation_form.start_date(id="start_date_value")}}
+                        {{vacation_form.end_date(id="end_date_value")}}
+                    </div>
+                    {{ vacation_form.submit(class="btn btn-outline-info", style="background-color: coral; color: #444444") }}
+                </form>
                 <br>
                 <br>
                 <br>
@@ -48,6 +70,17 @@
               </ul>
           </div>
     </div>
+    {% if judge_view == True %}
+    <script>
+        let JudgeIdPage={{cur_user_id}};
+        let IsJudgePage = true
+    </script>
+    {% else %}
+    <script>
+        let JudgeIdPage = 'none'
+        IsJudgePage = false
+    </script>
+    {% endif %}
     <script>
         "use strict";
         let monthly = true
@@ -86,22 +119,24 @@
             } else {
                 LocationToUse = Location
             }
-            judges_options.innerHTML = null;
-            let opt = document.createElement('option');
-            opt.value = "All";
-            opt.innerHTML = 'הכל';
-            judges_options.appendChild(opt);
-            let result = await fetch(`/${LocationToUse}/get_all_location_judges`)
-            let body = await result.json();
-            for (let judge of body) {
+            if (IsJudgePage == false) {
+                judges_options.innerHTML = null;
                 let opt = document.createElement('option');
-                opt.value = judge.id;
-                opt.innerHTML = judge.name;
+                opt.value = "All";
+                opt.innerHTML = 'הכל';
                 judges_options.appendChild(opt);
+                let result = await fetch(`/${LocationToUse}/get_all_location_judges`)
+                let body = await result.json();
+                for (let judge of body) {
+                    let opt = document.createElement('option');
+                    opt.value = judge.id;
+                    opt.innerHTML = judge.name;
+                    judges_options.appendChild(opt);
 
+                }
+                await addHallOptions(Location);
             }
-            await addHallOptions(Location);
-            }
+        }
     </script>
     <script>
         const renderCalendar = async (CalView) => {
@@ -111,7 +146,7 @@
             // Location = LocationChoice.value
             HallChoice = document.getElementById('hall_options');
             // Hall = HallChoice.value
-            if (JudgeChoice != undefined) {
+            if (JudgeChoice) {
                JudgeId = judges_options.value
                if (JudgeId == "All") {
                    judgeIdToUse = 'none'
@@ -120,12 +155,12 @@
                 judgeIdToUse = JudgeId
                }
             }
-            else{
-                judgeIdToUse = 'none'
+            else {
+                judgeIdToUse = JudgeIdPage
             }
 
 
-            if (LocationChoice != undefined) {
+            if (LocationChoice) {
                 UserLocation = location_choice.value
                 if (UserLocation == 'All'){
                     LocationToUse = 'none'
@@ -138,7 +173,7 @@
                 LocationToUse = 'none'
             }
 
-            if (HallChoice != 'undefined'){
+            if (HallChoice){
                 HallId = hall_options.value
                 if (HallId == 'All') {
                     HallToUse = 'none'
@@ -147,17 +182,16 @@
                 }
             }
             else {
-                HallToUse = 'None'
+                HallToUse = 'none'
             }
 
-            if (CalView != undefined) {
+            if (CalView) {
                 CalViewToUse = CalView
             }
 
 
             let result = await fetch(`/get_all_judge_events/${judgeIdToUse}-${LocationToUse}-${HallToUse}-${monthly}`)
             let body = await result.json();
-            console.log(body)
             let eventsForCal = [];
             for (let event of body){
                 let currentPush = {title: event.title,
@@ -178,6 +212,16 @@
                 selectable: true,
                 direction: 'rtl',
                 events: eventsForCal,
+                select: function(info) {
+                    let vaca_start_div = document.getElementById('start_date_value');
+                    vaca_start_div.value = info.startStr
+                    let vaca_end_div = document.getElementById('end_date_value');
+                    vaca_end_div.value = info.endStr
+                    let event_start_div = document.getElementById('event_start_date_value');
+                    event_start_div.value = info.startStr
+                    let event_end_div = document.getElementById('event_end_date_value');
+                    event_end_div.value = info.endStr
+                }
             });
             judge_calendar.render();
         }
