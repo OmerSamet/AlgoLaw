@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h2>חיפוש תיקים</h2>
+    <h2> נמצאו {{cases_found_num}} תיקים</h2>
+    {% for case in cases.items %}
+        <article class="media content-section">
+            <div class="media-body">
+                <h2> ערר: {{case.orer_id}}</h2>
+                <h2>שם עורך דין: {{case.lawyer_name}}</h2>
+                <h2>מספר תיק: {{case.id}}</h2>
+                <h2>קטגוריה ראשית: {{case.first_type}}</h2>
+                <h2>תראיך דיון, שעה, מיקום: </h2>
+                <p class="article-content">{{ post.content }}</p>
+            </div>
+        </article>
+    {% endfor %}
+
+{% endblock content %}

@@ -196,6 +196,26 @@ def check_date_earlier_than_today(form):
         return False
     return True
 
+
+def get_location_by_role(cur_role, current_user_id):
+    if 'Master' in cur_role:
+        return 'Jerusalem'
+    elif 'Secretary' in cur_role:
+        location = cur_role.split(' ')
+        location = location.pop()
+        if len(location) > 1:
+            location = ' '.join(location)
+            return location
+        else:
+            return location[0]
+    else:
+        #Judge
+        location = Judge.query.filter(Judge.user_id == current_user_id).first()
+        if ',' in location:
+            return 'All'
+        else:
+            return location
+
 # ROLES = {
 #     'דיין/דיינת': 'Judge',
 #     'מזכיר/ה ראשי/ת': 'Master Secretary',
@@ -270,22 +290,6 @@ def turn_events_to_monthly(events):
                 }
                 daily_events.append(daily_event)
 
-        # start = '09:00'
-        # end = '14:50'
-        # event_date_obj = datetime.datetime.strptime(event_date, '%Y-%m-%d')
-        # event_start_time = datetime.datetime.strptime(start, '%H:%M').time()
-        # event_start_time = datetime.datetime.combine(event_date_obj, event_start_time)
-        # event_end_time = datetime.datetime.strptime(end, '%H:%M').time()
-        # event_end_time = datetime.datetime.combine(event_date_obj, event_end_time)
-        # daily_event = {
-        #     'title': date_title,
-        #     'start': str(event_start_time),
-        #     'end': str(event_end_time),
-        #     'color': EVENT_COLORS['MONTHLY_EVENT'],
-        #     'display': 'block',
-        #     'allDay': False
-        # }
-        # daily_events.append(daily_event)
     return daily_events
 
 ###################################### VACATION FUNCTIONS #############################################################
@@ -370,10 +374,6 @@ def get_all_meetings(judge_id=None, location=None, hall_number=None):
         meetings = MeetingSchedule.query.join(Hall).filter(MeetingSchedule.judge_id.in_(relevant_judges_ids),
                                                            Hall.location.like(location),
                                                            Hall.hall_number.like(hall_number)).all()
-        # userList = users.query.join(friendships)
-        #                   .add_columns(users.id, users.userName, users.userEmail, friendships.user_id, friendships.friend_id).
-        #                   filter(users.id == friendships.friend_id).
-        #                   filter(friendships.user_id == userID).paginate(page, 1, False)
 
     else:
         meetings = MeetingSchedule.query.join(Hall).filter(MeetingSchedule.judge_id == judge_id,

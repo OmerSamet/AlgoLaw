@@ -74,3 +74,12 @@ class VacaForm(FlaskForm):
     start_date = DateField('תחילת חופש', validators=[DataRequired()], format='%Y/%m/%d')
     end_date = DateField('סוף חופש', validators=[DataRequired()], format='%Y/%m/%d')
     submit = SubmitField('הגש/י')
+
+
+class CaseSearchForm(FlaskForm):
+    lawyer_id = StringField('מספר זיהוי העורך דין', validators=[])
+    orer_id = StringField('מספר זיהוי העורר', validators=[])
+    case_id = StringField('מספר תיק', validators=[])
+    main_type = StringField('קטגוריה ראשית', validators=[])
+    secondary_type = StringField('קטגוריה משנית', validators=[])
+    submit = SubmitField('חיפוש')

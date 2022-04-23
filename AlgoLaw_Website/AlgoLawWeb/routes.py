@@ -1,14 +1,14 @@
 from flask import render_template, url_for, flash, redirect, send_from_directory
 from AlgoLawWeb import app, db, bcrypt
-from AlgoLawWeb.forms import RegistrationForm, LoginForm, CasesForm, VacaForm, UploadFilesForm
-from AlgoLawWeb.models import User, ROLES, Vacation, Judge, Hall
+from AlgoLawWeb.forms import RegistrationForm, LoginForm, CasesForm, VacaForm, UploadFilesForm, CaseSearchForm
+from AlgoLawWeb.models import User, ROLES, Vacation, Judge, Hall, Case, MeetingSchedule
 from flask_login import login_user, current_user, logout_user, login_required
 import datetime
 from AlgoLawWeb.AlgoLawBackEnd import judge_divider
 from AlgoLawWeb.utilities import check_if_already_vacation, save_csv_file, \
     get_all_relevant_judges, check_date_earlier_than_today, check_not_short_vaca, add_to_db, check_logged_in, \
     return_role_page, insert_output_to_db, get_all_events, load_cases_to_db, load_holidays_to_db, load_rotations_to_db, \
-    load_mishmoret_to_db, get_upload_div_colors, get_events_by_role
+    load_mishmoret_to_db, get_upload_div_colors, get_events_by_role, get_location_by_role
 import json
 from AlgoLawWeb.db_initiator import DBInitiator
 from AlgoLawWeb.scheduler import run_division_logic
@@ -77,6 +77,8 @@ def get_all_judge_events(judge_id_location):  # judge_id_location = judge_id-loc
         judge_id = None
     if hall_number == 'none':
         hall_number = None
+    if location == 'none':
+        location = None
     if monthly == 'true':
         events = get_events_by_role(cur_role, judge_id=judge_id, monthly=True, hall_number=hall_number, location=location)
     else:
@@ -309,7 +311,76 @@ def initiate_db():
 def calendar():
     cur_role = ROLES[current_user.role]
     master_view = False
+    judge_view = False
     if 'Master' in cur_role:
         master_view = True
-    # events = get_events_by_role(cur_role, judge_id=current_user.id, monthly=True)
-    return render_template('calendar.html', master_view=master_view)
+    else:
+        judge_view = True
+
+    return render_template('calendar.html', master_view=master_view, judge_view=judge_view)
+
+
+@app.route('/search_cases', methods=['GET', 'POST'])
+@login_required
+def search_cases():
+    form = CaseSearchForm()
+    if form.validate_on_submit():
+        # Go over all form fields to see which one was used
+        if form.orer_id.data:
+            orer_search_id = form.orer_id.data
+            orer_filter = Case.orer_id.like(orer_search_id)
+        else:
+            orer_filter = True
+
+        if form.case_id.data:
+            case_search_id = form.case_id.data
+            case_id_filter = Case.id.like(case_search_id)
+        else:
+            case_id_filter = True
+
+        if form.lawyer_id.data:
+            lawyer_search_id = form.lawyer_id.data
+            lawyer_filter = Case.lawyer_id.like(lawyer_search_id)
+        else:
+            lawyer_filter = True
+
+        if form.main_type.data:
+            main_type_search = form.main_type.data
+            main_type_filter = Case.first_type.like(main_type_search)
+        else:
+            main_type_filter = True
+
+        if form.secondary_type.data:
+            secondary_type_search = form.secondary_type.data
+            secondary_type_filter = Case.second_type.like(secondary_type_search)
+        else:
+            secondary_type_filter = True
+
+        cases = Case.query.filter(orer_filter,
+                                  case_id_filter,
+                                  lawyer_filter,
+                                  main_type_filter,
+                                  secondary_type_filter).all()
+        final_cases = []
+        for case in cases:
+            # lawyer_name = Lawyer.query.filter(Lawyer.name == case.lawyer_id).first()
+            schedule = MeetingSchedule.query.join(Hall).\
+                            filter(MeetingSchedule.case_id == case.id).\
+                            add_column(Hall.hall_number).add_column(Hall.location).\
+                            order_by(MeetingSchedule.date.desc()).first()
+            schedule = schedule.location + ', ' + schedule.hall_number + ', ' + schedule.start + ' - ' + schedule.end
+            final_cases.append(
+                {
+                    'case_id': case.id,
+                    'first_type': case.first_type,
+                    'second_type': case.second_type,
+                    # 'lawyer_name': lawyer_name,
+                    'location': schedule
+                }
+            )
+
+        return render_template('show_cases_search.html', cases=final_cases, cases_found_num=len(cases))
+
+    return render_template('search_cases.html', form=form)
+
+

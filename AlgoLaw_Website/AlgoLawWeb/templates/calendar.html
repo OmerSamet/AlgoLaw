@@ -21,7 +21,7 @@
                 {% endif %}
                 {% if master_view == True %}
                 <h3 class="form-group text-right" style="font-weight: bold;">מחוז</h3>
-                <select onchange="renderCalendar(judges_options.value , location_choice.value); addJudgeOptions(location_choice.value)" class="form-group text-right" id="location_choice">
+                <select onchange="renderCalendar(); addJudgeOptions(location_choice.value)" class="form-group text-right" id="location_choice">
                   <option value="Jerusalem" selected="selected">ירושלים</option>
                   <option value="Tel Aviv">תל אביב</option>
                   <option value="Haifa">חיפה</option>
@@ -29,12 +29,12 @@
                 </select>
                 {% endif %}
                 <h3 class="form-group text-right" style="font-weight: bold;">אולמות</h3>
-                <select onchange="renderCalendar(judges_options.value , location_choice.value, hall_options.value);" class="form-group text-right" id="hall_options">
+                <select onchange="renderCalendar();" class="form-group text-right" id="hall_options">
                   <option value="All">הכל</option>
                 </select>
 
                 <h3 class="form-group text-right" style="font-weight: bold;">בחירת דיין</h3>
-                <select onchange="renderCalendar(judges_options.value, location_choice.value, hall_options.value)" class="form-group text-right" id="judges_options">
+                <select onchange="renderCalendar()" class="form-group text-right" id="judges_options">
                   <option value="All">הכל</option>
                 </select>
 
@@ -42,9 +42,9 @@
                 <br>
                 <br>
                 <br>
-                <button onclick="monthly=true;renderCalendar(judges_options.value , location_choice.value, hall_options.value, 'dayGridMonth')" class="btn btn-outline-info">חודשי</button>
-                <button onclick="monthly=true;renderCalendar(judges_options.value , location_choice.value, hall_options.value, 'dayGridWeek')" class="btn btn-outline-info">שבועי</button>
-                <button onclick="monthly=false;renderCalendar(judges_options.value , location_choice.value, hall_options.value, 'timeGridDay')" class="btn btn-outline-info">יומי</button>
+                <button onclick="monthly=true;renderCalendar('dayGridMonth')" class="btn btn-outline-info">חודשי</button>
+                <button onclick="monthly=true;renderCalendar('dayGridWeek')" class="btn btn-outline-info">שבועי</button>
+                <button onclick="monthly=false;renderCalendar('timeGridDay')" class="btn btn-outline-info">יומי</button>
               </ul>
           </div>
     </div>
@@ -54,6 +54,7 @@
         var judges_options = document.getElementById('judges_options');
         var location_choice = document.getElementById('location_choice');
         var hall_options = document.getElementById('hall_options');
+        let CalViewToUse = 'dayGridMonth';
     </script>
     <script>
         const addHallOptions = async (Location) => {
@@ -103,27 +104,56 @@
             }
     </script>
     <script>
-        const renderCalendar = async (judgeId, Location, Hall, CalView) => {
-            if (judgeId == undefined | judgeId == "All") {
+        const renderCalendar = async (CalView) => {
+            JudgeChoice = document.getElementById('judges_options');
+            // JudgeId = JudgeChoice.value
+            LocationChoice = document.getElementById('location_choice');
+            // Location = LocationChoice.value
+            HallChoice = document.getElementById('hall_options');
+            // Hall = HallChoice.value
+            if (JudgeChoice != undefined) {
+               JudgeId = judges_options.value
+               if (JudgeId == "All") {
+                   judgeIdToUse = 'none'
+               }
+               else {
+                judgeIdToUse = JudgeId
+               }
+            }
+            else{
                 judgeIdToUse = 'none'
-            } else {
-                judgeIdToUse = judgeId
             }
-            if (Location == undefined) {
-                LocationToUse = 'Jerusalem'
-            } else {
-                LocationToUse = Location
+
+
+            if (LocationChoice != undefined) {
+                UserLocation = location_choice.value
+                if (UserLocation == 'All'){
+                    LocationToUse = 'none'
+                }
+                else {
+                    LocationToUse = UserLocation
+                }
             }
-            if (Hall == undefined | Hall == 'All') {
-                HallToUse = 'none'
-            } else {
-                HallToUse = Hall
+            else {
+                LocationToUse = 'none'
             }
-            if (CalView == undefined) {
-                CalViewToUse = 'dayGridMonth'
-            } else {
+
+            if (HallChoice != 'undefined'){
+                HallId = hall_options.value
+                if (HallId == 'All') {
+                    HallToUse = 'none'
+                } else {
+                    HallToUse = HallId
+                }
+            }
+            else {
+                HallToUse = 'None'
+            }
+
+            if (CalView != undefined) {
                 CalViewToUse = CalView
             }
+
 
             let result = await fetch(`/get_all_judge_events/${judgeIdToUse}-${LocationToUse}-${HallToUse}-${monthly}`)
             let body = await result.json();
