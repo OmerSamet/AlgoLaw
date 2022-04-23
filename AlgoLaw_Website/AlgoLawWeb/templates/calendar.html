@@ -62,6 +62,14 @@
                     </div>
                     {{ vacation_form.submit(class="btn btn-outline-info", style="background-color: coral; color: #444444", id="vacation_submit") }}
                 </form>
+                <br>
+                <br>
+                <div class="text-right btn btn-outline-info" style="background-color: #488a97; color: rosybrown">
+                    <a href="{{ url_for('search_cases') }}">
+                        <h4>חיפוש תיקים</h4>
+<!--                    <img src="{{url_for('static',filename = 'Web_models/push_back_case_big.jpeg')}}" width="200" height="200">-->
+                    </a>
+                </div>
                 {% endif %}
                 <br>
                 <br>
