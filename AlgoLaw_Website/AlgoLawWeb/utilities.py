@@ -3,10 +3,10 @@ from sqlalchemy import or_, and_
 from AlgoLawBackEnd import judge_divider
 from AlgoLawWeb import app, db
 from AlgoLawWeb.models import User, Judge, ROLES, Vacation, CaseJudgeLocation, Case, MeetingSchedule, Judge, Hall, \
-    Rotation, Event
+    Rotation, Event, Lawyer
 import datetime
 import os
-from flask import flash, redirect, request, send_from_directory
+from flask import render_template, url_for, flash, redirect, request, send_from_directory
 from flask_login import login_user, current_user, logout_user, login_required
 import pandas as pd
 from collections import defaultdict
@@ -553,3 +553,52 @@ def insert_output_to_db(output_path):
                                                 quarter=quarter,
                                                 year=year)
         add_to_db(case_judge_location)
+
+
+################################################## LAWYERS STUF ###########################################################
+
+def insert_new_lawyer(name , last_name , lawyer_id, mail,phone_number):
+    lawyer = Lawyer(name=name ,
+                    last_name=last_name
+                    ,lawyer_id=lawyer_id
+                    ,mail=mail,
+                    phone_number=phone_number)
+    add_to_db(lawyer)
+
+
+
+def find_lawyer(name , last_name , lawyer_id, mail,phone_number):
+
+    #checking the input and selecting thr right filters to work with
+    if name != '':
+        name_filter = Lawyer.name.like(name)
+    else:
+        name_filter = True
+    if last_name != '':
+        last_name_filter = Lawyer.last_name.like(last_name)
+    else:
+        last_name_filter = True
+    if lawyer_id != '':
+        lawyer_id_filter = Lawyer.lawyer_id.like(lawyer_id)
+    else:
+        lawyer_id_filter = True
+    if mail != '':
+        mail_filter = Lawyer.mail.like(mail)
+    else:
+        mail_filter = True
+    if phone_number != '':
+        phone_number_filter = Lawyer.phone_number.like(phone_number)
+    else:
+        phone_number_filter = True
+    found_lawyers = Lawyer.query.filter(name_filter,last_name_filter,lawyer_id_filter,mail_filter,phone_number_filter).all()
+    lawyers = []
+    for found in found_lawyers:
+         lawyer = {
+            'name': found.name,
+            'last name': found.last_name,
+             'id': found.lawyer_id,
+             'mail': found.mail,
+             'phone number':found.phone_number
+         }
+         lawyers.append(lawyer)
+    return lawyers

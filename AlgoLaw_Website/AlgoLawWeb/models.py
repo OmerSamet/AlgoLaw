@@ -91,6 +91,14 @@ class Rotation(db.Model):
     end_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
 
+class Lawyer(db.Model):
+    name = db.Column(db.String(100), primary_key=False)
+    last_name = db.Column(db.String(100), primary_key=False)
+    lawyer_id = db.Column(db.String(100), primary_key=True)
+    mail = db.Column(db.String(100), primary_key=False)
+    phone_number = db.Column(db.String(100), primary_key=False)
+
+
 class Case(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     first_type = db.Column(db.String(100), nullable=False)
@@ -104,6 +112,8 @@ class Case(db.Model):
     year_created = db.Column(db.String(20), nullable=False)
     judge_id = db.Column(db.Integer, db.ForeignKey('judge.id'), nullable=True)
     is_done = db.Column(db.Boolean, nullable=False, default=False)  # has this case been done yet?
+    lawyer_id_1 = db.Column(db.String(100),nullable=True)
+    lawyer_id_2 = db.Column(db.String(100), nullable=True)
 
 
 class Meeting(db.Model):
@@ -111,6 +121,7 @@ class Meeting(db.Model):
     case_id = db.Column(db.Integer, db.ForeignKey('case.id'), nullable=False)
     quarter = db.Column(db.String(20), nullable=False)
     year = db.Column(db.String(20), nullable=False)
+
 
 
 class MeetingSchedule(db.Model):
@@ -125,6 +136,9 @@ class MeetingSchedule(db.Model):
     start_time = db.Column(db.String(100), nullable=True)  # datetime.now().strftime("%H:%M") -> 09:30
     end_time = db.Column(db.String(100), nullable=True)  # datetime.now().strftime("%H:%M") -> 09:30
     is_verified = db.Column(db.Boolean, nullable=False, default=False)
+    lawyer_id_1 = db.Column(db.String(100), nullable=True)
+    lawyer_id_2 = db.Column(db.String(100), nullable=True)
+    location = db.Column(db.String(100) ,nullable=False )
 
 
 class CaseJudgeLocation(db.Model):

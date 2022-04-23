@@ -1,6 +1,6 @@
 import pandas as pd
 from AlgoLawWeb import db, login_manager, bcrypt
-from AlgoLawWeb.models import User, Post, ROLES, Vacation, Judge, Hall, Rotation, Case
+from AlgoLawWeb.models import User, Post, ROLES, Vacation, Judge, Hall, Rotation, Case,Lawyer
 from AlgoLawWeb.utilities import add_to_db
 import datetime
 from AlgoLawWeb import app
@@ -15,6 +15,7 @@ class DBInitiator:
         self.judge_data_csv_path = os.path.join(app.root_path, 'DB_DATA', 'Judge_Data.csv')
         self.halls_data_csv_path = os.path.join(app.root_path, 'DB_DATA', 'Halls.csv')
         self.rotation_data_csv_path = os.path.join(app.root_path, 'DB_DATA', 'Judge_Rotation_Schedule.csv')
+        self.lawyers_csv_path = os.path.join(app.root_path, 'DB_DATA','Lawyers.csv')
 
     def import_data_to_db(self):
         # Delete current DB and create empty DB
@@ -146,6 +147,8 @@ class DBInitiator:
             second_type = row['Secondary_Type']
             sub_type = row['Case_sub_type']
             location = row['Location']
+            lawyer_1 = row['Lawyer_ID_1']
+            lawyer_2 = row['Lawyer_ID_2']
 
             urg_level, duration, weight = self.get_case_db_data(case_enrichment_df, main_type,
                                                                                   second_type, sub_type)
@@ -158,7 +161,9 @@ class DBInitiator:
                             location=location,
                             weight=weight,
                             quarter_created=((datetime.datetime.now().month-1) // 3) + 1,
-                            year_created=datetime.datetime.now().year)
+                            year_created=datetime.datetime.now().year,
+                            lawyer_id_1=lawyer_1,
+                            lawyer_id_2=lawyer_2)
 
             add_to_db(new_case)
 
@@ -203,6 +208,18 @@ class DBInitiator:
             hall = Hall(hall_number=row['Hall_id'],
                         location=row['Location'])
             add_to_db(hall)
+
+        return True
+
+    def add_lawyers_to_db(self):
+        lawyers_df = pd.read_csv(self.lawyers_csv_path)
+        for index, row in lawyers_df.iterrows():
+            lawyer = Lawyer(name=row['Name'],
+                            last_name=row['Last_name'],
+                            lawyer_id=row['ID'],
+                            mail=row['Mail'],
+                            phone_number=row['Phone_number'])
+            add_to_db(lawyer)
 
         return True
 
