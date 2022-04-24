@@ -5,16 +5,15 @@
     </div>
     <br>
     <h2 class="text-right"> נמצאו {{ cases_found_num }} תיקים</h2>
-    {% for lawyer in lawyers %}
+    {% for case in cases %}
         <article class="text-right media content-section">
             <div class="media-body">
-                <h2>{{ lawyer['orer_id'] }} :ערר</h2>
-                <h2>{{ lawyer['lawyer_1_id'] }} :שם עורך דין</h2>
-                <h2>{{ lawyer['lawyer_2_id'] }} :שם עורך דין</h2>
-                <h2>{{ lawyer['case_id'] }} :מספר תיק</h2>
-                <h2>קטגוריה ראשית: {{ lawyer['first_type'] }} </h2>
-                <h2>קטגוריה משנית: {{ lawyer['second_type'] }} </h2>
-                <h2>{{ lawyer['location'] }} :תראיך דיון, שעה, מיקום</h2>
+                <h2>{{ case['case_id'] }} :מספר תיק</h2>
+                <h2>{{ case['lawyer_1_id'] }} :שם עורך דין</h2>
+                <h2>{{ case['lawyer_2_id'] }} :שם עורך דין</h2>
+                <h2>קטגוריה ראשית: {{ case['first_type'] }} </h2>
+                <h2>קטגוריה משנית: {{ case['second_type'] }} </h2>
+                <h2>{{ case['location'] }} :תראיך דיון, שעה, מיקום</h2>
             </div>
         </article>
     {% endfor %}
