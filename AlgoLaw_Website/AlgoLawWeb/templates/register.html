@@ -1,13 +1,12 @@
 {% extends "layout.html" %}
 {% block content %}
-    <div class="content-section text-right">
+    <div class="text-right">
         <form method="POST" action="">
             {{ form.hidden_tag() }}
             <fieldset class="form-group">
-                <legend class="border-bottom mb-4"> !הירשם </legend>
+                <img src="{{url_for('static',filename = 'Web_models/signup_now.jpeg')}}" width="300" height="100">
                 <div class="form-group">
-                    {{ form.username.label(class="form-control-label") }}
-
+                    <img src="{{url_for('static',filename = 'Web_models/register_username.jpeg')}}" width="180" height="60">
                     {% if form.username.errors %}
                         {{ form.username(class="form-control form-control-lg is-invalid") }}
                         <div class="invalid-feedback">
@@ -20,7 +19,7 @@
                     {% endif %}
                 </div>
                 <div class="form-group">
-                    {{ form.email.label(class="form-control-label") }}
+                    <img src="{{url_for('static',filename = 'Web_models/register_mail.jpeg')}}" width="180" height="60">
                     {% if form.email.errors %}
                         {{ form.email(class="form-control form-control-lg is-invalid") }}
                         <div class="invalid-feedback">
@@ -33,7 +32,7 @@
                     {% endif %}
                 </div>
                 <div class="form-group">
-                    {{ form.password.label(class="form-control-label") }}
+                    <img src="{{url_for('static',filename = 'Web_models/register_password.jpeg')}}" width="180" height="60">
                     {% if form.password.errors %}
                         {{ form.password(class="form-control form-control-lg is-invalid") }}
                         <div class="invalid-feedback">
@@ -46,7 +45,7 @@
                     {% endif %}
                 </div>
                 <div class="form-group">
-                    {{ form.confirm_password.label(class="form-control-label") }}
+                    <img src="{{url_for('static',filename = 'Web_models/register_re_password.jpeg')}}" width="180" height="60">
                     {% if form.confirm_password.errors %}
                         {{ form.confirm_password(class="form-control form-control-lg is-invalid") }}
                         <div class="invalid-feedback">
@@ -59,7 +58,7 @@
                     {% endif %}
                 </div>
                 <div class="form-group">
-                    {{ form.role.label(class="form-control-label") }}
+                    <img src="{{url_for('static',filename = 'Web_models/register_role.jpeg')}}" width="180" height="60">
 
                     {% if form.role.errors %}
                         {{ form.role(class="form-control form-control-lg is-invalid") }}

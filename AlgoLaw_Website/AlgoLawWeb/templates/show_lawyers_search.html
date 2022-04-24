@@ -11,8 +11,8 @@
         {% for lawyer in lawyers %}
             <article class="text-right media content-section">
                 <div class="media-body">
-                    <h2>{{ lawyer['name'] }} :שם פרטי</h2>
-                    <h2>{{ lawyer['last_name'] }} :שם משפחה</h2>
+                    <h2>שם פרטי: {{ lawyer['name'] }}</h2>
+                    <h2>שם משפחה: {{ lawyer['last_name'] }}</h2>
                     <h2>{{ lawyer['id'] }} :מספר זיהוי</h2>
                     <h2>{{ lawyer['mail'] }} :כתובת דואר אלקטרוני</h2>
                     <h2>מספר טלפון: {{ lawyer['phone_number'] }} </h2>

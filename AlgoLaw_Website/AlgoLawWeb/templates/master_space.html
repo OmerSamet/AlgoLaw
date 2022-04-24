@@ -3,13 +3,12 @@
     <div class="w-100 d-flex flex-column float-right">
         <h3 class="p-2 d-flex justify-content-end" style="font-weight: bold;">{{username}} שלום</h3>
         <div class="p-2 d-flex justify-content-end">
-            <h3 style="font-weight: bold;">יש לבחור את הפעולה הרצויה</h3>
+            <img src="{{url_for('static',filename = 'Web_models/choose_your_option.jpeg')}}" width="300" height="100">
         </div>
         <div class="row justify-content-end text-right">
             <div class="col-sm-2">
                 <a href="{{ url_for('master_validate_users') }}">
-                    <h4>אישור משתמשים חדשים</h4>
-<!--                    <img src="{{url_for('static',filename = 'Web_models/schedule_cases_big.jpeg')}}" width="200" height="200">-->
+                    <img src="{{url_for('static',filename = 'Web_models/verify_new_users.jpeg')}}" width="200" height="200">
                 </a>
             </div>
             <div class="col-sm-2">
@@ -24,14 +23,12 @@
             </div>
             <div class="col-sm-2">
                 <a href="{{ url_for('home') }}">
-                    <h4>ניתוח נתונים</h4>
-<!--                    <img src="{{url_for('static',filename = 'Web_models/changes_for_schedule_big.jpeg')}}" width="200" height="200">-->
+                    <img src="{{url_for('static',filename = 'Web_models/data_analysis.jpeg')}}" width="200" height="200">
                 </a>
             </div>
             <div class="col-sm-2">
                 <a href="{{ url_for('master_change_weights') }}">
-                    <h4>שינוי משקלות</h4>
-<!--                    <img src="{{url_for('static',filename = 'Web_models/changes_for_schedule_big.jpeg')}}" width="200" height="200">-->
+                    <img src="{{url_for('static',filename = 'Web_models/weight_change.jpeg')}}" width="200" height="200">
                 </a>
             </div>
         </div>

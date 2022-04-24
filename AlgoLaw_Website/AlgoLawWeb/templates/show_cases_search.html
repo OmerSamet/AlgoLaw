@@ -4,7 +4,9 @@
         <img src="{{url_for('static',filename = 'Web_models/case_search_title.jpeg')}}" width="240" height="100">
     </div>
     <br>
-    <h2 class="text-right"> נמצאו {{ cases_found_num }} תיקים</h2>
+    <div class="p-2 d-flex justify-content-end">
+            <img src="{{url_for('static',filename = 'Web_models/cases_found.jpeg')}}" width="240" height="80">
+        </div>
     {% for case in cases %}
         <article class="text-right media content-section">
             <div class="media-body">
