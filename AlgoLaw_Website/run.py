@@ -1,3 +1,3 @@
-from AlgoLawWeb import app
+# from AlgoLawWeb import app
 
-app.run(debug=True, threaded=True)
+# app.run(debug=True, threaded=True)
