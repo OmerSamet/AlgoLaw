@@ -195,7 +195,7 @@ def handle_event(form):
         start_date = datetime.datetime.strptime(form.start_date.raw_data[0], '%Y-%m-%dT%H:%M:%S%z')
         end_date = datetime.datetime.strptime(form.end_date.raw_data[0], '%Y-%m-%dT%H:%M:%S%z')
         if check_event_is_same_day(start_date, end_date):
-            event = Event(judge_id=current_user.id, start_time=start_date, end_time=end_date)
+            event = Event(judge_id=current_user.id, start_date=start_date, end_date=end_date)
             add_to_db(event)
             flash('נוצר אירוע', 'success')
             pass
