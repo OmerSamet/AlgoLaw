@@ -97,3 +97,17 @@ class lawyerSearchForm(FlaskForm):
     lawyer_mail = StringField('כתובת דואר אלקטרוני', validators=[])
     lawyer_phone = StringField('מספר טלפון', validators=[])
     submit = SubmitField('חיפוש')
+
+
+class WeightForm(FlaskForm):
+    type_1 = StringField('הסתננות ומקלט', validators=[])
+    type_2 = StringField('רישום ילדים', validators=[])
+    type_3 = StringField('הומניטרי', validators=[])
+    type_4 = StringField('תושבות', validators=[])
+    type_5 = StringField('איחוד משפחות', validators=[])
+    type_6 = StringField('עבודה ולימודים', validators=[])
+    type_7 = StringField('אזרחות', validators=[])
+    type_8 = StringField('כללי', validators=[])
+    type_9 = StringField('חוק השבות', validators=[])
+    type_10 = StringField('כניסה וביקור', validators=[])
+    submit = SubmitField('שנה')

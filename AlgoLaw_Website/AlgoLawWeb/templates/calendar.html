@@ -83,12 +83,22 @@
     {% if judge_view == True %}
     <script>
         let JudgeIdPage={{cur_user_id}};
-        let IsJudgePage = true
+        let IsJudgePage = true;
     </script>
     {% else %}
     <script>
         let JudgeIdPage = 'none'
-        IsJudgePage = false
+        IsJudgePage = false;
+    </script>
+    {% endif %}
+
+    {% if master_view == True %}
+    <script>
+        let MasterView=true;
+    </script>
+    {% else %}
+    <script>
+        let MasterView=false;
     </script>
     {% endif %}
     <script>
@@ -204,13 +214,20 @@
             let body = await result.json();
             let eventsForCal = [];
             for (let event of body){
-                let currentPush = {title: event.title,
+                let EventDesctiption = 'False'
+                if (event.is_verified) {
+                    EventDesctiption =  'True'
+                }
+                let currentPush = {
+                            title: event.title,
                             start: Date.parse(event.start),
                             end: Date.parse(event.end),
                             backgroundColor: event.color,
                             id: event.id,
                             display: event.display,
-                            allDay: event.allDay}
+                            allDay: event.allDay,
+                            description: EventDesctiption
+                }
                 eventsForCal.push(currentPush)
                 }
 
@@ -231,7 +248,30 @@
                     event_start_div.value = info.startStr
                     let event_end_div = document.getElementById('event_end_date_value');
                     event_end_div.value = info.endStr
+                },
+                eventClick: function (info) {
+                    if (MasterView == true) {
+
+                        var eventObj = info.event;
+                        if (eventObj.extendedProps.description == 'False') {
+                            let isVerified = confirm("חופשה מאושרת?")
+                            if (isVerified) {
+                                var xhr = new XMLHttpRequest();
+                                xhr.open("POST", `/verification_of_vacations/${eventObj.id}`, true);
+                                xhr.send();
+                            }
+                            else{
+                                let ShouldDelete = confirm("למחוק חופשה?")
+                                if (ShouldDelete) {
+                                    var xhr = new XMLHttpRequest();
+                                    xhr.open("POST", `/delete_vacation/${eventObj.id}`, true);
+                                    xhr.send();
+                                }
+                            }
+                        }
+                    }
                 }
+
             });
             judge_calendar.render();
         }

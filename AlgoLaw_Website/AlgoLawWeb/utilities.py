@@ -2,6 +2,7 @@ from sqlalchemy import or_, and_
 
 from AlgoLawWeb import app, db
 from AlgoLawWeb.AlgoLawBackEnd import judge_divider
+from AlgoLawWeb.AlgoLawBackEnd.config import CaseWeightDir
 from AlgoLawWeb.models import User, Judge, ROLES, Vacation, CaseJudgeLocation, Case, MeetingSchedule, Judge, Hall, \
     Rotation, Event, Lawyer
 import datetime
@@ -350,9 +351,8 @@ def check_if_short_vaca(form):
         delta = end_date - start_date
         if delta.days <= 3:
             return True
-    else:
-        return False
-    return True
+
+    return False
 
 
 def get_case_id_to_title(case_id_judge_id):
@@ -421,6 +421,7 @@ def get_all_meetings(judge_id=None, location=None, hall_number=None):
             'start': str(case_start_date),
             'end': str(case_end_date),
             'id': meeting.id,
+            'is_verified': meeting.is_verified,
             'type': 'meeting',
             'hall_id': meeting.hall_id,
             'display': 'block',
@@ -468,6 +469,7 @@ def get_all_vacations(judge_id=None, location=None):
             'start': str(vacation.start_date),
             'end': str(vacation.end_date),
             'id': vacation.id,
+            'is_verified': vacation.is_verified,
             'type': 'vacation',
             'display': 'block',
             'allDay': True
@@ -570,7 +572,6 @@ def insert_new_lawyer(name , last_name , lawyer_id, mail,phone_number):
 
 
 def find_lawyer(name , last_name , lawyer_id, mail,phone_number):
-
     #checking the input and selecting thr right filters to work with
     if name != '':
         name_filter = Lawyer.name.like(name)
@@ -604,3 +605,12 @@ def find_lawyer(name , last_name , lawyer_id, mail,phone_number):
          }
          lawyers.append(lawyer)
     return lawyers
+
+
+def get_case_weights(year='2020'):
+    weights = defaultdict(str)
+    weight_df = pd.read_excel(CaseWeightDir)
+    for index, row in weight_df.iterrows():
+        weights[row['Type']] = row[year]
+
+    return weights

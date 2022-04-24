@@ -1,7 +1,7 @@
 from flask import render_template, url_for, flash, redirect, send_from_directory, request
 from AlgoLawWeb import app, db, bcrypt
 from AlgoLawWeb.forms import RegistrationForm, LoginForm, CasesForm, VacaForm, UploadFilesForm, CaseSearchForm, \
-    EventForm, lawyerSearchForm
+    EventForm, lawyerSearchForm, WeightForm
 from AlgoLawWeb.models import User, ROLES, Vacation, Judge, Hall, Case, MeetingSchedule, Lawyer
 from flask_login import login_user, current_user, logout_user, login_required
 import datetime
@@ -10,7 +10,7 @@ from AlgoLawWeb.utilities import check_if_already_vacation, save_csv_file, \
     get_all_relevant_judges, add_to_db, check_logged_in, \
     return_role_page, insert_output_to_db, get_all_events, load_cases_to_db, load_holidays_to_db, load_rotations_to_db, \
     load_mishmoret_to_db, get_upload_div_colors, get_events_by_role, get_location_by_role, handle_vacation_form, \
-    handle_event , find_lawyer
+    handle_event , find_lawyer, get_case_weights
 import json
 from AlgoLawWeb.db_initiator import DBInitiator
 from AlgoLawWeb.scheduler import run_division_logic
@@ -58,13 +58,20 @@ def verification_of_vacations(vaca_id):
         db.session.commit()
     return 'True'
 
+@app.route('/delete_vacation/<vaca_id>', methods=['GET', 'POST'])
+@login_required
+def delete_vacation(vaca_id):
+    cur_vaca = Vacation.query.filter_by(id=vaca_id).first()
+    if cur_vaca:
+        db.session.delete(cur_vaca)
+        db.session.commit()
+    return 'True'
+
+
 
 @app.route('/<judge_id>/master_vacation_view', methods=['GET', 'POST'])
 @login_required
 def master_vacation_view(judge_id):  # judge_id = judge_id to see vacations of
-    # if judge_id == 'none':
-    #     judge_id = None
-    # vacations = get_all_vacations(judge_id)  # dict -> 'judge_id': vacation.judge_id, 'title': 'חופש' + str(vacation.judge_id), 'start': vacation.start_date, 'end': vacation.end_date
     judges = get_all_relevant_judges()  # dict -> id: judge_id, name: judge_name
     return render_template('master_vacation_view.html', title='Vacations View',
                            judge_id=current_user.id, username=current_user.username, judges=judges)
@@ -125,47 +132,6 @@ def get_all_location_halls(location):
 def judge_case_assignments():
     events = get_all_events(judge_id=current_user.id)
     return render_template('judge_case_assignments.html', events=events)
-
-
-# @app.route('/judge_short_vaca', methods=['GET', 'POST'])
-# @login_required
-# def judge_short_vaca():
-#     form = VacaForm()
-#     events = get_all_events(judge_id=current_user.id)
-#     if check_date_earlier_than_today(form):
-#         start_date = datetime.datetime.strptime(form.start_date.raw_data[0], '%Y-%m-%d')
-#         end_date = datetime.datetime.strptime(form.end_date.raw_data[0], '%Y-%m-%d')
-#         delta = end_date - start_date
-#         if delta.days <= 3:
-#             vacation = Vacation(judge_id=current_user.id, is_verified=True, type='Short',
-#                                    start_date=start_date, end_date=end_date)
-#             add_to_db(vacation)
-#             flash('בקשה הוגשה', 'success')
-#             # finish
-#             return redirect(url_for('home'))
-#         else:
-#             flash('חופשה קצרה יכולה להיות עד 3 ימים, לחופשה ארוכה יותר נע ללכת ל״בקשה לחופשה ארוכה״', 'danger')
-#     return render_template('judge_short_vaca.html', events=events, form=form)
-
-
-# @app.route('/judge_long_vaca', methods=['GET', 'POST'])
-# @login_required
-# def judge_long_vaca():
-#     form = VacaForm()
-#     events = get_all_events(judge_id=current_user.id)
-#     if check_date_earlier_than_today(form):
-#         if check_not_short_vaca(form):
-#             start_date = datetime.datetime.strptime(form.start_date.raw_data[0], '%Y-%m-%d')
-#             end_date = datetime.datetime.strptime(form.end_date.raw_data[0], '%Y-%m-%d')
-#             if not check_if_already_vacation(start_date, end_date, current_user.id):
-#                 vacation = Vacation(judge_id=current_user.id, is_verified=False, type='Long',
-#                                    start_date=start_date, end_date=end_date)
-#                 add_to_db(vacation)
-#                 flash('בקשה הוגשה', 'success')
-#                 # finish
-#                 return redirect(url_for('home'))
-#
-#     return render_template('judge_long_vaca.html', events=events, form=form)
 
 
 @app.route('/judge_case_search', methods=['GET', 'POST'])
@@ -443,5 +409,17 @@ def verify_user(user_id, role, role2=None, role3=None, role4=None):
         if cur_user.role != role:
             cur_user.role = role
         db.session.commit()
-        flash('משתמש {} אושר במערכת בתפקיד {} בהצלחה'.format(cur_user.username, cur_user.role), 'success')
+        flash('משתמש {} אושר במערכת     בתפקיד {} בהצלחה'.format(cur_user.username, cur_user.role), 'success')
     return redirect(url_for('master_validate_users'))
+
+
+@app.route('/master_change_weights', methods=['GET', 'POST'])
+@login_required
+def master_change_weights():
+    form = WeightForm()
+    if form.validate_on_submit():
+        # Change weights in DB maybe I dunno
+        pass
+
+    weights = get_case_weights(datetime.datetime.now().year)
+    return render_template('master_change_weights.html', weights=weights, form=form)
