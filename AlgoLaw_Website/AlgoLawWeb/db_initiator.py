@@ -1,9 +1,9 @@
 import pandas as pd
-from AlgoLawWeb import db, login_manager, bcrypt
-from AlgoLawWeb.models import User, Post, ROLES, Vacation, Judge, Hall, Rotation, Case,Lawyer
-from AlgoLawWeb.utilities import add_to_db
+from AlgoLaw_Website.AlgoLawWeb import db, login_manager, bcrypt
+from AlgoLaw_Website.AlgoLawWeb.models import User, Post, ROLES, Vacation, Judge, Hall, Rotation, Case,Lawyer
+from AlgoLaw_Website.AlgoLawWeb.utilities import add_to_db
 import datetime
-from AlgoLawWeb import app
+from AlgoLaw_Website.AlgoLawWeb import app
 import os
 
 

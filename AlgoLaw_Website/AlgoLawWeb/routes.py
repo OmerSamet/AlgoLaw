@@ -1,19 +1,19 @@
 from flask import render_template, url_for, flash, redirect, send_from_directory, request
-from AlgoLawWeb import app, db, bcrypt
-from AlgoLawWeb.forms import RegistrationForm, LoginForm, CasesForm, VacaForm, UploadFilesForm, CaseSearchForm, \
+from AlgoLaw_Website.AlgoLawWeb import app, db, bcrypt
+from AlgoLaw_Website.AlgoLawWeb.forms import RegistrationForm, LoginForm, CasesForm, VacaForm, UploadFilesForm, CaseSearchForm, \
     EventForm, lawyerSearchForm, WeightForm
-from AlgoLawWeb.models import User, ROLES, Vacation, Judge, Hall, Case, MeetingSchedule, Lawyer
+from AlgoLaw_Website.AlgoLawWeb.models import User, ROLES, Vacation, Judge, Hall, Case, MeetingSchedule, Lawyer
 from flask_login import login_user, current_user, logout_user, login_required
 import datetime
-from AlgoLawWeb.AlgoLawBackEnd import judge_divider
-from AlgoLawWeb.utilities import check_if_already_vacation, save_csv_file, \
+from AlgoLaw_Website.AlgoLawWeb.AlgoLawBackEnd import judge_divider
+from AlgoLaw_Website.AlgoLawWeb.utilities import check_if_already_vacation, save_csv_file, \
     get_all_relevant_judges, add_to_db, check_logged_in, \
     return_role_page, insert_output_to_db, get_all_events, load_cases_to_db, load_holidays_to_db, load_rotations_to_db, \
     load_mishmoret_to_db, get_upload_div_colors, get_events_by_role, get_location_by_role, handle_vacation_form, \
     handle_event , find_lawyer, get_case_weights
 import json
-from AlgoLawWeb.db_initiator import DBInitiator
-from AlgoLawWeb.scheduler import run_division_logic
+from AlgoLaw_Website.AlgoLawWeb.db_initiator import DBInitiator
+from AlgoLaw_Website.AlgoLawWeb.scheduler import run_division_logic
 import os
 
 

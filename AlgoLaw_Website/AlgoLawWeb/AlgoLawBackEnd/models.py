@@ -3,8 +3,8 @@ import time
 import pandas as pd
 from collections import defaultdict
 from datetime import datetime
-from AlgoLawWeb import app
-from AlgoLawWeb.AlgoLawBackEnd.config import JudgeDataDir, CaseDataDir, CaseDBDataDir
+from AlgoLaw_Website.AlgoLawWeb import app
+from AlgoLaw_Website.AlgoLawWeb.AlgoLawBackEnd.config import JudgeDataDir, CaseDataDir, CaseDBDataDir
 import os
 
 class Judge:

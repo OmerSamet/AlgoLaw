@@ -1,9 +1,9 @@
 from sqlalchemy import or_, and_
 
-from AlgoLawWeb import app, db
-from AlgoLawWeb.AlgoLawBackEnd import judge_divider
-from AlgoLawWeb.AlgoLawBackEnd.config import CaseWeightDir
-from AlgoLawWeb.models import User, Judge, ROLES, Vacation, CaseJudgeLocation, Case, MeetingSchedule, Judge, Hall, \
+from AlgoLaw_Website.AlgoLawWeb import app, db
+from AlgoLaw_Website.AlgoLawWeb.AlgoLawBackEnd import judge_divider
+from AlgoLaw_Website.AlgoLawWeb.AlgoLawBackEnd.config import CaseWeightDir
+from AlgoLaw_Website.AlgoLawWeb.models import User, Judge, ROLES, Vacation, CaseJudgeLocation, Case, MeetingSchedule, Judge, Hall, \
     Rotation, Event, Lawyer
 import datetime
 import os

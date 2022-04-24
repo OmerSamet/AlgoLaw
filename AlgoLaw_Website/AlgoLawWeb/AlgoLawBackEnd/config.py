@@ -1,6 +1,6 @@
 # FILE NAMES #
 import os
-from AlgoLawWeb import app
+from AlgoLaw_Website.AlgoLawWeb import app
 
 JudgeDataDir = os.path.join(app.root_path, 'DB_DATA', 'Judge_Data.csv')
 CaseDataDir = os.path.join(app.root_path, 'DB_DATA', 'Fake_case_data.csv')

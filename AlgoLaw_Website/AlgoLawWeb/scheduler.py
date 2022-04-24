@@ -1,12 +1,12 @@
 from collections import defaultdict
 
-from AlgoLawWeb.AlgoLawBackEnd import judge_divider
-from AlgoLawWeb import db, app
-from AlgoLawWeb.models import Hall, Case, CaseJudgeLocation, MeetingSchedule, Meeting, Vacation, Rotation, SickDay
+from AlgoLaw_Website.AlgoLawWeb.AlgoLawBackEnd import judge_divider
+from AlgoLaw_Website.AlgoLawWeb import db, app
+from AlgoLaw_Website.AlgoLawWeb.models import Hall, Case, CaseJudgeLocation, MeetingSchedule, Meeting, Vacation, Rotation, SickDay
 import datetime
 import calendar
 import enum
-from AlgoLawWeb.utilities import add_to_db, insert_output_to_db, DayToHallToJudgeJerusalem
+from AlgoLaw_Website.AlgoLawWeb.utilities import add_to_db, insert_output_to_db, DayToHallToJudgeJerusalem
 import os
 from flask import flash
 

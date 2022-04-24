@@ -2,7 +2,7 @@ from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed, FileRequired
 from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, DateField, DateTimeField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
-from AlgoLawWeb.models import User, datetime, ROLES
+from AlgoLaw_Website.AlgoLawWeb.models import User, datetime, ROLES
 from flask_login import current_user
 
 

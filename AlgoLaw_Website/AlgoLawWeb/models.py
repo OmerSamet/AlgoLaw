@@ -1,5 +1,5 @@
 from datetime import datetime
-from AlgoLawWeb import db, login_manager
+from AlgoLaw_Website.AlgoLawWeb import db, login_manager
 from flask_login import UserMixin
 
 ROLES = {
