@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block content %}
-    <h2 class="text-right">חיפוש תיקים</h2>
+    <img src="{{url_for('static',filename = 'Web_models/case_search_title.jpeg')}}" width="240" height="100">
     <br>
     <h2 class="text-right"> נמצאו {{ cases_found_num }} תיקים</h2>
     {% for lawyer in lawyers %}
