@@ -5,6 +5,7 @@ from AlgoLawWeb import app
 JudgeDataDir = os.path.join(app.root_path, 'DB_DATA', 'Judge_Data.csv')
 CaseDataDir = os.path.join(app.root_path, 'DB_DATA', 'Fake_case_data.csv')
 CaseDBDataDir = os.path.join(app.root_path, 'DB_DATA', 'Case_Data.csv')
+CaseWeightDir = os.path.join(app.root_path, 'DB_DATA', 'Average_weight_of_case.xlsx')
 #
 # if platform.system() == 'Windows':
 #     JudgeDataDir = r'C:\Users\Chen\Desktop\AlgoLaw\DB_DATA\Judge_Data.csv'
