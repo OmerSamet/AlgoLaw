@@ -360,9 +360,9 @@ def get_case_id_to_title(case_id_judge_id):
     for case_id, judge_id, lawyer_id_1, lawyer_id_2 in case_id_judge_id:
         case = Case.query.filter(Case.id == case_id).first()
         judge = Judge.query.filter(Judge.id == judge_id).first()
-        lawyer_2 = Lawyer.query.filter(Lawyer.lawyer_id == lawyer_id_2).first()
-        lawyer_1 = Lawyer.query.filter(Lawyer.lawyer_id == lawyer_id_1).first()
-        case_id_to_title[case.id] = lawyer_id_1 + ' - ' + lawyer_id_2
+        # lawyer_2 = Lawyer.query.filter(Lawyer.lawyer_id == lawyer_id_2).first()
+        # lawyer_1 = Lawyer.query.filter(Lawyer.lawyer_id == lawyer_id_1).first()
+        case_id_to_title[case.id] = judge.username + ' - ' + case.first_type
 
     return case_id_to_title
 
