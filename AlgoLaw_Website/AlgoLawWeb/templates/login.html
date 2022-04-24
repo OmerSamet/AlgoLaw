@@ -4,9 +4,9 @@
         <form method="POST" action="">
             {{ form.hidden_tag() }}
             <fieldset class="form-group">
-                <h2 class="border-bottom"> התחברות </h2>
+                <img src="{{url_for('static',filename = 'Web_models/login_title.jpeg')}}" width="240" height="100">
                 <div class="form-group">
-                    {{ form.email.label(class="form-control-label") }}
+                    <img src="{{url_for('static',filename = 'Web_models/email.jpeg')}}" width="180" height="60">
                     {% if form.email.errors %}
                         {{ form.email(class="form-control form-control-lg is-invalid") }}
                         <div class="invalid-feedback">
@@ -46,7 +46,9 @@
     </div>
     <div class="border-top pt-3">
         <small class="text-muted">
-            אין משתמש? <a class="ml-2" href="{{ url_for('register') }}"> הירשמו עכשיו </a>
+            <a class="ml-2" href="{{ url_for('register') }}">
+                <img src="{{url_for('static',filename = 'Web_models/no_user_sign_up.jpeg')}}" width="180" height="60">
+            </a>
         </small>
     </div>
 

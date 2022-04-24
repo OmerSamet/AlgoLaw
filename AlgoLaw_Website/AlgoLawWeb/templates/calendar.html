@@ -20,7 +20,9 @@
                 <br>
                 {% endif %}
                 {% if master_view == True %}
-                <h3 class="form-group text-right" style="font-weight: bold;">מחוז</h3>
+                <div class="p-2 d-flex justify-content-end">
+                    <img class="" src="{{url_for('static',filename = 'Web_models/location.jpeg')}}" width="180" height="60">
+                </div>
                 <select onchange="renderCalendar(); addJudgeOptions(location_choice.value)" class="form-group text-right" id="location_choice">
                   <option value="Jerusalem" selected="selected">ירושלים</option>
                   <option value="Tel Aviv">תל אביב</option>
@@ -29,12 +31,15 @@
                 </select>
                 {% endif %}
                 {% if judge_view == False %}
-                <h3 class="form-group text-right" style="font-weight: bold;">אולמות</h3>
+                <div class="p-2 d-flex justify-content-end">
+                    <img class="" src="{{url_for('static',filename = 'Web_models/choose_hall.jpeg')}}" width="180" height="60">
+                </div>
                 <select onchange="renderCalendar();" class="form-group text-right" id="hall_options">
                   <option value="All">הכל</option>
                 </select>
-
-                <h3 class="form-group text-right" style="font-weight: bold;">בחירת דיין</h3>
+                <div class="p-2 d-flex justify-content-end">
+                    <img class="" src="{{url_for('static',filename = 'Web_models/choose_judge.jpeg')}}" width="180" height="60">
+                </div>
                 <select onchange="renderCalendar()" class="form-group text-right" id="judges_options">
                   <option value="All">הכל</option>
                 </select>

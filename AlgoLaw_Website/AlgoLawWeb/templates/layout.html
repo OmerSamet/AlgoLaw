@@ -38,8 +38,12 @@
                                   <img src="{{url_for('static',filename = 'Web_models/logout_button.jpeg')}}" width="160" height="70">
                               </a>
                           {% else %}
-                              <a class="nav-item nav-link" href="{{ url_for('login') }}">התחבר/י</a>
-                              <a class="nav-item nav-link" href="{{ url_for('register') }}">הירשמ/י</a>
+                              <a class="nav-item nav-link" href="{{ url_for('login') }}">
+                                  <img src="{{url_for('static',filename = 'Web_models/login.jpeg')}}" width="160" height="70">
+                              </a>
+                              <a class="nav-item nav-link" href="{{ url_for('register') }}">
+                                  <img src="{{url_for('static',filename = 'Web_models/sign_up.jpeg')}}" width="160" height="70">
+                              </a>
                           {% endif %}
                       </div>
                     <!-- Navbar Right Side -->

@@ -272,8 +272,6 @@ class JerusalemScheduler(LocationScheduler):
         return False, False, False
 
 
-
-
     def schedule_cases(self):
         '''
         MAIN FUNCTION
@@ -298,8 +296,6 @@ class JerusalemScheduler(LocationScheduler):
                         J_date.schedule[hall_number][time_slot][judge_id] = case.id
                         self.add_meeting_to_schedule(case, J_date.date, time_slot, hall_number,
                                                      case_id_to_judge_id[case.id],case.lawyer_id_1 , case.lawyer_id_2)
-            #if not been_placed_in_calendar:
-                #print('got here')
 
 
 class MeetingScheduler:
