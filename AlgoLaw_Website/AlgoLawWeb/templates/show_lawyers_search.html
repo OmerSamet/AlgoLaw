@@ -1,18 +1,24 @@
 {% extends "layout.html" %}
 {% block content %}
-    <img src="{{url_for('static',filename = 'Web_models/lawyer_title.jpeg')}}" width="240" height="100">
-    <br>
-    <h2 class="text-right"> נמצאו {{ cases_found_num }} עורכי דין</h2>
-    {% for lawyer in lawyers %}
-        <article class="text-right media content-section">
-            <div class="media-body">
-                <h2>{{ lawyer['name'] }} :שם פרטי</h2>
-                <h2>{{ lawyer['last_name'] }} :שם משפחה</h2>
-                <h2>{{ lawyer['id'] }} :מספר זיהוי</h2>
-                <h2>{{ lawyer['mail'] }} :כתובת דואר אלקטרוני</h2>
-                <h2>מספר טלפון: {{ lawyer['phone_number'] }} </h2>
-            </div>
-        </article>
-    {% endfor %}
+    <div class="w-100 d-flex flex-column float-right">
+        <div class="p-2 d-flex justify-content-end">
+            <img src="{{url_for('static',filename = 'Web_models/lawyer_title.jpeg')}}" width="240" height="100">
+        </div>
+        <br>
+        <div class="p-2 d-flex justify-content-end">
+            <img src="{{url_for('static',filename = 'Web_models/lawyers_found.jpeg')}}" width="240" height="80">
+        </div>
+        {% for lawyer in lawyers %}
+            <article class="text-right media content-section">
+                <div class="media-body">
+                    <h2>{{ lawyer['name'] }} :שם פרטי</h2>
+                    <h2>{{ lawyer['last_name'] }} :שם משפחה</h2>
+                    <h2>{{ lawyer['id'] }} :מספר זיהוי</h2>
+                    <h2>{{ lawyer['mail'] }} :כתובת דואר אלקטרוני</h2>
+                    <h2>מספר טלפון: {{ lawyer['phone_number'] }} </h2>
+                </div>
+            </article>
+        {% endfor %}
+    </div>
 
 {% endblock content %}

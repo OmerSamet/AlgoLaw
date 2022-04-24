@@ -376,7 +376,7 @@ def search_cases():
                     }
                 )
 
-        return render_template('show_cases_search.html', cases=final_cases, cases_found_num=len(cases))
+        return render_template('show_cases_search.html', cases=final_cases, cases_found_num=len(final_cases))
 
     return render_template('search_cases.html', form=form)
 
