@@ -62,7 +62,7 @@ class SickDay(db.Model):
 class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     judge_id = db.Column(db.Integer, db.ForeignKey('judge.id'), nullable=False)
-    relevant_emails = db.Column(db.String(120), nullable=False)  # str of list of emails "['email1@gmail.com', 'email2@gmail.com',...]"
+    relevant_emails = db.Column(db.String(120), nullable=True)  # str of list of emails "['email1@gmail.com', 'email2@gmail.com',...]"
     start_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     end_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
