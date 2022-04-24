@@ -55,7 +55,7 @@
                         {{event_from.start_date(id="event_start_date_value")}}
                         {{event_from.end_date(id="event_end_date_value")}}
                     </div>
-                    {{ event_from.submit(class="btn btn-outline-info", style="background-color: coral; color: #444444", id="event_submit") }}
+                    {{ event_from.submit(class="btn btn-outline-info", style="background-color: #1C1C4E; color: #FFFFFF ", id="event_submit") }}
                 </form>
                 <br>
                 {% if judge_view == True%}
@@ -65,14 +65,13 @@
                         {{vacation_form.start_date(id="start_date_value")}}
                         {{vacation_form.end_date(id="end_date_value")}}
                     </div>
-                    {{ vacation_form.submit(class="btn btn-outline-info", style="background-color: coral; color: #444444", id="vacation_submit") }}
+                    {{ vacation_form.submit(class="btn btn-outline-info", style="background-color: #1C1C4E; color:#FFFFFF ", id="vacation_submit") }}
                 </form>
                 <br>
                 <br>
-                <div class="text-right btn btn-outline-info" style="background-color: #488a97; color: rosybrown">
+                <div class="text-right" >
                     <a href="{{ url_for('search_cases') }}">
-                        <h4>חיפוש תיקים</h4>
-<!--                    <img src="{{url_for('static',filename = 'Web_models/push_back_case_big.jpeg')}}" width="200" height="200">-->
+                        <img src="{{url_for('static',filename = 'Web_models/case_look_up_judge_2.jpeg')}}" width="200" height="100">
                     </a>
                 </div>
                 {% endif %}
