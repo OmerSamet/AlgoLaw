@@ -22,6 +22,11 @@ DayToHallToJudgeJerusalem = {
     4: {1: [9, 9], 2: [10, 10], 3: [5, 6]}  # Thursday
 }
 
+HALL_NUMBER_TO_BORDER_COLOR = {
+    1: '#8A2BE2',
+    2: '#1E90FF',
+    3: '#20B2AA'
+}
 
 EVENT_COLORS = {
     'VACATION_VERIFIED': '#3CB371',
@@ -352,6 +357,7 @@ def turn_events_to_monthly(events):
                     'end': str(event_end_time),
                     'color': EVENT_COLORS['MONTHLY_EVENT'],
                     'display': 'block',
+                    'is_verified': True,
                     'allDay': True
                 }
                 daily_events.append(daily_event)
@@ -397,9 +403,11 @@ def get_case_id_to_title(case_id_judge_id):
     for case_id, judge_id, lawyer_id_1, lawyer_id_2 in case_id_judge_id:
         case = Case.query.filter(Case.id == case_id).first()
         judge = Judge.query.filter(Judge.id == judge_id).first()
+        meeting = MeetingSchedule.query.filter(MeetingSchedule.case_id == case.id).first()
+        hall_num = hall_id_to_hall_num(meeting.hall_id)
         # lawyer_2 = Lawyer.query.filter(Lawyer.lawyer_id == lawyer_id_2).first()
         # lawyer_1 = Lawyer.query.filter(Lawyer.lawyer_id == lawyer_id_1).first()
-        case_id_to_title[case.id] = judge.username + ' - ' + case.first_type
+        case_id_to_title[case.id] = judge.username + ' - ' + case.first_type + ' - אולם ' + str(hall_num)
 
     return case_id_to_title
 
@@ -417,6 +425,10 @@ def check_location_and_hall_number(location):
     if location is None:
         return '%'
     return '%' + location + '%'
+
+
+def hall_id_to_hall_num(hall_id):
+    return Hall.query.filter(Hall.id == hall_id).first().hall_number
 
 
 def get_all_meetings(judge_id=None, location=None, hall_number=None):
@@ -452,6 +464,7 @@ def get_all_meetings(judge_id=None, location=None, hall_number=None):
         case_end_time = datetime.datetime.strptime(meeting.end_time, '%H:%M').time()
         case_start_date = datetime.datetime.combine(meeting.date, case_start_time)
         case_end_date = datetime.datetime.combine(meeting.date, case_end_time)
+        hall_num = hall_id_to_hall_num(meeting.hall_id)
         event = {
             'judge_id': meeting.judge_id,
             'title': case_id_to_title[meeting.case_id],
@@ -460,14 +473,17 @@ def get_all_meetings(judge_id=None, location=None, hall_number=None):
             'id': meeting.id,
             'is_verified': meeting.is_verified,
             'type': 'meeting',
-            'hall_id': meeting.hall_id,
+            'hall_id': hall_num,
             'display': 'block',
-            'allDay': False
+            'allDay': False,
+            'BackgroudColor': HALL_NUMBER_TO_BORDER_COLOR[hall_num]
         }
         if meeting.is_verified:
-            event['color'] = EVENT_COLORS['CASE_CONFIRMED']
+            # event['color'] = EVENT_COLORS['CASE_CONFIRMED']
+            event['color'] = HALL_NUMBER_TO_BORDER_COLOR[hall_num]
         else:
-            event['color'] = EVENT_COLORS['CASE_NOT_CONFIRMED']
+            # event['color'] = EVENT_COLORS['CASE_NOT_CONFIRMED']
+            event['color'] = HALL_NUMBER_TO_BORDER_COLOR[hall_num]
         events.append(event)
     return events
 
@@ -498,24 +514,39 @@ def get_all_vacations(judge_id=None, location=None):
     for vacation in vacations:
         if vacation.type in ('Short', 'Long'):
             title = 'חופש ' + judges_dict[vacation.judge_id]
+            judge_id = vacation.judge_id
+            vaca_id = vacation.id
+        elif vacation.type == 'Mishmoret':
+            title = 'משמורת ' + judges_dict[vacation.judge_id]
+            judge_id = vacation.judge_id
+            vaca_id = vacation.id
         else:
             title = vacation.type
+            judge_id = 'All'
+            vaca_id = 0
         event = {
-            'judge_id': vacation.judge_id,
+            'judge_id': judge_id,
             'title': title,
             'start': str(vacation.start_date),
             'end': str(vacation.end_date),
-            'id': vacation.id,
+            'id': vaca_id,
             'is_verified': vacation.is_verified,
             'type': 'vacation',
             'display': 'block',
             'allDay': True
         }
-        if vacation.is_verified:
+        if vacation.type == 'Mishmoret':
+            event['color'] = '#66CDAA'
+            event['BackgroudColor'] = '#66CDAA'
+        elif vacation.is_verified:
             event['color'] = EVENT_COLORS['VACATION_VERIFIED']
+            event['BackgroudColor'] = EVENT_COLORS['VACATION_VERIFIED']
         else:
             event['color'] = EVENT_COLORS['VACATION_UNVERIFIED']
-        events.append(event)
+            event['BackgroudColor'] = EVENT_COLORS['VACATION_VERIFIED']
+
+        if event not in events:
+            events.append(event)
     return events
 
 

@@ -1,19 +1,19 @@
 from flask import render_template, url_for, flash, redirect, send_from_directory, request
-from AlgoLaw_Website.AlgoLawWeb import app, db, bcrypt
+from AlgoLaw_Website.AlgoLawWeb import app, db, bcrypt, celery
 from AlgoLaw_Website.AlgoLawWeb.forms import RegistrationForm, LoginForm, CasesForm, VacaForm, UploadFilesForm, CaseSearchForm, \
     EventForm, lawyerSearchForm, WeightForm
 from AlgoLaw_Website.AlgoLawWeb.models import User, ROLES, Vacation, Judge, Hall, Case, MeetingSchedule, Lawyer
 from flask_login import login_user, current_user, logout_user, login_required
 import datetime
-# from AlgoLaw_Website.AlgoLawWeb.AlgoLawBackEnd import judge_divider
 from AlgoLaw_Website.AlgoLawWeb.utilities import check_if_already_vacation, save_csv_file, \
     get_all_relevant_judges, add_to_db, check_logged_in, \
     return_role_page, get_all_events, load_cases_to_db, load_holidays_to_db, load_rotations_to_db, \
     load_mishmoret_to_db, get_upload_div_colors_and_dates, get_events_by_role, get_location_by_role, handle_vacation_form, \
-    handle_event, find_lawyer, get_case_weights, load_files_from_form
+    handle_event, find_lawyer, get_case_weights, load_files_from_form, insert_output_to_db
 import json
 from AlgoLaw_Website.AlgoLawWeb.db_initiator import DBInitiator
-from AlgoLaw_Website.AlgoLawWeb.scheduler import run_division_logic
+from AlgoLaw_Website.AlgoLawWeb.AlgoLawBackEnd.models import DBReader, Divider
+from AlgoLaw_Website.AlgoLawWeb.scheduler import MeetingScheduler
 import os
 
 
@@ -153,6 +153,28 @@ def secretary_space():
     return render_template('secretary_space.html', title='Secretary Space')
 
 
+@celery.task(name='utilities.run_division_logic', time_limit=1000)
+def run_division_logic():
+    print('Start Logic')
+    print('Reading DB')
+    db_reader = DBReader()
+    print('Done - Reading DB')
+    judge_divider = Divider(db_reader.judges, db_reader.cases)
+    print('Dividing cases between judges')
+    judge_divider.handle_cases()
+    print('Done - Dividing cases between judges')
+    output_file = 'output.csv'
+    print('Inserting division into DB')
+    insert_output_to_db(os.path.join(app.config["OUTPUT_DIR"], output_file))
+    print('Done - Inserting division into DB')
+    scheduler = MeetingScheduler(datetime.datetime.now())
+    scheduler.schedule_jerusalem_cases()
+    celery.control.purge()
+    print('Purged')
+    # flash('תיקים חולקו ושובצו בהצלחה', 'success')
+    return 'Done'
+
+
 @app.route('/secretary_upload_files_and_split_cases', methods=['GET', 'POST'])
 @login_required
 def secretary_upload_files_and_split_cases():
@@ -168,19 +190,19 @@ def secretary_upload_files_and_split_cases():
             flash_str += ' הועלו בהצלחה '
             flash(flash_str, 'success')
         # Run logic
-        run_division_logic()
+        run_division_logic.delay()
         # Redirect home
         return redirect(url_for('home'))
 
     return render_template('secretary_upload_files_and_split_cases.html', form=form, colors=colors, dates=dates)
 
 
-@app.route('/run_logic')
-@login_required
-def run_logic():
-    run_division_logic()
-    output_file = 'output.csv'
-    return send_from_directory(directory=app.config["OUTPUT_DIR"], path=output_file, as_attachment=True)
+# @app.route('/run_logic')
+# @login_required
+# def run_logic():
+#     run_division_logic()
+#     output_file = 'output.csv'
+#     return send_from_directory(directory=app.config["OUTPUT_DIR"], path=output_file, as_attachment=True)
 
 
 @app.route('/')
@@ -381,7 +403,7 @@ def verify_user(user_id, role, role2=None, role3=None, role4=None):
         if cur_user.role != role:
             cur_user.role = role
         db.session.commit()
-        flash('משתמש {} אושר במערכת     בתפקיד {} בהצלחה'.format(cur_user.username, cur_user.role), 'success')
+        flash('משתמש {} אושר במערכת, בתפקיד {} בהצלחה'.format(cur_user.username, cur_user.role), 'success')
     return redirect(url_for('master_validate_users'))
 
 
@@ -395,3 +417,9 @@ def master_change_weights():
 
     weights = get_case_weights(datetime.datetime.now().year)
     return render_template('master_change_weights.html', weights=weights, form=form)
+
+
+# @app.route('/celery_run_logic')
+# def celery_run_logic():
+#     run_division_logic.delay()
+#     return redirect(url_for('home'))

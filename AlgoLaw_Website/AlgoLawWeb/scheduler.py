@@ -279,7 +279,10 @@ class JerusalemScheduler(LocationScheduler):
         quarterly_dates = self.get_quarterly_dates()
         quarterly_J_days = [JerusalemDay(date) for date in quarterly_dates]
         # case object
+        i = 1
         for case in ordered_cases:
+            print('Starting Jerusalem case {} / {} scheduling'.format(i, len(ordered_cases)))
+
             judge_id = case_id_to_judge_id[case.id]
             been_placed_in_calendar = False
             for J_date in quarterly_J_days:
@@ -289,11 +292,18 @@ class JerusalemScheduler(LocationScheduler):
                 if lawyers_available:
                     relevant, hall_number, time_slot = self.date_relevant_for_case(J_date, judge_id ,case)
                     if relevant:
+                        print('Done - Found! Jerusalem case relevancy {} / {}'.format(i, len(ordered_cases)))
                         been_placed_in_calendar = True
                         J_date.schedule[hall_number][time_slot][judge_id] = case.id
+                        print('Adding Jerusalem case  {} / {} to DB'.format(i, len(ordered_cases)))
                         self.add_meeting_to_schedule(case, J_date.date, time_slot, hall_number,
                                                      case_id_to_judge_id[case.id],case.lawyer_id_1 , case.lawyer_id_2)
+                        print('Done - Adding Jerusalem case  {} / {} to DB'.format(i, len(ordered_cases)))
 
+            if not been_placed_in_calendar:
+                print('Case {} has not been placed in calendar!'.format(case.id))
+            print('Done - Jerusalem case {} / {} scheduling'.format(i, len(ordered_cases)))
+            i += 1
 
 class MeetingScheduler:
     def __init__(self, start_date):
@@ -315,7 +325,11 @@ class MeetingScheduler:
 
         case_ids = [cjl.case_id for cjl in case_judge_locations]
 
-        cases = db.session.query(Case).filter(Case.id.in_(case_ids)).all()
+        cases_with_meetings = MeetingSchedule.query.filter(MeetingSchedule.case_id.in_(case_ids)).all()
+        case_ids_with_meetings = [meeting.case_id for meeting in cases_with_meetings]
+        case_ids_without_meetings = [case_id for case_id in case_ids if case_id not in case_ids_with_meetings]
+
+        cases = db.session.query(Case).filter(Case.id.in_(case_ids_without_meetings)).all()
 
         return cases
 
@@ -328,16 +342,10 @@ class MeetingScheduler:
         return location_to_cases
 
     def schedule_jerusalem_cases(self):
+        print('Starting Jerusalem scheduling')
+        print('Getting Jerusalem cases')
         j_scheduler = JerusalemScheduler(self.location_to_cases['Jerusalem'])
+        print('Done - Getting Jerusalem cases')
         j_scheduler.schedule_cases()
+        print('Done - Jerusalem scheduling')
 
-
-def run_division_logic():
-    db_reader = DBReader()
-    judge_divider = Divider(db_reader.judges, db_reader.cases)
-    judge_divider.handle_cases()
-    output_file = 'output.csv'
-    insert_output_to_db(os.path.join(app.config["OUTPUT_DIR"], output_file))
-    scheduler = MeetingScheduler(datetime.datetime.now())
-    scheduler.schedule_jerusalem_cases()
-    flash('תיקים חולקו ושובצו בהצלחה', 'success')
