@@ -5,9 +5,11 @@ from collections import defaultdict
 from datetime import datetime
 from AlgoLaw_Website.AlgoLawWeb import app
 from AlgoLaw_Website.AlgoLawWeb.AlgoLawBackEnd.config import JudgeDataDir, CaseDataDir, CaseDBDataDir
+from AlgoLaw_Website.AlgoLawWeb.models import Judge, Case, MeetingSchedule
 import os
 
-class Judge:
+
+class DivJudge:
     def __init__(self, id, name, locations, is_in_rotation):
         self.id = id
         self.name = name
@@ -32,90 +34,35 @@ class Judge:
         self.locations.append(location)
 
 
-class Case:
-    def __init__(self, id, first_type, second_type, third_type, urgency_level, duration, location, weight):
-        self.id = id
-        self.first_type = first_type
-        self.second_type = second_type
-        self.third_type = third_type
-        self.urgency_level = urgency_level
-        self.duration = duration
-        self.location = location
-        self.weight = weight
-        self.quarter = ((datetime.now().month-1) // 3) + 1
-        self.status = True  # True = is open, False = Done
-
-
 class DBReader:
     def __init__(self):
         self.judges = self.get_judges()
         self.cases = self.get_cases()
 
     def get_judges(self):
-        judges_data = pd.read_csv(JudgeDataDir)
-        judges = self.create_judges(judges_data)
+        judges = Judge.query.all()
+        judges = self.create_judges(judges)
         return judges
 
-    def create_judges(self, judges_data):
+    @staticmethod
+    def create_judges(db_judges):
         judges = []
-        for index, row in judges_data.iterrows():
-            j_name = row['Judge_name']
-            j_id = row['Judge_ID']
-            j_location = row['Location']
-            judge_exists = self.check_if_judge_exists_already(j_id, judges)
-            if judge_exists:
-                judge_exists.add_location(j_location)
-            else:
-                judge = Judge(j_id, j_name, [j_location], False)
-                judges.append(judge)
+        for judge in db_judges:
+            j_name = judge.username
+            j_id = judge.id
+            j_location = judge.locations
+            j_location = j_location.split(',')
+            divjudge = DivJudge(j_id, j_name, j_location, False)
+            judges.append(divjudge)
         return judges
 
     @staticmethod
-    def check_if_judge_exists_already(j_id, judges):
-        for judge in judges:
-            if judge.id == j_id:
-                return judge
-        return False
-
-    def get_cases(self):
-        cases_data = pd.read_csv(CaseDataDir)
-        cases_ids = self.create_cases(cases_data)
-        return cases_ids
-
-    def create_cases(self, cases_data):
-        cases = []
-        # Read DB Data to get values
-        case_db_data = pd.read_csv(CaseDBDataDir)
-
-        for index, row in cases_data.iterrows():
-            c_id = index + 1
-            c_main_type = row['Case_Main_Type']
-            c_secondary_type = row['Secondary_Type']
-            c_sub_type = row['Case_sub_type']
-            location = row['Location']
-
-            c_urg_level, c_duration, c_weight = self.get_case_db_data(case_db_data, c_main_type,
-                                                                             c_secondary_type, c_sub_type)
-
-            case = Case(c_id, c_main_type, c_secondary_type, c_sub_type, c_urg_level, c_duration, location, c_weight)
-            cases.append(case)
-        return cases
-
-    @staticmethod
-    def get_case_db_data(case_db_data, c_main_type, c_secondary_type, c_sub_type):
-        if type(c_sub_type) == str:
-            pandas_query = (case_db_data['Main_Type'] == c_main_type) & (
-                        case_db_data['Secondary_Type'] == c_secondary_type) & (
-                                   case_db_data['Sub_Type'] == c_sub_type)
-        else:
-            pandas_query = (case_db_data['Main_Type'] == c_main_type) & (
-                    case_db_data['Secondary_Type'] == c_secondary_type)
-
-        c_urg_level = case_db_data[pandas_query]['Urgency_Level'].values[0]
-        c_duration = case_db_data[pandas_query]['Duration'].values[0]
-        c_weight = case_db_data[pandas_query]['Weight'].values[0]
-
-        return c_urg_level, c_duration, c_weight
+    def get_cases():
+        cases_data = Case.query.all()
+        meetings = MeetingSchedule.query.all()
+        case_ids_with_meetings = [meeting.case_id for meeting in meetings]
+        cases_without_meetings = [case for case in cases_data if case.id not in case_ids_with_meetings]
+        return cases_without_meetings
 
 
 class Divider:
