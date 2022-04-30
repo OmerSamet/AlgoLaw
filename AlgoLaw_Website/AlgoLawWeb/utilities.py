@@ -1,7 +1,6 @@
 from sqlalchemy import or_, and_
 
 from AlgoLaw_Website.AlgoLawWeb import app, db
-from AlgoLaw_Website.AlgoLawWeb.AlgoLawBackEnd import judge_divider
 from AlgoLaw_Website.AlgoLawWeb.AlgoLawBackEnd.config import CaseWeightDir
 from AlgoLaw_Website.AlgoLawWeb.models import User, Judge, ROLES, Vacation, CaseJudgeLocation, Case, MeetingSchedule, Judge, Hall, \
     Rotation, Event, Lawyer
@@ -40,6 +39,39 @@ ROLES_EN_TO_HE = {
 
 
 ###################################### UPLOAD FUNCTIONS #############################################################
+def load_files_from_form(form):
+    today_date = str(datetime.datetime.now().date())
+    files_added = []
+    added = False
+    secretary_upload_directory = 'Secretary_Upload_Files'
+    if form.new_cases_file.data:
+        case_csv_file_path = save_csv_file(form.new_cases_file.data, secretary_upload_directory,
+                                           'cases_{}.csv'.format(today_date))
+        load_cases_to_db(case_csv_file_path)
+        files_added.append('תיקים')
+        added = True
+    if form.holidays_file.data:
+        holiday_csv_file = save_csv_file(form.holidays_file.data, secretary_upload_directory,
+                                         'holidays_{}.csv'.format(today_date))
+        load_holidays_to_db(holiday_csv_file)
+        files_added.append('חגים')
+        added = True
+    if form.rotation_file.data:
+        rotation_csv_file = save_csv_file(form.rotation_file.data, secretary_upload_directory,
+                                          'rotations_{}.csv'.format(today_date))
+        load_rotations_to_db(rotation_csv_file)
+        files_added.append('תורנות')
+        added = True
+    if form.mishmoret_file.data:
+        mishmoret_csv_file = save_csv_file(form.mishmoret_file.data, secretary_upload_directory,
+                                           'mishmoret_{}.csv'.format(today_date))
+        load_mishmoret_to_db(mishmoret_csv_file)
+        files_added.append('משמורת')
+        added = True
+
+    return added, files_added
+
+
 def check_available_directory():
     current_year = datetime.datetime.now().year
     current_quarter = (datetime.datetime.now().month - 1 // 3) + 1
@@ -65,7 +97,7 @@ def get_case_db_data(case_enrichment_df, main_type, second_type, sub_type):
 
         c_urg_level = case_enrichment_df[pandas_query]['Urgency_Level'].values[0]
         c_duration = 35
-        c_weight = case_enrichment_df[pandas_query]['Weight'].values[0]
+        c_weight = int.from_bytes(case_enrichment_df[pandas_query]['Weight'].values[0], 'little')
 
         return c_urg_level, c_duration, c_weight
 
@@ -123,8 +155,8 @@ def load_rotations_to_db(rotation_csv_file):
     rotation_df = pd.read_csv(rotation_csv_file)
     for index, row in rotation_df.iterrows():
         rotation = Rotation(judge_id=row['Judge_ID'],
-                            start_date=datetime.datetime.strptime(row['Start_Date'], '%Y-%m-%d'),
-                            end_date=datetime.datetime.strptime(row['End_Date'], '%Y-%m-%d'))
+                            start_date=datetime.datetime.strptime(row['Start_Date'], '%d/%m/%Y'),
+                            end_date=datetime.datetime.strptime(row['End_Date'], '%d/%m/%Y'))
         add_to_db(rotation)
 
     return True
@@ -133,9 +165,9 @@ def load_rotations_to_db(rotation_csv_file):
 def load_mishmoret_to_db(mishmoret_csv_file):
     mishmoret_df = pd.read_csv(mishmoret_csv_file)
 
-    for index, row in mishmoret_df.iterrrows():
-        start_date = row['Start_Date']
-        end_date = row['End_Date']
+    for index, row in mishmoret_df.iterrows():
+        start_date = datetime.datetime.strptime(row['Start_Date'], '%d/%m/%Y')
+        end_date = datetime.datetime.strptime(row['End_Date'], '%d/%m/%Y')
         judge_id = row['Judge_ID']
         vacation = Vacation(judge_id=judge_id,
                             start_date=start_date,
@@ -154,11 +186,15 @@ def check_later_date(file_path, latest_date):
         return latest_date
 
 
-def get_upload_div_colors():
+def get_upload_div_colors_and_dates():
     colors = {'cases': '#FFE4B5',
               'holidays': '#FFE4B5',
               'rotations': '#FFE4B5',
               'mishmoret': '#FFE4B5'}
+    upload_dates = {'cases': '',
+                    'holidays': '',
+                    'rotations': '',
+                    'mishmoret': ''}
     file_names = os.listdir(os.path.join(app.root_path, 'Secretary_Upload_Files'))
     most_recent_dates = {
         'cases': datetime.datetime.now()-datetime.timedelta(days=1000),
@@ -179,10 +215,11 @@ def get_upload_div_colors():
                 most_recent_dates['mishmoret'] = check_later_date(file_path, most_recent_dates['mishmoret'])
 
     for event_type, latest_date in most_recent_dates.items():
+        upload_dates[event_type] = str(latest_date.date())
         if latest_date > datetime.datetime.now()-datetime.timedelta(days=30):
             colors[event_type] = '#87CEFA'
 
-    return colors
+    return colors, upload_dates
 
 
 ###################################### CALENDAR FUNCTIONS ############################################

@@ -5,12 +5,12 @@ from AlgoLaw_Website.AlgoLawWeb.forms import RegistrationForm, LoginForm, CasesF
 from AlgoLaw_Website.AlgoLawWeb.models import User, ROLES, Vacation, Judge, Hall, Case, MeetingSchedule, Lawyer
 from flask_login import login_user, current_user, logout_user, login_required
 import datetime
-from AlgoLaw_Website.AlgoLawWeb.AlgoLawBackEnd import judge_divider
+# from AlgoLaw_Website.AlgoLawWeb.AlgoLawBackEnd import judge_divider
 from AlgoLaw_Website.AlgoLawWeb.utilities import check_if_already_vacation, save_csv_file, \
     get_all_relevant_judges, add_to_db, check_logged_in, \
-    return_role_page, insert_output_to_db, get_all_events, load_cases_to_db, load_holidays_to_db, load_rotations_to_db, \
-    load_mishmoret_to_db, get_upload_div_colors, get_events_by_role, get_location_by_role, handle_vacation_form, \
-    handle_event , find_lawyer, get_case_weights
+    return_role_page, get_all_events, load_cases_to_db, load_holidays_to_db, load_rotations_to_db, \
+    load_mishmoret_to_db, get_upload_div_colors_and_dates, get_events_by_role, get_location_by_role, handle_vacation_form, \
+    handle_event, find_lawyer, get_case_weights, load_files_from_form
 import json
 from AlgoLaw_Website.AlgoLawWeb.db_initiator import DBInitiator
 from AlgoLaw_Website.AlgoLawWeb.scheduler import run_division_logic
@@ -68,13 +68,13 @@ def delete_vacation(vaca_id):
     return 'True'
 
 
-
 @app.route('/<judge_id>/master_vacation_view', methods=['GET', 'POST'])
 @login_required
 def master_vacation_view(judge_id):  # judge_id = judge_id to see vacations of
     judges = get_all_relevant_judges()  # dict -> id: judge_id, name: judge_name
     return render_template('master_vacation_view.html', title='Vacations View',
                            judge_id=current_user.id, username=current_user.username, judges=judges)
+
 
 @app.route('/get_all_judge_events/<judge_id_location>')
 @login_required
@@ -157,37 +157,9 @@ def secretary_space():
 @login_required
 def secretary_upload_files_and_split_cases():
     form = UploadFilesForm()
-    colors = get_upload_div_colors()
+    colors, dates = get_upload_div_colors_and_dates()
     if form.validate_on_submit():
-        today_date = str(datetime.datetime.now().date())
-        files_added = []
-        added = False
-        secretary_upload_directory = 'Secretary_Upload_Files'
-        if form.new_cases_file.data:
-            case_csv_file_path = save_csv_file(form.new_cases_file.data, secretary_upload_directory,
-                                               'cases_{}.csv'.format(today_date))
-            load_cases_to_db(case_csv_file_path)
-            files_added.append('תיקים')
-            added = True
-        if form.holidays_file.data:
-            holiday_csv_file = save_csv_file(form.holidays_file.data, secretary_upload_directory,
-                                             'holidays_{}.csv'.format(today_date))
-            load_holidays_to_db(holiday_csv_file)
-            files_added.append('חגים')
-            added = True
-        if form.rotation_file.data:
-            rotation_csv_file = save_csv_file(form.rotation_file.data, secretary_upload_directory,
-                                              'rotations_{}.csv'.format(today_date))
-            load_rotations_to_db(rotation_csv_file)
-            files_added.append('תורנות')
-            added = True
-        if form.mishmoret_file.data:
-            mishmoret_csv_file = save_csv_file(form.mishmoret_file.data, secretary_upload_directory,
-                                               'mishmoret_{}.csv'.format(today_date))
-            load_mishmoret_to_db(mishmoret_csv_file)
-            files_added.append('משמורת')
-            added = True
-
+        added, files_added = load_files_from_form(form)
         if added:
             # Flash message
             flash_str = 'קבצים :'
@@ -200,7 +172,7 @@ def secretary_upload_files_and_split_cases():
         # Redirect home
         return redirect(url_for('home'))
 
-    return render_template('secretary_upload_files_and_split_cases.html', form=form, colors=colors)
+    return render_template('secretary_upload_files_and_split_cases.html', form=form, colors=colors, dates=dates)
 
 
 @app.route('/run_logic')

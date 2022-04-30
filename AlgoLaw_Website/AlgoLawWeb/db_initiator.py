@@ -143,7 +143,7 @@ class DBInitiator:
 
         c_urg_level = case_enrichment_df[pandas_query]['Urgency_Level'].values[0]
         c_duration = 35
-        c_weight = case_enrichment_df[pandas_query]['Weight'].values[0]
+        c_weight = int.from_bytes(case_enrichment_df[pandas_query]['Weight'].values[0], 'little')
 
         return c_urg_level, c_duration, c_weight
 

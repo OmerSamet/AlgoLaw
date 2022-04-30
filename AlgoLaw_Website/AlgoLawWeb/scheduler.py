@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from AlgoLaw_Website.AlgoLawWeb.AlgoLawBackEnd import judge_divider
+from AlgoLaw_Website.AlgoLawWeb.AlgoLawBackEnd.models import DBReader, Divider
 from AlgoLaw_Website.AlgoLawWeb import db, app
 from AlgoLaw_Website.AlgoLawWeb.models import Hall, Case, CaseJudgeLocation, MeetingSchedule, Meeting, Vacation, Rotation, SickDay
 import datetime
@@ -194,11 +194,11 @@ class JerusalemScheduler(LocationScheduler):
         else:
             return judge_id == DayToHallToJudgeJerusalem[day_of_week][hall_number][1]
 
-    def isDateBetweenDates(self ,date, startDate, endDate):
+    def isDateBetweenDates(self, date, startDate, endDate):
         datetime_date = datetime.datetime(date.year , date.month , date.day)
         return (datetime_date > startDate) and ( datetime_date < endDate)
 
-    def judgeIsAvailable(self, judge_id , date):
+    def judgeIsAvailable(self, judge_id, date):
         vacations = db.session.query(Vacation).filter(Vacation.is_verified).all()
         for vac in vacations:
             if vac.judge_id == judge_id and self.isDateBetweenDates(date , vac.start_date , vac.end_date):
@@ -216,8 +216,7 @@ class JerusalemScheduler(LocationScheduler):
 
         return True
 
-    def add_meeting_to_schedule(self, case, date, time_slot, hall_number, judge_id,lawyer_id_1 , lawyer_id_2):
-
+    def add_meeting_to_schedule(self, case, date, time_slot, hall_number, judge_id, lawyer_id_1, lawyer_id_2):
         date_obj = date
         start_time, end_time = time_slot.split('-')
         # add meeting to DB
@@ -254,7 +253,6 @@ class JerusalemScheduler(LocationScheduler):
             case_id_to_judge_id[case_judge_location.case_id] = case_judge_location.judge_id
         return case_id_to_judge_id
 
-
     def date_relevant_for_case(self, j_date, judge_id, case):
         '''
         input - date, judge_id
@@ -270,7 +268,6 @@ class JerusalemScheduler(LocationScheduler):
                             if case_id == '':
                                 return True, hall_number, time_slot
         return False, False, False
-
 
     def schedule_cases(self):
         '''
@@ -336,6 +333,8 @@ class MeetingScheduler:
 
 
 def run_division_logic():
+    db_reader = DBReader()
+    judge_divider = Divider(db_reader.judges, db_reader.cases)
     judge_divider.handle_cases()
     output_file = 'output.csv'
     insert_output_to_db(os.path.join(app.config["OUTPUT_DIR"], output_file))
