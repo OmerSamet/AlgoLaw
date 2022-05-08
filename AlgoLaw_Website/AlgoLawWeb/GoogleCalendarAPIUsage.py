@@ -84,5 +84,20 @@ def send_calendar_summon(title, description, start_time, end_time, attendees_mai
         print('An error occurred: %s' % error)
 
 
+def get_attendees_response_by_event_id(service, event_id):
+    '''
+    :param service: is the ctual service created before - service = build('calendar', 'v3', credentials=creds)
+    :param event_id: the event id that we want to get - event['id']
+    :return:
+    '''
+    event = service.events().get(calendarId='primary', eventId=event_id).execute()
+    response_by_attendee = defaultdict(str)
+    # dict of -> attendee email: response in str
+    for attendee_dict in event['attendees']:
+        response_by_attendee[attendee_dict['email']] = attendee_dict['responseStatus']
+
+    return response_by_attendee
+
+
 if __name__ == '__main__':
     main()
