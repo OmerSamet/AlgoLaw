@@ -13,6 +13,7 @@ app.config["OUTPUT_DIR"] = os.path.join(app.root_path, 'DB_DATA')
 app.config['CELERY_RESULT_BACKEND'] = 'db+sqlite:///site.db'
 app.config['CELERY_BROKER_URL'] = 'amqp://localhost//'
 celery = make_celery(app)
+# email_watchdog = make_celery(app)
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)

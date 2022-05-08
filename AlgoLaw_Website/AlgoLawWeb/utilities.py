@@ -113,10 +113,14 @@ def load_cases_to_db(case_file_path):
     case_enrichment_df = pd.read_csv(case_enrichment_data_path).fillna('NO DATA')
     cases_df = pd.read_csv(case_file_path).fillna('NO DATA')
     for index, row in cases_df.iterrows():
-        main_type = row['Case_Main_Type']
-        second_type = row['Secondary_Type']
-        sub_type = row['Case_sub_type']
-        location = row['Location']
+        case_id = row['מספר תיק']
+        main_type = row['נושא עיקרי']
+        # second_type = row['Secondary_Type']
+        # sub_type = row['Case_sub_type']
+        location = row['שם בית דין']
+        location = location.replace('בית דין ', '')
+        lawyer_name = row['שם ב"כ העורר']
+
 
         urg_level, duration, weight = get_case_db_data(case_enrichment_df, main_type,
                                                        second_type, sub_type)
@@ -564,10 +568,26 @@ def get_all_events(judge_id=None, location=None, hall_number=None):
 
     return events
 
+
+# def get_summon_data_from_db(case_id):
+#     meetings = MeetingSchedule.query.filter(MeetingSchedule.case_id == case_id).all()
+#     cases
+#     for meeting in meetings:
+#         title
+#         description
+#         start_time = str(meeting.date).split(' ')[0] + 'T' + meeting.end_time + ':00-' + meeting.start_time. + ':00'
+#         end_time = str(meeting.date).split(' ')[0] + 'T' + meeting.end_time + ':00-' + meeting.start_time. + ':00'
+#         attendees_mails
+#         location
+#
+#         title = 'TestTESTTest'
+#         description = 'This is my test description'
+#         attendees_mails = ['mailomersamet@gmail.com', 'xxhe4433@gmail.com']
+#         location = 'Jerusalem, Hall 1'
+
+
 ###################################### MASTER FUNCTIONS ############################################
 def get_all_relevant_judges(location='Jerusalem'):
-    # relevant_user_ids = get_judge_user_ids(location)
-    # location = '%' + location + '%'
     location_judges = Judge.query.filter(Judge.locations.like(location)).all()
     judges = []
     for user in location_judges:
@@ -627,7 +647,7 @@ def insert_output_to_db(output_path):
         add_to_db(case_judge_location)
 
 
-################################################## LAWYERS STUF ###########################################################
+################################################## LAWYERS STUFF ###########################################################
 
 def insert_new_lawyer(name , last_name , lawyer_id, mail,phone_number):
     lawyer = Lawyer(name=name ,

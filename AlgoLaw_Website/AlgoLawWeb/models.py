@@ -125,7 +125,6 @@ class Meeting(db.Model):
     year = db.Column(db.String(20), nullable=False)
 
 
-
 class MeetingSchedule(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     case_id = db.Column(db.Integer, db.ForeignKey('case.id'), nullable=False)
@@ -140,7 +139,7 @@ class MeetingSchedule(db.Model):
     is_verified = db.Column(db.Boolean, nullable=False, default=False)
     lawyer_id_1 = db.Column(db.String(100), nullable=True)
     lawyer_id_2 = db.Column(db.String(100), nullable=True)
-    location = db.Column(db.String(100) ,nullable=False )
+    location = db.Column(db.String(100), nullable=False)
 
 
 class CaseJudgeLocation(db.Model):

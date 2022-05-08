@@ -99,5 +99,12 @@ def get_attendees_response_by_event_id(service, event_id):
     return response_by_attendee
 
 
+def check_all_attendees_accept(response_by_attendee):
+    for attendee_email, response_status in response_by_attendee.items():
+        if response_status != 'confirmed':
+            return False
+    return True
+
+
 if __name__ == '__main__':
     main()
