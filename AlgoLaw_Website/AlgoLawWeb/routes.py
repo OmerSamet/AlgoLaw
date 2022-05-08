@@ -15,6 +15,7 @@ from AlgoLaw_Website.AlgoLawWeb.db_initiator import DBInitiator
 from AlgoLaw_Website.AlgoLawWeb.AlgoLawBackEnd.models import DBReader, Divider
 from AlgoLaw_Website.AlgoLawWeb.scheduler import MeetingScheduler
 import os
+from AlgoLaw_Website.AlgoLawWeb.GoogleCalendarAPIUsage import *
 
 
 @app.route('/upload_cases', methods=['GET', 'POST'])
@@ -294,6 +295,8 @@ def calendar():
 
     return render_template('calendar.html', master_view=master_view, judge_view=judge_view, cur_user_id=current_user.id,
                            vacation_form=vacation_form, event_from=event_from)
+
+
 @app.route('/secretary_lawyer_search', methods=['GET', 'POST'])
 @login_required
 def secretary_lawyer_search():
@@ -302,6 +305,7 @@ def secretary_lawyer_search():
         layers_found = find_lawyer(form.lawyer_name.data , form.lawyer_last_name.data , form.lawyer_id.data, form.lawyer_mail.data,form.lawyer_phone.data)
         return render_template('show_lawyers_search.html', lawyers=layers_found, num_lawyers_found=len(layers_found))
     return render_template('secretary_lawyer_search.html',form=form)
+
 
 @app.route('/search_cases', methods=['GET', 'POST'])
 @login_required
@@ -417,6 +421,20 @@ def master_change_weights():
 
     weights = get_case_weights(datetime.datetime.now().year)
     return render_template('master_change_weights.html', weights=weights, form=form)
+
+
+@app.route('/google_api_test', methods=['GET', 'POST'])
+@login_required
+def google_api_test():
+    creds = get_or_create_credentials()
+    title = 'TestTESTTest'
+    description = 'This is my test description'
+    start_time = '2022-05-08T09:00:00-07:00'
+    end_time = '2022-05-08T09:00:00-07:00'
+    attendees_mails = ['mailomersamet@gmail.com', 'xxhe4433@gmail.com']
+    location = 'Jerusalem, Hall 1'
+    send_calendar_summon(title, description, start_time, end_time, attendees_mails, location, creds)
+    return render_template('secretary_space.html', title='Secretary Space')
 
 
 # @app.route('/celery_run_logic')
