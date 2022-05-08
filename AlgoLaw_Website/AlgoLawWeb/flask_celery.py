@@ -12,6 +12,10 @@ def make_celery(app):
     celery.conf.result_backend = app.config['CELERY_RESULT_BACKEND']
     celery.conf.broker_pool_limit = None
     celery.conf.broker_connection_timeout = 1500
+    celery.conf.event_serializer = "json"
+    celery.conf.accept_content = ['json']
+
+    # worker: celery -A worker --app=AlgoLaw_Website.AlgoLawWeb.celery --pool=solo --loglevel=info
     # CELERY_BROKER_CONNECTION_RETRY = True
     # CELERY_BROKER_CONNECTION_MAX_RETRIES = None
     # CELERY_TASK_RESULT_EXPIRES = 60
