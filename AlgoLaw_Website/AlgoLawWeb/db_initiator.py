@@ -78,38 +78,38 @@ class DBInitiator:
         db.session.commit()
 
         vacation1 = Vacation(judge_id=1,
-                                start_date=datetime.datetime.strptime('2022-03-28', '%Y-%m-%d'),
-                                end_date=datetime.datetime.strptime('2022-03-30', '%Y-%m-%d'),
+                                start_date=datetime.datetime.strptime('2022-05-28', '%Y-%m-%d'),
+                                end_date=datetime.datetime.strptime('2022-05-30', '%Y-%m-%d'),
                                 is_verified=True,
                                 type='Short')
         vacation2 = Vacation(judge_id=1,
-                                start_date=datetime.datetime.strptime('2022-04-08', '%Y-%m-%d'),
-                                end_date=datetime.datetime.strptime('2022-04-18', '%Y-%m-%d'),
+                                start_date=datetime.datetime.strptime('2022-06-08', '%Y-%m-%d'),
+                                end_date=datetime.datetime.strptime('2022-06-18', '%Y-%m-%d'),
                                 is_verified=False,
                                 type='Long')
         vacation3 = Vacation(judge_id=1,
-                                start_date=datetime.datetime.strptime('2022-04-02', '%Y-%m-%d'),
-                                end_date=datetime.datetime.strptime('2022-04-04', '%Y-%m-%d'),
+                                start_date=datetime.datetime.strptime('2022-05-02', '%Y-%m-%d'),
+                                end_date=datetime.datetime.strptime('2022-05-04', '%Y-%m-%d'),
                                 is_verified=True,
                                 type='Short')
         vacation4 = Vacation(judge_id=1,
-                                start_date=datetime.datetime.strptime('2022-03-02', '%Y-%m-%d'),
-                                end_date=datetime.datetime.strptime('2022-03-20', '%Y-%m-%d'),
+                                start_date=datetime.datetime.strptime('2022-05-02', '%Y-%m-%d'),
+                                end_date=datetime.datetime.strptime('2022-05-20', '%Y-%m-%d'),
                                 is_verified=True,
                                 type='Long')
-        vacation5 = Vacation(judge_id=1,
-                                start_date=datetime.datetime.strptime('2022-04-22', '%Y-%m-%d'),
-                                end_date=datetime.datetime.strptime('2022-04-25', '%Y-%m-%d'),
+        vacation5 = Vacation(judge_id=4,
+                                start_date=datetime.datetime.strptime('2022-05-22', '%Y-%m-%d'),
+                                end_date=datetime.datetime.strptime('2022-05-25', '%Y-%m-%d'),
                                 is_verified=True,
                                 type='Short')
-        vacation6 = Vacation(judge_id=4,
-                                start_date=datetime.datetime.strptime('2022-03-02', '%Y-%m-%d'),
-                                end_date=datetime.datetime.strptime('2022-03-20', '%Y-%m-%d'),
+        vacation6 = Vacation(judge_id=5,
+                                start_date=datetime.datetime.strptime('2022-05-02', '%Y-%m-%d'),
+                                end_date=datetime.datetime.strptime('2022-05-20', '%Y-%m-%d'),
                                 is_verified=True,
                                 type='Long')
-        vacation7 = Vacation(judge_id=4,
-                                start_date=datetime.datetime.strptime('2022-04-22', '%Y-%m-%d'),
-                                end_date=datetime.datetime.strptime('2022-04-25', '%Y-%m-%d'),
+        vacation7 = Vacation(judge_id=3,
+                                start_date=datetime.datetime.strptime('2022-05-22', '%Y-%m-%d'),
+                                end_date=datetime.datetime.strptime('2022-05-25', '%Y-%m-%d'),
                                 is_verified=True,
                                 type='Short')
 
