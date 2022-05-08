@@ -218,9 +218,9 @@
             let body = await result.json();
             let eventsForCal = [];
             for (let event of body){
-                let EventDesctiption = 'False'
-                if (event.is_verified) {
-                    EventDesctiption =  'True'
+                let EventDesctiption = 'True'
+                if (event.type == 'vacation' && event.is_verified === false) {
+                    EventDesctiption = 'False'
                 }
                 let currentPush = {
                             title: event.title,
@@ -230,7 +230,8 @@
                             id: event.id,
                             display: event.display,
                             allDay: event.allDay,
-                            description: EventDesctiption
+                            description: EventDesctiption,
+                            eventBorderColor: event.BackgroudColor
                 }
                 eventsForCal.push(currentPush)
                 }
