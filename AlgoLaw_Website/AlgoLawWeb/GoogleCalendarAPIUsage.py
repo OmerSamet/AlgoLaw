@@ -77,7 +77,7 @@ def send_calendar_summon(title, description, start_time, end_time, attendees_mai
                 ],
             },
         }
-        event = service.events().insert(calendarId='primary', body=event).execute()
+        event = service.events().insert(calendarId='primary', body=event, sendUpdates='all').execute()
         print('Event created: %s' % (event.get('htmlLink')))
 
     except HttpError as error:
