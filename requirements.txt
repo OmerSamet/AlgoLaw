@@ -14,3 +14,6 @@ Werkzeug==2.0.0
 openpyxl==3.0.9
 celery==5.2.6
 xlrd==2.0.1
+google-api-python-client==2.47.0
+google-auth-httplib2==0.1.0
+google-auth-oauthlib==0.5.1
