@@ -102,7 +102,7 @@ def get_all_judge_events(judge_id_location):  # judge_id_location = judge_id-loc
 @app.route('/<location>/get_all_location_judges')
 @login_required
 def get_all_location_judges(location):
-    location = '%' + location + '%'
+    location = '%' + LocationEngToHeb[location] + '%'
     judges_objects = Judge.query.filter(Judge.locations.like(location)).all()
     judges = []
     for judge in judges_objects:
@@ -118,7 +118,7 @@ def get_all_location_judges(location):
 @app.route('/<location>/get_all_location_halls')
 @login_required
 def get_all_location_halls(location):
-    hall_objects = Hall.query.filter(Hall.location == location).all()
+    hall_objects = Hall.query.filter(Hall.location == LocationEngToHeb[location]).all()
     halls = []
     for hall in hall_objects:
         halls.append(
