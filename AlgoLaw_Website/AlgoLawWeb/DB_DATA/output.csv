@@ -1,428 +1,112 @@
 ID Case,ID judge,Location
-5,1,Haifa
-6,1,Haifa
-12,1,Haifa
-29,1,Haifa
-30,1,Haifa
-39,1,Haifa
-40,1,Haifa
-46,1,Haifa
-63,1,Haifa
-64,1,Haifa
-73,1,Haifa
-74,1,Haifa
-80,1,Haifa
-97,1,Haifa
-98,1,Haifa
-107,1,Haifa
-108,1,Haifa
-114,1,Haifa
-131,1,Haifa
-132,1,Haifa
-141,1,Haifa
-142,1,Haifa
-148,1,Haifa
-165,1,Haifa
-166,1,Haifa
-175,1,Haifa
-176,1,Haifa
-182,1,Haifa
-199,1,Haifa
-200,1,Haifa
-209,1,Haifa
-210,1,Haifa
-216,1,Haifa
-233,1,Haifa
-234,1,Haifa
-243,1,Haifa
-244,1,Haifa
-250,1,Haifa
-267,1,Haifa
-268,1,Haifa
-277,1,Haifa
-278,1,Haifa
-284,1,Haifa
-301,1,Haifa
-302,1,Haifa
-311,1,Haifa
-312,1,Haifa
-318,1,Haifa
-335,1,Haifa
-336,1,Haifa
-345,1,Haifa
-346,1,Haifa
-352,1,Haifa
-369,1,Haifa
-370,1,Haifa
-379,1,Haifa
-380,1,Haifa
-386,1,Haifa
-403,1,Haifa
-404,1,Haifa
-413,1,Haifa
-414,1,Haifa
-420,1,Haifa
-437,1,Haifa
-438,1,Haifa
-482,2,Jerusalem
-512,2,Jerusalem
-530,2,Jerusalem
-542,2,Jerusalem
-549,2,Jerusalem
-558,2,Jerusalem
-565,2,Jerusalem
-571,2,Jerusalem
-577,2,Jerusalem
-583,2,Jerusalem
-590,2,Jerusalem
-596,2,Jerusalem
-602,2,Jerusalem
-608,2,Jerusalem
-614,2,Jerusalem
-620,2,Jerusalem
-626,2,Jerusalem
-632,2,Jerusalem
-638,2,Jerusalem
-644,2,Jerusalem
-650,2,Jerusalem
-656,2,Jerusalem
-662,2,Jerusalem
-668,2,Jerusalem
-674,2,Jerusalem
-680,2,Jerusalem
-484,3,Jerusalem
-514,3,Jerusalem
-531,3,Jerusalem
-543,3,Jerusalem
-550,3,Jerusalem
-560,3,Jerusalem
-566,3,Jerusalem
-572,3,Jerusalem
-578,3,Jerusalem
-584,3,Jerusalem
-591,3,Jerusalem
-597,3,Jerusalem
-603,3,Jerusalem
-609,3,Jerusalem
-615,3,Jerusalem
-621,3,Jerusalem
-627,3,Jerusalem
-633,3,Jerusalem
-639,3,Jerusalem
-645,3,Jerusalem
-651,3,Jerusalem
-657,3,Jerusalem
-663,3,Jerusalem
-669,3,Jerusalem
-675,3,Jerusalem
-681,3,Jerusalem
-4,4,Beer Sheva
-10,4,Beer Sheva
-11,4,Beer Sheva
-25,4,Beer Sheva
-38,4,Beer Sheva
-44,4,Beer Sheva
-45,4,Beer Sheva
-59,4,Beer Sheva
-72,4,Beer Sheva
-78,4,Beer Sheva
-79,4,Beer Sheva
-93,4,Beer Sheva
-106,4,Beer Sheva
-112,4,Beer Sheva
-113,4,Beer Sheva
-127,4,Beer Sheva
-140,4,Beer Sheva
-146,4,Beer Sheva
-147,4,Beer Sheva
-161,4,Beer Sheva
-174,4,Beer Sheva
-180,4,Beer Sheva
-181,4,Beer Sheva
-195,4,Beer Sheva
-208,4,Beer Sheva
-214,4,Beer Sheva
-215,4,Beer Sheva
-229,4,Beer Sheva
-242,4,Beer Sheva
-248,4,Beer Sheva
-249,4,Beer Sheva
-263,4,Beer Sheva
-276,4,Beer Sheva
-282,4,Beer Sheva
-283,4,Beer Sheva
-297,4,Beer Sheva
-310,4,Beer Sheva
-316,4,Beer Sheva
-317,4,Beer Sheva
-331,4,Beer Sheva
-344,4,Beer Sheva
-350,4,Beer Sheva
-351,4,Beer Sheva
-365,4,Beer Sheva
-378,4,Beer Sheva
-384,4,Beer Sheva
-385,4,Beer Sheva
-399,4,Beer Sheva
-412,4,Beer Sheva
-418,4,Beer Sheva
-419,4,Beer Sheva
-433,4,Beer Sheva
-486,5,Jerusalem
-516,5,Jerusalem
-538,5,Jerusalem
-544,5,Jerusalem
-551,5,Jerusalem
-561,5,Jerusalem
-567,5,Jerusalem
-573,5,Jerusalem
-579,5,Jerusalem
-585,5,Jerusalem
-592,5,Jerusalem
-598,5,Jerusalem
-604,5,Jerusalem
-610,5,Jerusalem
-616,5,Jerusalem
-622,5,Jerusalem
-628,5,Jerusalem
-634,5,Jerusalem
-640,5,Jerusalem
-646,5,Jerusalem
-652,5,Jerusalem
-658,5,Jerusalem
-664,5,Jerusalem
-670,5,Jerusalem
-676,5,Jerusalem
-682,5,Jerusalem
-507,6,Jerusalem
-518,6,Jerusalem
-539,6,Jerusalem
-546,6,Jerusalem
-552,6,Jerusalem
-562,6,Jerusalem
-568,6,Jerusalem
-574,6,Jerusalem
-580,6,Jerusalem
-586,6,Jerusalem
-593,6,Jerusalem
-599,6,Jerusalem
-605,6,Jerusalem
-611,6,Jerusalem
-617,6,Jerusalem
-623,6,Jerusalem
-629,6,Jerusalem
-635,6,Jerusalem
-641,6,Jerusalem
-647,6,Jerusalem
-653,6,Jerusalem
-659,6,Jerusalem
-665,6,Jerusalem
-671,6,Jerusalem
-677,6,Jerusalem
-683,6,Jerusalem
-508,7,Jerusalem
-519,7,Jerusalem
-540,7,Jerusalem
-547,7,Jerusalem
-553,7,Jerusalem
-563,7,Jerusalem
-569,7,Jerusalem
-575,7,Jerusalem
-581,7,Jerusalem
-587,7,Jerusalem
-594,7,Jerusalem
-600,7,Jerusalem
-606,7,Jerusalem
-612,7,Jerusalem
-618,7,Jerusalem
-624,7,Jerusalem
-630,7,Jerusalem
-636,7,Jerusalem
-642,7,Jerusalem
-648,7,Jerusalem
-654,7,Jerusalem
-660,7,Jerusalem
-666,7,Jerusalem
-672,7,Jerusalem
-678,7,Jerusalem
-510,8,Jerusalem
-520,8,Jerusalem
-541,8,Jerusalem
-548,8,Jerusalem
-554,8,Jerusalem
-564,8,Jerusalem
-570,8,Jerusalem
-576,8,Jerusalem
-582,8,Jerusalem
-588,8,Jerusalem
-595,8,Jerusalem
-601,8,Jerusalem
-607,8,Jerusalem
-613,8,Jerusalem
-619,8,Jerusalem
-625,8,Jerusalem
-631,8,Jerusalem
-637,8,Jerusalem
-643,8,Jerusalem
-649,8,Jerusalem
-655,8,Jerusalem
-661,8,Jerusalem
-667,8,Jerusalem
-673,8,Jerusalem
-679,8,Jerusalem
-1,9,Tel Aviv
-20,9,Tel Aviv
-24,9,Tel Aviv
-33,9,Tel Aviv
-43,9,Tel Aviv
-54,9,Tel Aviv
-58,9,Tel Aviv
-67,9,Tel Aviv
-77,9,Tel Aviv
-88,9,Tel Aviv
-92,9,Tel Aviv
-101,9,Tel Aviv
-111,9,Tel Aviv
-122,9,Tel Aviv
-126,9,Tel Aviv
-135,9,Tel Aviv
-145,9,Tel Aviv
-156,9,Tel Aviv
-160,9,Tel Aviv
-169,9,Tel Aviv
-179,9,Tel Aviv
-190,9,Tel Aviv
-194,9,Tel Aviv
-203,9,Tel Aviv
-213,9,Tel Aviv
-224,9,Tel Aviv
-228,9,Tel Aviv
-237,9,Tel Aviv
-247,9,Tel Aviv
-258,9,Tel Aviv
-262,9,Tel Aviv
-271,9,Tel Aviv
-281,9,Tel Aviv
-292,9,Tel Aviv
-296,9,Tel Aviv
-305,9,Tel Aviv
-315,9,Tel Aviv
-326,9,Tel Aviv
-330,9,Tel Aviv
-339,9,Tel Aviv
-349,9,Tel Aviv
-360,9,Tel Aviv
-364,9,Tel Aviv
-373,9,Tel Aviv
-383,9,Tel Aviv
-394,9,Tel Aviv
-398,9,Tel Aviv
-407,9,Tel Aviv
-417,9,Tel Aviv
-428,9,Tel Aviv
-432,9,Tel Aviv
-441,9,Tel Aviv
-8,10,Tel Aviv
-21,10,Tel Aviv
-34,10,Tel Aviv
-42,10,Tel Aviv
-55,10,Tel Aviv
-68,10,Tel Aviv
-76,10,Tel Aviv
-89,10,Tel Aviv
-102,10,Tel Aviv
-110,10,Tel Aviv
-123,10,Tel Aviv
-136,10,Tel Aviv
-144,10,Tel Aviv
-157,10,Tel Aviv
-170,10,Tel Aviv
-178,10,Tel Aviv
-191,10,Tel Aviv
-204,10,Tel Aviv
-212,10,Tel Aviv
-225,10,Tel Aviv
-238,10,Tel Aviv
-246,10,Tel Aviv
-259,10,Tel Aviv
-272,10,Tel Aviv
-280,10,Tel Aviv
-293,10,Tel Aviv
-306,10,Tel Aviv
-314,10,Tel Aviv
-327,10,Tel Aviv
-340,10,Tel Aviv
-348,10,Tel Aviv
-361,10,Tel Aviv
-374,10,Tel Aviv
-382,10,Tel Aviv
-395,10,Tel Aviv
-408,10,Tel Aviv
-416,10,Tel Aviv
-429,10,Tel Aviv
-442,10,Tel Aviv
-9,11,Tel Aviv
-13,11,Tel Aviv
-23,11,Tel Aviv
-31,11,Tel Aviv
-32,11,Tel Aviv
-35,11,Tel Aviv
-47,11,Tel Aviv
-57,11,Tel Aviv
-65,11,Tel Aviv
-66,11,Tel Aviv
-69,11,Tel Aviv
-81,11,Tel Aviv
-91,11,Tel Aviv
-99,11,Tel Aviv
-100,11,Tel Aviv
-103,11,Tel Aviv
-115,11,Tel Aviv
-125,11,Tel Aviv
-133,11,Tel Aviv
-134,11,Tel Aviv
-137,11,Tel Aviv
-149,11,Tel Aviv
-159,11,Tel Aviv
-167,11,Tel Aviv
-168,11,Tel Aviv
-171,11,Tel Aviv
-183,11,Tel Aviv
-193,11,Tel Aviv
-201,11,Tel Aviv
-202,11,Tel Aviv
-205,11,Tel Aviv
-217,11,Tel Aviv
-227,11,Tel Aviv
-235,11,Tel Aviv
-236,11,Tel Aviv
-239,11,Tel Aviv
-251,11,Tel Aviv
-261,11,Tel Aviv
-269,11,Tel Aviv
-270,11,Tel Aviv
-273,11,Tel Aviv
-285,11,Tel Aviv
-295,11,Tel Aviv
-303,11,Tel Aviv
-304,11,Tel Aviv
-307,11,Tel Aviv
-319,11,Tel Aviv
-329,11,Tel Aviv
-337,11,Tel Aviv
-338,11,Tel Aviv
-341,11,Tel Aviv
-353,11,Tel Aviv
-363,11,Tel Aviv
-371,11,Tel Aviv
-372,11,Tel Aviv
-375,11,Tel Aviv
-387,11,Tel Aviv
-397,11,Tel Aviv
-405,11,Tel Aviv
-406,11,Tel Aviv
-409,11,Tel Aviv
-421,11,Tel Aviv
-431,11,Tel Aviv
-439,11,Tel Aviv
-440,11,Tel Aviv
+2390-22,1,ירושלים
+2304-22,1,ירושלים
+2354-22,1,ירושלים
+2315-22,1,ירושלים
+2392-22,1,חיפה
+2344-22,1,חיפה
+2367-22,1,חיפה
+2381-22,1,ירושלים
+2395-22,1,חיפה
+2353-22,2,ירושלים
+2305-22,2,ירושלים
+2318-22,2,ירושלים
+2334-22,2,ירושלים
+2338-22,2,ירושלים
+2359-22,2,ירושלים
+2373-22,2,ירושלים
+2382-22,2,ירושלים
+2404-22,2,ירושלים
+2351-22,3,ירושלים
+2306-22,3,ירושלים
+2331-22,3,ירושלים
+2335-22,3,ירושלים
+2337-22,3,ירושלים
+2360-22,3,ירושלים
+2374-22,3,ירושלים
+2386-22,3,ירושלים
+2408-22,3,ירושלים
+2299-22,4,ירושלים
+2309-22,4,באר שבע
+2311-22,4,באר שבע
+2313-22,4,באר שבע
+2328-22,4,ירושלים
+2389-22,4,ירושלים
+2371-22,4,ירושלים
+2380-22,4,ירושלים
+2387-22,4,באר שבע
+2402-22,4,באר שבע
+2363-22,5,ירושלים
+2364-22,5,ירושלים
+2332-22,5,ירושלים
+2336-22,5,ירושלים
+2343-22,5,ירושלים
+2361-22,5,ירושלים
+2375-22,5,ירושלים
+2399-22,5,ירושלים
+2409-22,5,ירושלים
+2341-22,6,ירושלים
+2308-22,6,ירושלים
+2333-22,6,ירושלים
+2345-22,6,ירושלים
+2347-22,6,ירושלים
+2362-22,6,ירושלים
+2377-22,6,ירושלים
+2391-22,6,ירושלים
+2342-22,7,ירושלים
+2310-22,7,ירושלים
+2330-22,7,ירושלים
+2317-22,7,ירושלים
+2356-22,7,ירושלים
+2370-22,7,ירושלים
+2379-22,7,ירושלים
+2397-22,7,ירושלים
+2357-22,8,ירושלים
+2316-22,8,ירושלים
+2355-22,8,ירושלים
+2329-22,8,ירושלים
+2358-22,8,ירושלים
+2372-22,8,ירושלים
+2378-22,8,ירושלים
+2400-22,8,ירושלים
+2300-22,9,תל אביב
+2303-22,9,תל אביב
+2314-22,9,תל אביב
+2321-22,9,תל אביב
+2323-22,9,תל אביב
+2326-22,9,תל אביב
+2349-22,9,תל אביב
+2352-22,9,תל אביב
+2368-22,9,תל אביב
+2384-22,9,תל אביב
+2393-22,9,תל אביב
+2398-22,9,תל אביב
+2405-22,9,תל אביב
+2301-22,10,תל אביב
+2307-22,10,תל אביב
+2312-22,10,תל אביב
+2369-22,10,תל אביב
+2339-22,10,תל אביב
+2324-22,10,תל אביב
+2340-22,10,תל אביב
+2346-22,10,תל אביב
+2348-22,10,תל אביב
+2365-22,10,תל אביב
+2383-22,10,תל אביב
+2385-22,10,תל אביב
+2394-22,10,תל אביב
+2401-22,10,תל אביב
+2406-22,10,תל אביב
+2302-22,11,תל אביב
+2319-22,11,תל אביב
+2320-22,11,תל אביב
+2322-22,11,תל אביב
+2325-22,11,תל אביב
+2327-22,11,תל אביב
+2350-22,11,תל אביב
+2366-22,11,תל אביב
+2376-22,11,תל אביב
+2388-22,11,תל אביב
+2396-22,11,תל אביב
+2403-22,11,תל אביב
+2407-22,11,תל אביב

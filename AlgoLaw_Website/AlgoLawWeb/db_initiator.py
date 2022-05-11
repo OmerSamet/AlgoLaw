@@ -26,7 +26,8 @@ class DBInitiator:
         judges = self.add_judges_to_db()
         halls = self.add_halls_to_db()
         rotation_dates = self.add_rotation_dates_to_db()
-        cases = self.add_cases_to_db()
+        # cases = self.add_cases_to_db()
+        cases = 1
         self.add_lawyers_to_db()
 
         self.check_csv_imports(cases, judges, halls, rotation_dates)
@@ -92,28 +93,18 @@ class DBInitiator:
                                 end_date=datetime.datetime.strptime('2022-05-04', '%Y-%m-%d'),
                                 is_verified=True,
                                 type='Short')
-        vacation4 = Vacation(judge_id=1,
-                                start_date=datetime.datetime.strptime('2022-05-02', '%Y-%m-%d'),
-                                end_date=datetime.datetime.strptime('2022-05-20', '%Y-%m-%d'),
-                                is_verified=True,
-                                type='Long')
         vacation5 = Vacation(judge_id=4,
                                 start_date=datetime.datetime.strptime('2022-05-22', '%Y-%m-%d'),
                                 end_date=datetime.datetime.strptime('2022-05-25', '%Y-%m-%d'),
                                 is_verified=True,
                                 type='Short')
-        vacation6 = Vacation(judge_id=5,
-                                start_date=datetime.datetime.strptime('2022-05-02', '%Y-%m-%d'),
-                                end_date=datetime.datetime.strptime('2022-05-20', '%Y-%m-%d'),
-                                is_verified=True,
-                                type='Long')
         vacation7 = Vacation(judge_id=3,
                                 start_date=datetime.datetime.strptime('2022-05-22', '%Y-%m-%d'),
                                 end_date=datetime.datetime.strptime('2022-05-25', '%Y-%m-%d'),
                                 is_verified=True,
                                 type='Short')
 
-        vacations = [vacation1, vacation2, vacation3, vacation4, vacation5, vacation6, vacation7]
+        vacations = [vacation1, vacation2, vacation3, vacation5, vacation7]
         for vacation in vacations:
             db.session.add(vacation)
         db.session.commit()

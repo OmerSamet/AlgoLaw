@@ -9,7 +9,7 @@ from AlgoLaw_Website.AlgoLawWeb.utilities import check_if_already_vacation, save
     get_all_relevant_judges, add_to_db, check_logged_in, \
     return_role_page, get_all_events, load_cases_to_db, load_holidays_to_db, load_rotations_to_db, \
     load_mishmoret_to_db, get_upload_div_colors_and_dates, get_events_by_role, get_location_by_role, handle_vacation_form, \
-    handle_event, find_lawyer, get_case_weights, load_files_from_form, insert_output_to_db
+    handle_event, find_lawyer, get_case_weights, load_files_from_form, insert_output_to_db, LocationEngToHeb
 import json
 from AlgoLaw_Website.AlgoLawWeb.db_initiator import DBInitiator
 from AlgoLaw_Website.AlgoLawWeb.AlgoLawBackEnd.models import DBReader, Divider
@@ -89,6 +89,8 @@ def get_all_judge_events(judge_id_location):  # judge_id_location = judge_id-loc
         hall_number = None
     if location == 'none':
         location = None
+    else:
+        location = LocationEngToHeb[location]
     if monthly == 'true':
         events = get_events_by_role(cur_role, judge_id=judge_id, monthly=True, hall_number=hall_number, location=location)
     else:
@@ -169,6 +171,7 @@ def run_division_logic():
     insert_output_to_db(os.path.join(app.config["OUTPUT_DIR"], output_file))
     print('Done - Inserting division into DB')
     scheduler = MeetingScheduler(datetime.datetime.now())
+    print('Jerus cases num: {}'.format(len(scheduler.location_to_cases)))
     scheduler.schedule_jerusalem_cases()
     celery.control.purge()
     print('Purged')

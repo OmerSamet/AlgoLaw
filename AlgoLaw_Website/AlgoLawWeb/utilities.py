@@ -22,6 +22,13 @@ DayToHallToJudgeJerusalem = {
     4: {1: [9, 9], 2: [10, 10], 3: [5, 6]}  # Thursday
 }
 
+LocationEngToHeb = {
+    'Jerusalem': 'ירושלים',
+    'Haifa': 'חיפה',
+    'Beer Sheva': 'באר שבע',
+    'Tel Aviv': 'תל אביב'
+}
+
 HALL_NUMBER_TO_BORDER_COLOR = {
     1: '#8A2BE2',
     2: '#1E90FF',
@@ -91,41 +98,70 @@ def save_csv_file(form_csv_file, output_directory, file_name):
     return csv_path
 
 
-def get_case_db_data(case_enrichment_df, main_type, second_type, sub_type):
-        if type(sub_type) == str:
-            pandas_query = (case_enrichment_df['Main_Type'] == main_type) & (
-                    case_enrichment_df['Secondary_Type'] == second_type) & (
-                                   case_enrichment_df['Sub_Type'] == sub_type)
-        else:
-            pandas_query = (case_enrichment_df['Main_Type'] == main_type) & (
-                    case_enrichment_df['Secondary_Type'] == second_type)
+def get_case_db_data(case_enrichment_df, main_type):
+    pandas_query = (case_enrichment_df['Main_Type'] == main_type)
 
+    try:
         c_urg_level = case_enrichment_df[pandas_query]['Urgency_Level'].values[0]
         c_duration = 35
         c_weight = int.from_bytes(case_enrichment_df[pandas_query]['Weight'].values[0], 'little')
+    except Exception as e:
+        print('got here!')
+        print(main_type)
 
-        return c_urg_level, c_duration, c_weight
+    return c_urg_level, c_duration, c_weight
+
+# def get_case_db_data(case_enrichment_df, main_type, second_type, sub_type):
+#         if type(sub_type) == str:
+#             pandas_query = (case_enrichment_df['Main_Type'] == main_type) & (
+#                     case_enrichment_df['Secondary_Type'] == second_type) & (
+#                                    case_enrichment_df['Sub_Type'] == sub_type)
+#         else:
+#             pandas_query = (case_enrichment_df['Main_Type'] == main_type) & (
+#                     case_enrichment_df['Secondary_Type'] == second_type)
+#
+#         c_urg_level = case_enrichment_df[pandas_query]['Urgency_Level'].values[0]
+#         c_duration = 35
+#         c_weight = int.from_bytes(case_enrichment_df[pandas_query]['Weight'].values[0], 'little')
+#
+#         return c_urg_level, c_duration, c_weight
+
+
+def read_excel_file(file_path):
+    try:
+        df = pd.read_csv(file_path).fillna('NO DATA')
+    except Exception as e:
+        df = pd.read_excel(file_path).fillna('NO DATA')
+    return df
 
 
 def load_cases_to_db(case_file_path):
     case_enrichment_data_path = os.path.join(app.root_path, 'DB_DATA', 'Case_Data.csv')
 
     case_enrichment_df = pd.read_csv(case_enrichment_data_path).fillna('NO DATA')
-    cases_df = pd.read_csv(case_file_path).fillna('NO DATA')
+    cases_df = read_excel_file(case_file_path)
     for index, row in cases_df.iterrows():
         case_id = row['מספר תיק']
         main_type = row['נושא עיקרי']
+        second_type = ''
+        sub_type = ''
+        # main_type = row['Case_Main_Type']
         # second_type = row['Secondary_Type']
         # sub_type = row['Case_sub_type']
+        # location = row['Location']
         location = row['שם בית דין']
         location = location.replace('בית דין ', '')
         lawyer_name = row['שם ב"כ העורר']
+        lawyer_id_2 = ''
+        # lawyer_id_1 = row['Lawyer_ID_1']
+        # lawyer_id_2 = row['Lawyer_ID_2']
 
+        urg_level, duration, weight = get_case_db_data(case_enrichment_df, main_type)
+        # urg_level, duration, weight = get_case_db_data(case_enrichment_df, main_type,
+        #                                                second_type, sub_type)
 
-        urg_level, duration, weight = get_case_db_data(case_enrichment_df, main_type,
-                                                       second_type, sub_type)
-
-        new_case = Case(first_type=main_type,
+        new_case = Case(id=case_id,
+                        first_type=main_type,
                         second_type=second_type,
                         third_type=sub_type,
                         urgency_level=urg_level,
@@ -133,7 +169,9 @@ def load_cases_to_db(case_file_path):
                         location=location,
                         weight=weight,
                         quarter_created=((datetime.datetime.now().month - 1) // 3) + 1,
-                        year_created=datetime.datetime.now().year)
+                        year_created=datetime.datetime.now().year,
+                        lawyer_id_1=lawyer_name,
+                        lawyer_id_2=lawyer_id_2)
 
         add_to_db(new_case)
 
@@ -141,7 +179,7 @@ def load_cases_to_db(case_file_path):
 
 
 def load_holidays_to_db(holiday_csv_file):
-    holidays_df = pd.read_csv(holiday_csv_file)
+    holidays_df = read_excel_file(holiday_csv_file)
 
     all_judges = Judge.query.all()
     all_judge_ids = [judge.user_id for judge in all_judges]
@@ -161,7 +199,7 @@ def load_holidays_to_db(holiday_csv_file):
 
 
 def load_rotations_to_db(rotation_csv_file):
-    rotation_df = pd.read_csv(rotation_csv_file)
+    rotation_df = read_excel_file(rotation_csv_file)
     for index, row in rotation_df.iterrows():
         rotation = Rotation(judge_id=row['Judge_ID'],
                             start_date=datetime.datetime.strptime(row['Start_Date'], '%d/%m/%Y'),
@@ -332,10 +370,8 @@ def turn_events_to_monthly(events):
     for event in events:
         if event['type'] == 'meeting':
             event_date = str(datetime.datetime.strptime(event['start'], '%Y-%m-%d %H:%M:%S').date())
-            event_hall_id = event['hall_id']
+            event_hall_number = event['hall_id']
             judge_id = event['judge_id']  # ID in Judge table
-
-            event_hall_number = Hall.query.filter(Hall.id == event_hall_id).first().hall_number
 
             date_to_hall_number_to_judge[event_date][event_hall_number].add(judge_id)
         else:

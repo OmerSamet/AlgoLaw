@@ -101,7 +101,7 @@ class Lawyer(db.Model):
 
 
 class Case(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String(50), primary_key=True)
     first_type = db.Column(db.String(100), nullable=False)
     second_type = db.Column(db.String(100), nullable=False)
     third_type = db.Column(db.String(100), nullable=True)

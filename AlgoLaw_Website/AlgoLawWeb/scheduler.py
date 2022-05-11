@@ -63,18 +63,20 @@ class LocationScheduler:
         work_days = []
         for day in range(1, num_days + 1):
             day_date = datetime.date(year, month, day)
-            if day_date.isoweekday() in DayToHallToJudgeJerusalem.keys():
+            if day_date.isoweekday() in DayToHallToJudgeJerusalem.keys() and day_date >= datetime.datetime.now().date():
                 work_days.append(day_date)
         return work_days
 
-    def get_quarterly_dates(self):
+    def get_next_90_dates(self):
         year = datetime.datetime.now().year
         quarterly_dates = []
-        for i in range(0, 3):
+        for i in range(0, 4):
             month = datetime.datetime.now().month + i
             num_days = calendar.monthrange(year, month)[1]
             work_days = self.get_workdays(num_days, year, month)
             quarterly_dates.extend(work_days)
+            if len(quarterly_dates) >= 90:
+                break
 
         return quarterly_dates
 
@@ -110,7 +112,7 @@ class LocationScheduler:
 
         :return: empty_schedule
         '''
-        quarterly_dates = self.get_quarterly_dates()
+        quarterly_dates = self.get_next_90_dates()
         empty_schedule = defaultdict(lambda: defaultdict(lambda: defaultdict(Case)))
         empty_case = Case()
         for date in quarterly_dates:
@@ -276,7 +278,7 @@ class JerusalemScheduler(LocationScheduler):
         '''
         ordered_cases = self.order_cases()
         case_id_to_judge_id = self.get_case_id_to_judge_id()
-        quarterly_dates = self.get_quarterly_dates()
+        quarterly_dates = self.get_next_90_dates()
         quarterly_J_days = [JerusalemDay(date) for date in quarterly_dates]
         # case object
         i = 1
@@ -319,11 +321,11 @@ class MeetingScheduler:
         :return: cases -> list of Case objects (AlgoLawWeb.models.Case)
         '''
 
-        case_judge_locations = db.session.query(CaseJudgeLocation).filter(
-            CaseJudgeLocation.quarter == self.quarter,
-            CaseJudgeLocation.year == self.year).all()
+        cases = db.session.query(Case).filter(
+            Case.quarter_created == self.quarter,
+            Case.year_created == self.year).all()
 
-        case_ids = [cjl.case_id for cjl in case_judge_locations]
+        case_ids = [case.id for case in cases]
 
         cases_with_meetings = MeetingSchedule.query.filter(MeetingSchedule.case_id.in_(case_ids)).all()
         case_ids_with_meetings = [meeting.case_id for meeting in cases_with_meetings]
@@ -335,6 +337,7 @@ class MeetingScheduler:
 
     def divide_cases_to_location(self):
         cases = self.get_uploaded_cases()
+        print('Amount of Cases got: {}'.format(len(cases)))
         location_to_cases = defaultdict(list)  # dict of location to case list -> {location_name_str: [Case], ...
         for case in cases:
             location_to_cases[case.location].append(case)
@@ -344,7 +347,7 @@ class MeetingScheduler:
     def schedule_jerusalem_cases(self):
         print('Starting Jerusalem scheduling')
         print('Getting Jerusalem cases')
-        j_scheduler = JerusalemScheduler(self.location_to_cases['Jerusalem'])
+        j_scheduler = JerusalemScheduler(self.location_to_cases['ירושלים'])
         print('Done - Getting Jerusalem cases')
         j_scheduler.schedule_cases()
         print('Done - Jerusalem scheduling')
