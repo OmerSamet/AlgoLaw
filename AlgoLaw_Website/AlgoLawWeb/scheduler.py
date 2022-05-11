@@ -80,48 +80,6 @@ class LocationScheduler:
 
         return quarterly_dates
 
-    def init_schedule(self, halls):
-        '''
-        :input: halls -> list of hall objects
-        :description: Function returns dict of dates of quarter to empty lists,
-                      we will use this function for each hall so every hall will have a dict of dates
-                      and every date will have a list of HallSchedule
-
-                      empty_schedule is a dict that is built like this:
-                      {date: {time_slot: {hall_id: case_id,
-                                            hall_id: case_id
-                                            hall_id: case_id
-                                            ...},
-                                {time_slot: {hall_id: case_id,
-                                            hall_id: case_id
-                                            hall_id: case_id
-                                            ...},
-                                ...
-                                },
-                        date2: {time_slot: {hall_id: case_id,
-                                            hall_id: case_id
-                                            hall_id: case_id
-                                            ...},
-                                {time_slot: {hall_id: case_id,
-                                            hall_id: case_id
-                                            hall_id: case_id
-                                            ...},
-                                ...
-                                },
-                                ...
-
-        :return: empty_schedule
-        '''
-        quarterly_dates = self.get_next_90_dates()
-        empty_schedule = defaultdict(lambda: defaultdict(lambda: defaultdict(Case)))
-        empty_case = Case()
-        for date in quarterly_dates:
-            for time_slot in JerusalemTimeSlots:
-                for day_num, hall_dict in DayToHallToJudgeJerusalem.items():
-                    for hall_num, judges in hall_dict.items():
-                        empty_schedule[str(date)][time_slot.value][hall_num] = empty_case
-
-        return empty_schedule
 
     def lawyer_is_not_in_different_city(self, date, lawyer_id_1, lawyer_id_2, location):
         if lawyer_id_1 != '' and lawyer_id_2 != '':
@@ -175,7 +133,6 @@ class JerusalemScheduler(LocationScheduler):
         self.location = 'Jerusalem'
         LocationScheduler.__init__(self, cases, self.location)
         self.halls = self.get_halls(self.location)
-        self.hall_schedules = self.init_schedule(self.halls)
 
     def order_cases(self):
         return sorted(self.cases, key=lambda x: x.urgency_level, reverse=True)
