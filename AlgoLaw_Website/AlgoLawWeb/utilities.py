@@ -21,7 +21,13 @@ DayToHallToJudgeJerusalem = {
     3: {1: [7, 7], 2: [8, 8], 3: [3, 4]},  # Wednesday
     4: {1: [9, 9], 2: [10, 10], 3: [5, 6]}  # Thursday
 }
-
+DayToHallToJudgeTelAviv = {
+    7: {1: [9, 9], 2: [10, 10]},  # Sunday
+    1: {1: [9, 9], 2: [10, 10]},  # Monday
+    2: {1: [9, 9], 2: [10, 10]},  # Tuesday
+    3: {1: [9, 9], 2: [10, 10]},  # Wednesday
+    4: {1: [9, 9], 2: [10, 10]}  # Thursday
+}
 LocationEngToHeb = {
     'Jerusalem': 'ירושלים',
     'Haifa': 'חיפה',
