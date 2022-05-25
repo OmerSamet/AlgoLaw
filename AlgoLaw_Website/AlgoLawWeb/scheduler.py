@@ -2,12 +2,13 @@ from collections import defaultdict
 
 from AlgoLaw_Website.AlgoLawWeb.AlgoLawBackEnd.models import DBReader, Divider
 from AlgoLaw_Website.AlgoLawWeb import db, app
-from AlgoLaw_Website.AlgoLawWeb.models import Hall, Case, CaseJudgeLocation, MeetingSchedule, Meeting, Vacation\
+from AlgoLaw_Website.AlgoLawWeb.models import Hall, Case, CaseJudgeLocation, MeetingSchedule, Meeting, Vacation \
     , Rotation, SickDay
 import datetime
 import calendar
 import enum
-from AlgoLaw_Website.AlgoLawWeb.utilities import add_to_db, DayToHallToJudgeJerusalem, DayToHallToJudgeTelAviv
+from AlgoLaw_Website.AlgoLawWeb.utilities import add_to_db, DayToHallToJudgeJerusalem, DayToHallToJudgeTelAviv \
+    , DayToHallToJudgeHeifa, DayToHallToJudgeBeerSheva
 import os
 from flask import flash
 
@@ -75,7 +76,7 @@ class LocationScheduler:
         work_days = []
         for day in range(1, num_days + 1):
             day_date = datetime.date(year, month, day)
-            if day_date.isoweekday() in day_to_hall_to_judge.keys() and day_date >= datetime.datetime.now().date():
+            if day_date.isoweekday() in day_to_hall_to_judge.keys() and day_date > datetime.datetime.now().date():
                 work_days.append(day_date)
         return work_days
 
@@ -183,7 +184,7 @@ class LocationScheduler:
         if (lawyer_id_1 != '') and (lawyer_id_2 != ''):
             start_time, end_time = time_slot.split('-')
             lawyers_1_cases_that_day = db.session.query(MeetingSchedule).filter(MeetingSchedule.lawyer_id_1 == lawyer_id_1,
-                                                                              MeetingSchedule.start_time == start_time ,
+                                                                              MeetingSchedule.start_time == start_time,
                                                                                 MeetingSchedule.date == date,
                                                                               MeetingSchedule.location == location).all()
             lawyers_2_cases_that_day = db.session.query(MeetingSchedule).filter(MeetingSchedule.lawyer_id_2 == lawyer_id_2,
@@ -273,7 +274,7 @@ class JerusalemScheduler(LocationScheduler):
         # case object
         i = 1
         for case in ordered_cases:
-            print('Starting Jerusalem case {} / {} scheduling'.format(i, len(ordered_cases)))
+            #print('Starting Jerusalem case {} / {} scheduling'.format(i, len(ordered_cases)))
 
             judge_id = case_id_to_judge_id[case.id]
             been_placed_in_calendar = False
@@ -284,14 +285,14 @@ class JerusalemScheduler(LocationScheduler):
                 if lawyers_available:
                     relevant, hall_number, time_slot = self.date_relevant_for_case(J_date, judge_id, case, 'Jerusalem')
                     if relevant:
-                        print('Done - Found! Jerusalem case relevancy {} / {}'.format(i, len(ordered_cases)))
+                        #print('Done - Found! Jerusalem case relevancy {} / {}'.format(i, len(ordered_cases)))
                         been_placed_in_calendar = True
                         J_date.schedule[hall_number][time_slot][judge_id] = case.id
-                        print('Adding Jerusalem case  {} / {} to DB'.format(i, len(ordered_cases)))
+                        #print('Adding Jerusalem case  {} / {} to DB'.format(i, len(ordered_cases)))
                         self.add_meeting_to_schedule(case, J_date.date, time_slot, hall_number,
                                                      case_id_to_judge_id[case.id],case.lawyer_id_1 , case.lawyer_id_2,
                                                      'Jerusalem')
-                        print('Done - Adding Jerusalem case  {} / {} to DB'.format(i, len(ordered_cases)))
+                        #print('Done - Adding Jerusalem case  {} / {} to DB'.format(i, len(ordered_cases)))
 
             if not been_placed_in_calendar:
                 print('Case {} has not been placed in calendar!'.format(case.id))
@@ -322,7 +323,7 @@ class TelAvivScheduler(LocationScheduler):
                 print('got here')
 
             ##############
-            print('Starting Tel Aviv case {} / {} scheduling'.format(i, len(ordered_cases)))
+            #print('Starting Tel Aviv case {} / {} scheduling'.format(i, len(ordered_cases)))
 
             judge_id = case_id_to_judge_id[case.id]
             been_placed_in_calendar = False
@@ -334,18 +335,110 @@ class TelAvivScheduler(LocationScheduler):
                 if lawyers_available:
                     relevant, hall_number, time_slot = self.date_relevant_for_case(T_date, judge_id ,case, 'Tel Aviv')
                     if relevant:
-                        print('Done - Found! Tel Aviv case relevancy {} / {}'.format(i, len(ordered_cases)))
+                        #print('Done - Found! Tel Aviv case relevancy {} / {}'.format(i, len(ordered_cases)))
                         been_placed_in_calendar = True
                         T_date.schedule[hall_number][time_slot][judge_id] = case.id
-                        print('Adding Tel Aviv case  {} / {} to DB'.format(i, len(ordered_cases)))
+                        #print('Adding Tel Aviv case  {} / {} to DB'.format(i, len(ordered_cases)))
                         self.add_meeting_to_schedule(case, T_date.date, time_slot, hall_number,
                                                      case_id_to_judge_id[case.id],case.lawyer_id_1, case.lawyer_id_2
                                                      , 'Tel Aviv')
-                        print('Done - Adding Jerusalem case  {} / {} to DB'.format(i, len(ordered_cases)))
+                        #print('Done - Adding Tel Aviv case  {} / {} to DB'.format(i, len(ordered_cases)))
 
             if not been_placed_in_calendar:
                 print('Case {} has not been placed in calendar!'.format(case.id))
-            print('Done - Jerusalem case {} / {} scheduling'.format(i, len(ordered_cases)))
+            print('Done - Tel Aviv case {} / {} scheduling'.format(i, len(ordered_cases)))
+            i += 1
+
+
+class HaifaScheduler(LocationScheduler):
+    def __init__(self, cases):
+        self.location = 'Haifa'
+        LocationScheduler.__init__(self, cases, self.location)
+        self.halls = self.get_halls(self.location)
+
+    def schedule_cases(self):
+        '''
+        MAIN FUNCTION
+        :return:
+        '''
+        ordered_cases = self.order_cases()
+        case_id_to_judge_id = self.get_case_id_to_judge_id()
+        quarterly_dates = self.get_next_90_dates(DayToHallToJudgeTelAviv)
+        quarterly_t_a_days = [Day(date, DayToHallToJudgeHeifa) for date in quarterly_dates]
+        # case object
+        i = 1
+        for case in ordered_cases:
+            ##############
+            #print('Starting Haifa case {} / {} scheduling'.format(i, len(ordered_cases)))
+
+            judge_id = case_id_to_judge_id[case.id]
+            been_placed_in_calendar = False
+            for T_date in quarterly_t_a_days:
+                if been_placed_in_calendar:
+                    break
+                lawyers_available = self.lawyer_is_not_in_different_city(T_date.date, case.lawyer_id_1, case.lawyer_id_2
+                                                                         , 'Haifa')
+                if lawyers_available:
+                    relevant, hall_number, time_slot = self.date_relevant_for_case(T_date, judge_id ,case, 'Haifa')
+                    if relevant:
+                        #print('Done - Found! Haifa case relevancy {} / {}'.format(i, len(ordered_cases)))
+                        been_placed_in_calendar = True
+                        T_date.schedule[hall_number][time_slot][judge_id] = case.id
+                        #print('Adding Haifa case  {} / {} to DB'.format(i, len(ordered_cases)))
+                        self.add_meeting_to_schedule(case, T_date.date, time_slot, hall_number,
+                                                     case_id_to_judge_id[case.id],case.lawyer_id_1, case.lawyer_id_2
+                                                     , 'Haifa')
+                        #print('Done - Adding Haifa case  {} / {} to DB'.format(i, len(ordered_cases)))
+
+            if not been_placed_in_calendar:
+                print('Case {} has not been placed in calendar!'.format(case.id))
+            print('Done - Haifa case {} / {} scheduling'.format(i, len(ordered_cases)))
+            i += 1
+
+
+class BeerShevaScheduler(LocationScheduler):
+    def __init__(self, cases):
+        self.location = 'Beer Sheva'
+        LocationScheduler.__init__(self, cases, self.location)
+        self.halls = self.get_halls(self.location)
+
+    def schedule_cases(self):
+        '''
+        MAIN FUNCTION
+        :return:
+        '''
+        ordered_cases = self.order_cases()
+        case_id_to_judge_id = self.get_case_id_to_judge_id()
+        quarterly_dates = self.get_next_90_dates(DayToHallToJudgeTelAviv)
+        quarterly_t_a_days = [Day(date, DayToHallToJudgeBeerSheva) for date in quarterly_dates]
+        # case object
+        i = 1
+        for case in ordered_cases:
+            ##############
+            #print('Starting Beer Sheva case {} / {} scheduling'.format(i, len(ordered_cases)))
+
+            judge_id = case_id_to_judge_id[case.id]
+            been_placed_in_calendar = False
+            for T_date in quarterly_t_a_days:
+                if been_placed_in_calendar:
+                    break
+                lawyers_available = self.lawyer_is_not_in_different_city(T_date.date, case.lawyer_id_1, case.lawyer_id_2
+                                                                         , 'Beer Sheva')
+                if lawyers_available:
+                    relevant, hall_number, time_slot = self.date_relevant_for_case(T_date, judge_id ,case, 'Beer Sheva')
+                    if relevant:
+                        #print('Done - Found! Beer Sheva case relevancy {} / {}'.format(i, len(ordered_cases)))
+                        been_placed_in_calendar = True
+                        T_date.schedule[hall_number][time_slot][judge_id] = case.id
+                        #print('Adding Beer Sheva case  {} / {} to DB'.format(i, len(ordered_cases)))
+                        self.add_meeting_to_schedule(case, T_date.date, time_slot, hall_number,
+                                                     case_id_to_judge_id[case.id],case.lawyer_id_1, case.lawyer_id_2
+                                                     , 'Beer Sheva')
+                        #print('Done - Adding Beer Sheva case  {} / {} to DB'.format(i, len(ordered_cases)))
+
+            if not been_placed_in_calendar:
+                print('Case {} has not been placed in calendar!'.format(case.id))
+            print('Done - Beer Sheva case {} / {} scheduling'.format(i, len(ordered_cases)))
             i += 1
 
 
@@ -379,7 +472,7 @@ class MeetingScheduler:
 
     def divide_cases_to_location(self):
         cases = self.get_uploaded_cases()
-        print('Amount of Cases got: {}'.format(len(cases)))
+        #print('Amount of Cases got: {}'.format(len(cases)))
         location_to_cases = defaultdict(list)  # dict of location to case list -> {location_name_str: [Case], ...
         for case in cases:
             location_to_cases[case.location].append(case)
@@ -387,12 +480,18 @@ class MeetingScheduler:
         return location_to_cases
 
     def schedule_jerusalem_cases(self):
-        print('Starting Jerusalem scheduling')
-        print('Getting Jerusalem cases')
-        #j_scheduler = JerusalemScheduler(self.location_to_cases['ירושלים'])
-        print('Done - Getting Jerusalem cases')
-        #j_scheduler.schedule_cases()
+        #print('Starting Jerusalem scheduling')
+        #print('Getting Jerusalem cases')
+        j_scheduler = JerusalemScheduler(self.location_to_cases['ירושלים'])
+        #print('Done - Getting Jerusalem cases')
+        j_scheduler.schedule_cases()
 
         t_scheduler = TelAvivScheduler(self.location_to_cases['תל אביב'])
         t_scheduler.schedule_cases()
+
+        h_scheduler = HaifaScheduler(self.location_to_cases['חיפה'])
+        h_scheduler.schedule_cases()
+
+        b_scheduler = BeerShevaScheduler(self.location_to_cases['באר שבע'])
+        b_scheduler.schedule_cases()
 

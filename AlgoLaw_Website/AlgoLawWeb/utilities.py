@@ -28,6 +28,21 @@ DayToHallToJudgeTelAviv = {
     3: {1: [9, 9], 2: [10, 10]},  # Wednesday
     4: {1: [9, 9], 2: [10, 10]}  # Thursday
 }
+
+DayToHallToJudgeHeifa = {
+    7: {1: [1, 1]},  # Sunday
+    1: {1: [1, 1]},  # Monday
+    2: {1: [1, 1]},  # Tuesday
+    3: {1: [1, 1]},  # Wednesday
+    4: {1: [1, 1]}  # Thursday
+}
+DayToHallToJudgeBeerSheva = {
+    7: {1: [4, 4]},  # Sunday
+    1: {1: [4, 4]},  # Monday
+    2: {1: [4, 4]},  # Tuesday
+    3: {1: [4, 4]},  # Wednesday
+    4: {1: [4, 4]}# Thursday
+}
 LocationEngToHeb = {
     'Jerusalem': 'ירושלים',
     'Haifa': 'חיפה',
@@ -165,22 +180,22 @@ def load_cases_to_db(case_file_path):
         urg_level, duration, weight = get_case_db_data(case_enrichment_df, main_type)
         # urg_level, duration, weight = get_case_db_data(case_enrichment_df, main_type,
         #                                                second_type, sub_type)
+        case_sanity_check = db.session.query(Case).filter(Case.id==case_id).all()
+        if (len(case_sanity_check) == 0):
+            new_case = Case(id=case_id,
+                            first_type=main_type,
+                            second_type=second_type,
+                            third_type=sub_type,
+                            urgency_level=urg_level,
+                            duration=duration,
+                            location=location,
+                            weight=weight,
+                            quarter_created=((datetime.datetime.now().month - 1) // 3) + 1,
+                            year_created=datetime.datetime.now().year,
+                            lawyer_id_1=lawyer_name,
+                            lawyer_id_2=lawyer_id_2)
 
-        new_case = Case(id=case_id,
-                        first_type=main_type,
-                        second_type=second_type,
-                        third_type=sub_type,
-                        urgency_level=urg_level,
-                        duration=duration,
-                        location=location,
-                        weight=weight,
-                        quarter_created=((datetime.datetime.now().month - 1) // 3) + 1,
-                        year_created=datetime.datetime.now().year,
-                        lawyer_id_1=lawyer_name,
-                        lawyer_id_2=lawyer_id_2)
-
-        add_to_db(new_case)
-
+            add_to_db(new_case)
     return True
 
 
