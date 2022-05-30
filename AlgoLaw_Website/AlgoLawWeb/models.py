@@ -140,6 +140,7 @@ class MeetingSchedule(db.Model):
     lawyer_id_1 = db.Column(db.String(100), nullable=True)
     lawyer_id_2 = db.Column(db.String(100), nullable=True)
     location = db.Column(db.String(100), nullable=False)
+    # google_calendar_event_id = db.Column(db.String(100), nullable=True)
 
 
 class CaseJudgeLocation(db.Model):

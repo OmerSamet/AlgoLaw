@@ -264,6 +264,7 @@ class JerusalemScheduler(LocationScheduler):
             print('Done - Jerusalem case {} / {} scheduling'.format(i, len(ordered_cases)))
             i += 1
 
+
 class MeetingScheduler:
     def __init__(self, start_date):
         self.start_date = start_date  # start of quarter

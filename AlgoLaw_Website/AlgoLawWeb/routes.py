@@ -430,13 +430,14 @@ def master_change_weights():
 @login_required
 def google_api_test():
     creds = get_or_create_credentials()
+    service = create_service(creds)
     title = 'TestTESTTest'
     description = 'This is my test description'
     start_time = '2022-05-08T09:00:00-07:00'
     end_time = '2022-05-08T09:00:00-07:00'
-    attendees_mails = ['mailomersamet@gmail.com', 'xxhe4433@gmail.com']
+    attendees_mails = ['mailomersamet@gmail.com']
     location = 'Jerusalem, Hall 1'
-    send_calendar_summon(title, description, start_time, end_time, attendees_mails, location, creds)
+    send_calendar_summon(service, title, description, start_time, end_time, attendees_mails, location)
     return render_template('secretary_space.html', title='Secretary Space')
 
 
