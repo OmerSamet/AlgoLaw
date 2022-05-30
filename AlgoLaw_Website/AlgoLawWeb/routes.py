@@ -156,6 +156,9 @@ def secretary_space():
     return render_template('secretary_space.html', title='Secretary Space')
 
 
+
+# @app.route('/run_division_logic')
+# @login_required
 @celery.task(name='utilities.run_division_logic', time_limit=1000)
 def run_division_logic():
     print('Start Logic')
@@ -175,8 +178,9 @@ def run_division_logic():
     scheduler.schedule_jerusalem_cases()
     celery.control.purge()
     print('Purged')
-    # flash('תיקים חולקו ושובצו בהצלחה', 'success')
     return 'Done'
+    # flash('תיקים חולקו ושובצו בהצלחה', 'success')
+
 
 
 @app.route('/secretary_upload_files_and_split_cases', methods=['GET', 'POST'])
@@ -194,7 +198,7 @@ def secretary_upload_files_and_split_cases():
             flash_str += ' הועלו בהצלחה '
             flash(flash_str, 'success')
         # Run logic
-        run_division_logic.delay()
+        run_division_logic()
         # Redirect home
         return redirect(url_for('home'))
 
