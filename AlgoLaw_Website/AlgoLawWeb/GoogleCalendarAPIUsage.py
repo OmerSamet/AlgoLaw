@@ -9,8 +9,18 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
+from AlgoLaw_Website.AlgoLawWeb.models import MeetingSchedule
+import datetime
+from AlgoLaw_Website.AlgoLawWeb import app, db, bcrypt, celery
+# from AlgoLaw_Website.AlgoLawWeb import celery
+
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/calendar']
+
+
+def create_service(creds):
+    service = build('calendar', 'v3', credentials=creds)
+    return service
 
 
 def get_or_create_credentials():
@@ -39,8 +49,9 @@ def get_or_create_credentials():
     return creds
 
 
-def send_calendar_summon(title, description, start_time, end_time, attendees_mails, location, creds):
+def send_calendar_summon(service, title, description, start_time, end_time, attendees_mails, location):
     '''
+    :param service: - google calendar api service from create_service function
     :param title: - title of meeting - str
     :param description: - description of meeting - str
     :param start_time: starting time of meeting - str
@@ -52,7 +63,6 @@ def send_calendar_summon(title, description, start_time, end_time, attendees_mai
             - fail -> False
     '''
     try:
-        service = build('calendar', 'v3', credentials=creds)
         attendees = []
         for attendee_mail in attendees_mails:
             attendees.append({'email': attendee_mail})
@@ -79,9 +89,11 @@ def send_calendar_summon(title, description, start_time, end_time, attendees_mai
         }
         event = service.events().insert(calendarId='primary', body=event, sendUpdates='all').execute()
         print('Event created: %s' % (event.get('htmlLink')))
+        return event["id"]
 
     except HttpError as error:
         print('An error occurred: %s' % error)
+        return False
 
 
 def get_attendees_response_by_event_id(service, event_id):
@@ -104,6 +116,17 @@ def check_all_attendees_accept(response_by_attendee):
         if response_status != 'confirmed':
             return False
     return True
+
+
+def run_event_status_watchdog(service):
+    while True:
+        all_event_ids = MeetingSchedule.query.filter(MeetingSchedule.date >= datetime.datetime.now()).all()
+        # if all_event_ids:
+        #     all_event_ids = [event.google_calendar_event_id for event in all_event_ids]
+        #     for event_id in all_event_ids:
+        #         event = service.events().get(calendarId='primary', eventId=event_id).execute()
+
+    pass
 
 
 if __name__ == '__main__':
