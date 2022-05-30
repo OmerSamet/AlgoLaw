@@ -156,9 +156,10 @@ def secretary_space():
     return render_template('secretary_space.html', title='Secretary Space')
 
 
-#@celery.task(name='utilities.run_division_logic', time_limit=1000)
-@app.route('/run_division_logic')
-@login_required
+
+# @app.route('/run_division_logic')
+# @login_required
+@celery.task(name='utilities.run_division_logic', time_limit=1000)
 def run_division_logic():
     print('Start Logic')
     print('Reading DB')
@@ -175,8 +176,9 @@ def run_division_logic():
     scheduler = MeetingScheduler(datetime.datetime.now())
     print('Jerus cases num: {}'.format(len(scheduler.location_to_cases)))
     scheduler.schedule_jerusalem_cases()
-    #celery.control.purge()
+    celery.control.purge()
     print('Purged')
+    return 'Done'
     # flash('תיקים חולקו ושובצו בהצלחה', 'success')
 
 

@@ -184,7 +184,7 @@ class LocationScheduler:
                 MeetingSchedule.lawyer_id_2 == lawyer_id_2,
                 MeetingSchedule.date == date,
                 MeetingSchedule.location != location).all()
-            
+
             return len(lawyers_2_cases_that_day) == 0
 
         return True
