@@ -198,7 +198,7 @@ def secretary_upload_files_and_split_cases():
             flash_str += ' הועלו בהצלחה '
             flash(flash_str, 'success')
         # Run logic
-        run_division_logic()
+        run_division_logic.delay()
         # Redirect home
         return redirect(url_for('home'))
 
